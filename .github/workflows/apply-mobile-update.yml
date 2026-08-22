@@ -1,0 +1,30 @@
+name: Apply tested SkyStudee mobile update
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.skystudee-update/run'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild tested mobile UI
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d .skystudee-update/mobile.patch.gz.b64 | gzip -d > /tmp/mobile.patch
+          patch index.html /tmp/mobile.patch
+          test "$(git hash-object index.html)" = "b2092ea7f9c053576c9ae6877027746fecab83d2"
+          rm -rf .skystudee-update
+          rm -f .github/workflows/apply-mobile-update.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add mobile-specific SkyStudee UI"
+          git push
