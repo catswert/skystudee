@@ -1,0 +1,67 @@
+name: Apply SkyStudee Later Undo Memory fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.skystudee-update/run-fix-later-undo-memory'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rebuild and verify SkyStudee
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat assets/mobile-build-01 assets/mobile-build-02 assets/mobile-build-03 assets/mobile-build-04 assets/mobile-build-05 assets/mobile-build-06 \
+            | base64 -d | gzip -d > /tmp/skystudee.html
+          test "$(sha256sum /tmp/skystudee.html | awk '{print $1}')" = "db85dacde26b66b89038b7c928b69f0662b9a9542ced1c275b49efc4e1ccfdfa"
+
+          base64 -d .skystudee-update/fix-later-undo-memory.patch.gz.b64 | gzip -d > /tmp/fix.patch
+          patch /tmp/skystudee.html /tmp/fix.patch
+          test "$(sha256sum /tmp/skystudee.html | awk '{print $1}')" = "681efea65dc3a51a3df2c0978e446f02b0132ea487f57b9a70d8ea5800eeaf38"
+
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('/tmp/skystudee.html').read_text()
+          start=s.index('<script>')+8
+          end=s.rindex('</script>')
+          Path('/tmp/skystudee.js').write_text(s[start:end])
+          PY
+          node --check /tmp/skystudee.js
+
+          python - <<'PY'
+          from pathlib import Path
+          import gzip, base64, re
+
+          html=Path('/tmp/skystudee.html').read_bytes()
+          encoded=base64.b64encode(gzip.compress(html, compresslevel=9, mtime=0)).decode()
+          parts=[encoded[i:i+9792] for i in range(0,len(encoded),9792)]
+
+          assets=Path('assets')
+          for old in assets.glob('mobile-build-*'):
+              old.unlink()
+          for i,part in enumerate(parts,1):
+              (assets/f'mobile-build-{i:02d}').write_text(part)
+
+          p=Path('index.html')
+          loader=p.read_text()
+          loader=re.sub(r"const version='[^']+';", "const version='later-undo-memory-20260822';", loader)
+          loader=re.sub(r'Array\.from\(\{length:\d+\}', f'Array.from({{length:{len(parts)}}}', loader)
+          p.write_text(loader)
+          print(f'Wrote {len(parts)} build parts')
+          PY
+
+          rm -rf .skystudee-update
+          rm -f .github/workflows/apply-later-undo-memory.yml
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Fix Later and Undo; open chosen decks in Memory"
+          git push
