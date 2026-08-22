@@ -719,6 +719,15 @@
       padding: 30px 34px;
       box-shadow: 0 22px 70px rgba(0,0,0,.34);
     }
+    .modal-card {
+      /* The import dialog itself never grows beyond the viewport. The card
+         list owns the scrolling, so the action buttons always remain visible. */
+      height: min(88dvh, 980px);
+      min-height: min(640px, calc(100dvh - 36px));
+      display: grid;
+      grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+      overflow: hidden;
+    }
     .onboard-card {
       width: min(620px, 100%);
       text-align: center;
@@ -797,24 +806,50 @@
     .import-stat span { color: var(--muted); letter-spacing: .12em; font-size: .8rem; text-transform: uppercase; }
     .import-preview-list {
       border: 1px solid var(--line);
-      border-radius: 16px;
-      overflow: hidden;
+      border-radius: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
+      min-height: 0;
       margin: 14px 0 18px;
-      display: grid;
+      display: block;
+      background: rgba(6, 10, 15, .28);
     }
+    .import-preview-list::-webkit-scrollbar { width: 11px; }
+    .import-preview-list::-webkit-scrollbar-track { background: rgba(255,255,255,.015); }
+    .import-preview-list::-webkit-scrollbar-thumb {
+      background: rgba(148,163,184,.28);
+      border: 3px solid transparent;
+      background-clip: padding-box;
+    }
+    .import-preview-header,
     .import-preview-row {
       display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
       gap: 14px;
       align-items: center;
       padding: 13px 16px;
       border-bottom: 1px solid rgba(148,163,184,.12);
     }
+    .import-preview-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #10151d;
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 650;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
     .import-preview-row:last-child { border-bottom: none; }
+    .import-preview-header span:last-child,
     .import-preview-row span:last-child { text-align: right; }
     .import-preview-arrow {
       color: var(--muted);
       text-align: center;
+      min-width: 1.25rem;
     }
     .import-row, .import-head {
       display: grid;
@@ -837,6 +872,9 @@
       justify-content: flex-end;
       gap: 10px;
       flex-wrap: wrap;
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+      background: rgba(12,17,24,.98);
     }
     .modal-btn.primary { background: #eef2f7; color: #141923; border-color: #eef2f7; }
 
@@ -969,6 +1007,13 @@
       .stats-card { grid-column: span 12; }
       .metric-row { grid-template-columns: 1fr; }
       .score-grid, .import-summary { grid-template-columns: 1fr; }
+      .modal-card {
+        height: calc(100dvh - 24px);
+        min-height: 0;
+        padding: 20px 18px;
+      }
+      .import-summary { gap: 8px; padding: 12px 0; }
+      .import-preview-header, .import-preview-row { padding: 11px 10px; gap: 8px; }
       .typed-row { grid-template-columns: 1fr; }
     }
   </style>
@@ -1359,7 +1404,398 @@
       { id: "zeigen__gezeigt", front: "zeigen", back: "gezeigt" }
     ];
 
-    const APP_VERSION = 5;
+    // ==========================================================
+    // PRELOADED PSYCHOLOGY DECK
+    // ==========================================================
+    // This deck ships with SkyStudee, but unlike the German fallback deck it
+    // is user-removable. APP_VERSION 6 seeds it once for existing users; if
+    // they later delete it, it stays deleted.
+    const PSYCH_DECK_ID = "ap_psych:unit_0_research_methods";
+    const PSYCH_DECK_NAME = "AP Psychology Unit 0 — Research Methods";
+    const PSYCH_CARDS = [
+      {
+            "id": "psychology",
+            "front": "Psychology",
+            "back": "The scientific study of mental processes and behavior."
+      },
+      {
+            "id": "mental_processes",
+            "front": "Mental Processes",
+            "back": "Internal thinking processes that cannot be directly seen from the outside."
+      },
+      {
+            "id": "behavior",
+            "front": "Behavior",
+            "back": "Observable actions—what people do and how they act."
+      },
+      {
+            "id": "confirmation_bias",
+            "front": "Confirmation Bias",
+            "back": "Seeking, interpreting, or remembering information that supports what you already believe."
+      },
+      {
+            "id": "hindsight_bias",
+            "front": "Hindsight Bias",
+            "back": "Believing after an event that you knew it would happen beforehand."
+      },
+      {
+            "id": "overconfidence",
+            "front": "Overconfidence",
+            "back": "Having too much faith in your judgments or abilities; thinking you know more than you do."
+      },
+      {
+            "id": "empirical_evidence",
+            "front": "Empirical Evidence",
+            "back": "Information obtained through observation, experimentation, or measurement."
+      },
+      {
+            "id": "scientific_method",
+            "front": "Scientific Method",
+            "back": "A systematic process of observing, forming hypotheses, studying, analyzing data, and drawing evidence-based conclusions."
+      },
+      {
+            "id": "hypothesis",
+            "front": "Hypothesis",
+            "back": "A specific, testable prediction about variables or a research outcome."
+      },
+      {
+            "id": "falsifiable",
+            "front": "Falsifiable",
+            "back": "Able to be tested and potentially proven false by evidence."
+      },
+      {
+            "id": "peer_review",
+            "front": "Peer Review",
+            "back": "Experts evaluate research quality, validity, and significance before publication."
+      },
+      {
+            "id": "replication",
+            "front": "Replication",
+            "back": "Repeating a study with new participants under similar conditions to see if the findings occur again."
+      },
+      {
+            "id": "reliability",
+            "front": "Reliability",
+            "back": "Producing consistent results when measured repeatedly under similar conditions."
+      },
+      {
+            "id": "validity",
+            "front": "Validity",
+            "back": "Accurately measuring what a study or measurement tool intends to measure."
+      },
+      {
+            "id": "apa",
+            "front": "The American Psychological Association (APA)",
+            "back": "A major professional organization that advances psychology, ethical standards, research, education, and practice."
+      },
+      {
+            "id": "research_design",
+            "front": "Research Design",
+            "back": "The overall plan or strategy for how a research study will be conducted."
+      },
+      {
+            "id": "methodology",
+            "front": "Methodology",
+            "back": "The specific procedures and techniques used to carry out a research design."
+      },
+      {
+            "id": "quantitative_data",
+            "front": "Quantitative Data",
+            "back": "Numerical information gathered from surveys, tests, or experiments."
+      },
+      {
+            "id": "qualitative_data",
+            "front": "Qualitative Data",
+            "back": "Non-numerical information about experiences and behavior, often from interviews or observations."
+      },
+      {
+            "id": "likert_scales",
+            "front": "Likert Scales",
+            "back": "Survey scales used to measure attitudes or opinions, usually from strong agreement to strong disagreement."
+      },
+      {
+            "id": "structured_interviews",
+            "front": "Structured Interviews",
+            "back": "Interviews where every participant is asked the same predetermined questions in the same order."
+      },
+      {
+            "id": "survey_technique",
+            "front": "Survey Technique",
+            "back": "Collecting self-report data from a sample by asking questions about attitudes, beliefs, opinions, or behaviors."
+      },
+      {
+            "id": "wording_effect",
+            "front": "Wording Effect",
+            "back": "Changes in question phrasing that influence how people interpret and answer it."
+      },
+      {
+            "id": "social_desirability_bias",
+            "front": "Social Desirability Bias",
+            "back": "Answering in a socially favorable way instead of giving a fully honest or accurate response."
+      },
+      {
+            "id": "naturalistic_observation",
+            "front": "Naturalistic Observation",
+            "back": "Observing and recording behavior in real-world settings without manipulating the situation."
+      },
+      {
+            "id": "case_study",
+            "front": "Case Study",
+            "back": "An in-depth examination of one individual, group, or phenomenon."
+      },
+      {
+            "id": "correlational_research",
+            "front": "Correlational Research",
+            "back": "Research that measures relationships between variables without manipulating them."
+      },
+      {
+            "id": "third_variable_problem",
+            "front": "Third Variable Problem",
+            "back": "An unmeasured third variable may be influencing the relationship between two correlated variables."
+      },
+      {
+            "id": "scatterplot",
+            "front": "Scatterplot",
+            "back": "A graph showing the relationship between two variables."
+      },
+      {
+            "id": "correlation_coefficient",
+            "front": "Correlation Coefficient",
+            "back": "A number, r, from -1 to +1 showing the strength and direction of a correlation."
+      },
+      {
+            "id": "positive_correlation",
+            "front": "Positive Correlation",
+            "back": "A relationship where the variables move in the same direction."
+      },
+      {
+            "id": "negative_correlation",
+            "front": "Negative Correlation",
+            "back": "A relationship where the variables move in opposite directions."
+      },
+      {
+            "id": "experimental_method",
+            "front": "Experimental Method",
+            "back": "A method used to test cause and effect by manipulating one variable and measuring another."
+      },
+      {
+            "id": "independent_variable",
+            "front": "Independent Variable",
+            "back": "The variable the researcher deliberately manipulates."
+      },
+      {
+            "id": "dependent_variable",
+            "front": "Dependent Variable",
+            "back": "The variable measured for changes as the outcome of an experiment."
+      },
+      {
+            "id": "confounding_variable",
+            "front": "Confounding Variable",
+            "back": "An uncontrolled variable that affects the results and can distort the effect of the independent variable."
+      },
+      {
+            "id": "operational_definitions",
+            "front": "Operational Definitions",
+            "back": "Exact procedures for how variables will be measured or manipulated."
+      },
+      {
+            "id": "experimental_group",
+            "front": "Experimental Group",
+            "back": "The group exposed to the independent variable or treatment."
+      },
+      {
+            "id": "control_group",
+            "front": "Control Group",
+            "back": "The comparison group not exposed to the independent variable or special treatment."
+      },
+      {
+            "id": "random_assignment",
+            "front": "Random Assignment",
+            "back": "Assigning participants to conditions by chance so each person has an equal chance of any group."
+      },
+      {
+            "id": "placebo_effect",
+            "front": "Placebo Effect",
+            "back": "Improvement caused by believing a treatment will help rather than by an active treatment effect."
+      },
+      {
+            "id": "experimenter_bias",
+            "front": "Experimenter Bias",
+            "back": "When a researcher's expectations or beliefs unintentionally influence the study or its interpretation."
+      },
+      {
+            "id": "single_blind_study",
+            "front": "Single-Blind Study",
+            "back": "Participants do not know their group, but the researchers do."
+      },
+      {
+            "id": "double_blind_study",
+            "front": "Double-Blind Study",
+            "back": "Neither participants nor researchers know who is in the experimental or control group."
+      },
+      {
+            "id": "placebo_condition",
+            "front": "Placebo Condition",
+            "back": "A control condition that receives a placebo instead of the actual treatment."
+      },
+      {
+            "id": "sample",
+            "front": "Sample",
+            "back": "A subset of a larger population selected for study."
+      },
+      {
+            "id": "representative_sample",
+            "front": "Representative Sample",
+            "back": "A sample that accurately reflects the population's important characteristics and diversity."
+      },
+      {
+            "id": "random_sample",
+            "front": "Random Sample",
+            "back": "A sample chosen so each member of the population has an equal chance of being selected."
+      },
+      {
+            "id": "sample_bias",
+            "front": "Sample Bias",
+            "back": "When a sample is not representative of the larger population, producing misleading results."
+      },
+      {
+            "id": "generalizability",
+            "front": "Generalizability",
+            "back": "How well findings from a sample can be applied to a larger population."
+      },
+      {
+            "id": "statistics",
+            "front": "Statistics",
+            "back": "Tools for organizing, describing, and using data to make predictions about populations."
+      },
+      {
+            "id": "descriptive_statistics",
+            "front": "Descriptive Statistics",
+            "back": "Numerical methods used to summarize and describe a dataset."
+      },
+      {
+            "id": "inferential_statistics",
+            "front": "Inferential Statistics",
+            "back": "Using sample data to make conclusions or predictions about a larger population."
+      },
+      {
+            "id": "measure_of_central_tendency",
+            "front": "Measure of Central Tendency",
+            "back": "A value used to describe the center or typical value of a dataset."
+      },
+      {
+            "id": "mean",
+            "front": "Mean",
+            "back": "The average: add all values and divide by the number of values."
+      },
+      {
+            "id": "median",
+            "front": "Median",
+            "back": "The middle value after data are ordered; average the two middle values if there is an even number."
+      },
+      {
+            "id": "normal_curve",
+            "front": "Normal Curve",
+            "back": "A bell-shaped distribution where most values fall near the mean and fewer occur farther away."
+      },
+      {
+            "id": "positive_skew",
+            "front": "Positive Skew",
+            "back": "A distribution with most data on the left and a tail extending to the right."
+      },
+      {
+            "id": "negative_skew",
+            "front": "Negative Skew",
+            "back": "A distribution with most data on the right and a tail extending to the left."
+      },
+      {
+            "id": "standard_deviation",
+            "front": "Standard Deviation",
+            "back": "A measure of how spread out scores are around the mean."
+      },
+      {
+            "id": "percentile_rank",
+            "front": "Percentile Rank",
+            "back": "The percentage of scores at or below a particular score."
+      },
+      {
+            "id": "statistical_significance",
+            "front": "Statistical Significance",
+            "back": "Evidence that an observed result is unlikely to be due to chance, often judged using a p-value."
+      },
+      {
+            "id": "meta_analysis",
+            "front": "Meta Analysis",
+            "back": "A statistical analysis combining multiple studies on the same topic to draw an overall conclusion."
+      },
+      {
+            "id": "irb",
+            "front": "Institutional Review Boards (IRB)",
+            "back": "Committees that review research to protect participants and ensure ethical standards are met."
+      },
+      {
+            "id": "informed_consent",
+            "front": "Informed Consent",
+            "back": "Voluntary agreement to participate after learning the study's purpose, procedures, risks, benefits, and rights."
+      },
+      {
+            "id": "informed_assent",
+            "front": "Informed Assent",
+            "back": "Age-appropriate or understandable agreement from someone who cannot legally give full consent."
+      },
+      {
+            "id": "confidentiality",
+            "front": "Confidentiality",
+            "back": "Protecting participants' identities, responses, and personal information from unauthorized disclosure."
+      },
+      {
+            "id": "deception",
+            "front": "Deception",
+            "back": "Misleading participants about the true purpose, procedures, or expected outcomes of a study."
+      },
+      {
+            "id": "confederates",
+            "front": "Confederates",
+            "back": "People who appear to be participants but are actually working with the researcher and know the study's purpose."
+      },
+      {
+            "id": "debriefing",
+            "front": "Debriefing",
+            "back": "Explaining the true nature, purpose, and procedures of a study to participants after they participate."
+      },
+      {
+            "id": "mode",
+            "front": "Mode",
+            "back": "The value that appears most often in a dataset."
+      },
+      {
+            "id": "regression_to_the_mean",
+            "front": "Regression to the Mean",
+            "back": "The tendency for unusually extreme scores to be closer to the average when measured again."
+      },
+      {
+            "id": "effect_sizes",
+            "front": "Effect Sizes",
+            "back": "Measures of how large or strong a difference or relationship is."
+      },
+      {
+            "id": "aaq",
+            "front": "Article Analysis Question (AAQ)",
+            "back": "An AP Psychology free-response question where you analyze one summarized research study."
+      },
+      {
+            "id": "ebq",
+            "front": "Evidence-Based Question (EBQ)",
+            "back": "An AP Psychology free-response question where you make a claim and support it with evidence from provided research sources."
+      },
+      {
+            "id": "defensible_claim",
+            "front": "Defensible Claim",
+            "back": "A specific claim that can be reasonably supported with evidence and psychological science."
+      }
+];
+
+    const APP_VERSION = 6;
     const STORAGE_KEY = "study_cards_multideck_engine_v5";
     const OLD_STORAGE_KEY = "study_cards_memory_engine_v4";
     const PRIOR_ALPHA = 2;
@@ -1526,12 +1962,13 @@
       };
     }
 
-    function createDeckRecord({ id, name, cards, builtin = false }) {
+    function createDeckRecord({ id, name, cards, builtin = false, preloaded = false }) {
       const now = new Date().toISOString();
       const deck = {
         id,
         name: name || "Untitled Deck",
         builtin: Boolean(builtin),
+        preloaded: Boolean(preloaded),
         createdAt: now,
         updatedAt: now,
         cards: normalizeStoredCards(cards || []),
@@ -1560,6 +1997,12 @@
         cards: BUILTIN_CARDS,
         builtin: true
       });
+      const psychology = createDeckRecord({
+        id: PSYCH_DECK_ID,
+        name: PSYCH_DECK_NAME,
+        cards: PSYCH_CARDS,
+        preloaded: true
+      });
 
       return {
         version: APP_VERSION,
@@ -1568,7 +2011,8 @@
         lastSavedAt: null,
         activeDeckId: BUILTIN_DECK_ID,
         decks: {
-          [BUILTIN_DECK_ID]: builtin
+          [BUILTIN_DECK_ID]: builtin,
+          [PSYCH_DECK_ID]: psychology
         }
       };
     }
@@ -1606,6 +2050,7 @@
         id,
         name: String(raw?.name || "Untitled Deck"),
         builtin: Boolean(raw?.builtin),
+        preloaded: Boolean(raw?.preloaded),
         createdAt: raw?.createdAt || new Date().toISOString(),
         updatedAt: raw?.updatedAt || new Date().toISOString(),
         cards: normalizeStoredCards(raw?.cards || []),
@@ -1665,6 +2110,18 @@
       }
     }
 
+    function seedPsychologyDeckForUpgrade(target, savedVersion) {
+      const version = Number(savedVersion || 0);
+      if (version >= 6 || target.decks[PSYCH_DECK_ID]) return;
+
+      target.decks[PSYCH_DECK_ID] = createDeckRecord({
+        id: PSYCH_DECK_ID,
+        name: PSYCH_DECK_NAME,
+        cards: PSYCH_CARDS,
+        preloaded: true
+      });
+    }
+
     function mergeAppState(saved) {
       const base = defaultAppState();
 
@@ -1687,6 +2144,7 @@
       }
 
       ensureBuiltInDeck(target);
+      seedPsychologyDeckForUpgrade(target, saved.version);
 
       if (!target.decks[target.activeDeckId]) {
         target.activeDeckId = BUILTIN_DECK_ID;
@@ -4469,7 +4927,16 @@ I will upload the topic soon, confirm your understanding`;
         parsed.duplicates;
 
       importPreviewList.innerHTML = "";
-      for (const card of parsed.cards.slice(0, 30)) {
+
+      const previewHeader = document.createElement("div");
+      previewHeader.className = "import-preview-header";
+      previewHeader.innerHTML =
+        `<span>Front</span>` +
+        `<span class="import-preview-arrow"></span>` +
+        `<span>Back</span>`;
+      importPreviewList.appendChild(previewHeader);
+
+      for (const card of parsed.cards) {
         const row =
           document.createElement("div");
         row.className = "import-preview-row";
@@ -4480,15 +4947,8 @@ I will upload the topic soon, confirm your understanding`;
         importPreviewList.appendChild(row);
       }
 
-      if (parsed.cards.length > 30) {
-        const more =
-          document.createElement("div");
-        more.className = "import-note";
-        more.style.padding = "8px";
-        more.textContent =
-          `…and ${parsed.cards.length - 30} more cards`;
-        importPreviewList.appendChild(more);
-      }
+      // Every preview starts at the top of its own fixed scroll region.
+      importPreviewList.scrollTop = 0;
 
       confirmImportBtn.classList.toggle(
         "hidden",
@@ -4618,7 +5078,9 @@ I will upload the topic soon, confirm your understanding`;
 
         const badge = deck.builtin
           ? `<span class="deck-badge">BUILT-IN</span>`
-          : "";
+          : deck.preloaded
+            ? `<span class="deck-badge">PRELOADED</span>`
+            : "";
 
         const deadline =
           deck.settings.deadline
@@ -4646,16 +5108,19 @@ I will upload the topic soon, confirm your understanding`;
           "deck-action primary";
         study.textContent =
           deck.id === activeDeckId
-            ? "Studying"
+            ? "Continue →"
             : "Study →";
-        study.disabled =
-          deck.id === activeDeckId;
-        study.addEventListener("click", () =>
-          switchDeck(
-            deck.id,
-            { fromManager: true }
-          )
-        );
+        study.disabled = false;
+        study.addEventListener("click", () => {
+          if (deck.id === activeDeckId) {
+            showStudyView();
+          } else {
+            switchDeck(
+              deck.id,
+              { fromManager: true }
+            );
+          }
+        });
         actions.appendChild(study);
 
         const rename =
@@ -5279,6 +5744,16 @@ I will upload the topic soon, confirm your understanding`;
     persistState();
     updateControls();
     renderCurrentFact({ forceImmediate: true });
+
+    // With more than one deck, SkyStudee opens on the deck chooser so the
+    // user explicitly picks the subject they want to study. A single-deck
+    // setup still opens directly into Study.
+    if (Object.keys(appState.decks).length > 1) {
+      showDecksView();
+    } else {
+      showStudyView();
+    }
+
     showOnboardingIfNeeded();
     updateStats();
 
