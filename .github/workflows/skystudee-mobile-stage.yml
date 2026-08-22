@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '.skystudee-update/mobile-*'
+      - '.github/workflows/skystudee-mobile-stage.yml'
 
 permissions:
   contents: write
@@ -16,14 +16,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Apply build when all parts are present
+      - name: Reconstruct and verify tested mobile build
         shell: bash
         run: |
           set -euo pipefail
           count=$(find .skystudee-update -maxdepth 1 -type f -name 'mobile-*' | wc -l)
-          if [ "$count" -lt 6 ]; then
-            echo "Waiting for all 6 parts. Found $count."
-            exit 0
+          if [ "$count" -ne 6 ]; then
+            echo "Expected all 6 staged parts, found $count."
+            exit 1
           fi
           cat .skystudee-update/mobile-01 \
               .skystudee-update/mobile-02 \
@@ -38,14 +38,16 @@ jobs:
             echo "Hash mismatch: expected $expected, got $actual"
             exit 1
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git rm .skystudee-update/mobile-01 \
-                 .skystudee-update/mobile-02 \
-                 .skystudee-update/mobile-03 \
-                 .skystudee-update/mobile-04 \
-                 .skystudee-update/mobile-05 \
-                 .skystudee-update/mobile-06
+          start=$(grep -n -m1 '<script>' index.html | cut -d: -f1)
+          end=$(grep -n '</script>' index.html | tail -1 | cut -d: -f1)
+          sed -n "$((start+1)),$((end-1))p" index.html > /tmp/skystudee.js
+          node --check /tmp/skystudee.js
+      - name: Commit tested mobile build
+        shell: bash
+        run: |
+          rm -rf .skystudee-update
+          git config user.name "SkyStudee Update Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html .skystudee-update
           git commit -m "Add mobile-specific SkyStudee UI"
           git push
