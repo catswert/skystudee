@@ -1,0 +1,78 @@
+name: Apply tested SkyStudee update
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-skystudee-update.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruct tested index.html
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64, hashlib, zlib
+
+          parts = sorted(Path('.skystudee-update').glob('part-*'))
+          if len(parts) != 6:
+              raise SystemExit(f'Expected 6 staged parts, found {len(parts)}')
+
+          encoded = ''.join(p.read_text(encoding='utf-8').strip() for p in parts)
+          data = zlib.decompress(base64.b64decode(encoded))
+          expected = '5cda82642901dc399b890df9373b603b1dcd9b55bc6d76af905e9ac399dce1fb'
+          actual = hashlib.sha256(data).hexdigest()
+          if actual != expected:
+              raise SystemExit(f'SHA-256 mismatch: {actual}')
+
+          Path('index.html').write_bytes(data)
+          print(f'Reconstructed index.html ({len(data)} bytes), SHA-256 verified.')
+          PY
+
+      - name: Validate SkyStudee build
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          source = Path('index.html').read_text(encoding='utf-8')
+          required = [
+              'const APP_VERSION = 6;',
+              'const PSYCH_DECK_ID = "ap_psych:unit_0_research_methods";',
+              'className = "import-preview-header";',
+              'for (const card of parsed.cards)',
+              'Object.keys(appState.decks).length > 1'
+          ]
+          missing = [item for item in required if item not in source]
+          if missing:
+              raise SystemExit('Missing required update markers: ' + repr(missing))
+          start = source.index('<script>') + len('<script>')
+          end = source.rindex('</script>')
+          Path('/tmp/skystudee.js').write_text(source[start:end], encoding='utf-8')
+          print('Required update markers present.')
+          PY
+          node --check /tmp/skystudee.js
+
+      - name: Commit tested build
+        shell: bash
+        run: |
+          rm -rf .skystudee-update
+          git config user.name "SkyStudee Update Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html .skystudee-update
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Update SkyStudee deck flow and import preview"
+          git push
