@@ -1,0 +1,5287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyStudee</title>
+  
+
+  <style id="instrumentRedesign">
+    :root {
+      --bg: #090c11;
+      --bg-2: #0d1219;
+      --panel: #10151d;
+      --panel-2: #131925;
+      --text: #eef2f7;
+      --muted: #94a3b8;
+      --muted-2: #64748b;
+      --line: rgba(148,163,184,.22);
+      --line-strong: rgba(148,163,184,.34);
+      --accent: #f0b53a;
+      --green: #7bd56d;
+      --red: #ff6f61;
+      --blue: #8db6ff;
+      --card-front: #0b1017;
+      --card-back: #121821;
+      --shadow: none;
+      --shadow-small: none;
+      --radius: 16px;
+
+      /* Responsive shell variables. These scale continuously instead of
+         treating every desktop as a 1440px layout. */
+      --shell-width: 94vw;
+      --shell-max: 4600px;
+      --shell-pad-x: clamp(16px, 1.15vw, 64px);
+      --shell-pad-y: clamp(16px, 1.05vh, 34px);
+      --study-stage-height: clamp(430px, 58dvh, 1180px);
+      --action-height: clamp(76px, 7.4dvh, 122px);
+    }
+
+    * { box-sizing: border-box; }
+    html {
+      /* About 16px on laptops, ~18px around 3440px, ~20px on 5K.
+         Using rem from here lets the whole interface grow coherently. */
+      font-size: clamp(16px, calc(14.55px + 0.105vw), 20.5px);
+    }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 50% -12%, rgba(62, 96, 150, .085) 0%, rgba(62, 96, 150, .025) 34%, transparent 58%),
+        linear-gradient(180deg, #0b0f15 0%, #090d13 54%, #080b10 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 0;
+    }
+    button, input, select { font: inherit; }
+    .hidden, [hidden] { display: none !important; }
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0);
+      white-space: nowrap; border: 0;
+    }
+    .app {
+      width: min(var(--shell-width), var(--shell-max));
+      margin: 0 auto;
+      padding: var(--shell-pad-y) var(--shell-pad-x) calc(var(--shell-pad-y) * 1.25);
+    }
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.15fr) auto minmax(260px, 1fr);
+      align-items: center;
+      gap: clamp(16px, 1.4vw, 42px);
+      min-height: clamp(68px, 5.5dvh, 106px);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: clamp(12px, 1.1vh, 22px);
+      margin-bottom: clamp(10px, .9vh, 18px);
+    }
+    .topbar-left, .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+      color: var(--text);
+      text-decoration: none;
+      font-size: .92rem;
+      font-weight: 680;
+      letter-spacing: -.015em;
+      white-space: nowrap;
+      padding-right: 14px;
+      margin-right: 2px;
+      border-right: 1px solid var(--line);
+    }
+    .brand-mark::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 1px rgba(240,181,58,.18);
+    }
+    .topbar-right { justify-content: flex-end; }
+    .deck-picker {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+    }
+    .deck-select {
+      appearance: none;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      padding: 6px 28px 6px 0;
+      font-size: clamp(1.05rem, 1.3vw, 1.35rem);
+      font-weight: 560;
+      max-width: min(100%, 460px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      outline: none;
+    }
+    .deck-select option {
+      background: #10151d;
+      color: var(--text);
+    }
+    .deck-picker::after {
+      content: "▾";
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+      font-size: .95rem;
+    }
+    .page-nav, .mode-tabs {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(6px, .45vw, 12px);
+      min-width: 0;
+    }
+    .page-nav-btn, .tab-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.15vw, 1.18rem);
+      font-weight: 520;
+      padding: 10px 14px 14px;
+      cursor: pointer;
+      position: relative;
+    }
+    .page-nav-btn.active, .tab-btn.active {
+      color: var(--text);
+    }
+    .page-nav-btn.active::after, .tab-btn.active::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 0;
+      height: 2px;
+      background: #89b5ff;
+      border-radius: 999px;
+    }
+    .memory-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: .92rem;
+      font-weight: 560;
+    }
+    .memory-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 1px rgba(123,213,109,.25);
+    }
+    .memory-dot.bad {
+      background: var(--red);
+      box-shadow: 0 0 0 1px rgba(255,111,97,.22);
+    }
+
+    .page-view, #studyShell {
+      display: none;
+    }
+    .page-view.show, #studyShell.show,
+    #studyShell:not(.hidden):not([style*="display: none"]) {
+      display: block;
+    }
+
+    .study-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: clamp(14px, 1.25vw, 34px);
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--line);
+      padding: 2px 0 clamp(11px, .95vh, 20px);
+      margin-bottom: clamp(10px, .8vh, 17px);
+    }
+    .study-settings {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: clamp(8px, .55vw, 14px) clamp(10px, .8vw, 20px);
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+    .control-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .control-label {
+      font-size: .73rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted-2);
+      font-weight: 650;
+      margin-right: 3px;
+    }
+    .seg-btn, .small-btn, .deck-bar-btn, .summary-btn, .backup-btn, .modal-btn, .submit-btn, .name-start {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(16, 21, 29, .82);
+      color: var(--muted);
+      padding: 9px 12px;
+      cursor: pointer;
+      transition: border-color .15s ease, color .15s ease, background .15s ease;
+    }
+    .seg-btn.active, .small-btn.active {
+      border-color: rgba(137,181,255,.4);
+      color: var(--text);
+      background: rgba(18, 24, 33, .95);
+    }
+    .seg-btn:hover, .small-btn:hover, .deck-bar-btn:hover, .summary-btn:hover, .backup-btn:hover, .modal-btn:hover, .submit-btn:hover, .name-start:hover {
+      color: var(--text);
+      border-color: var(--line-strong);
+    }
+
+    button:disabled,
+    input:disabled,
+    select:disabled {
+      opacity: .48;
+      cursor: default;
+    }
+
+    .deadline-wrap { display: none; align-items: center; gap: 8px; }
+    .deadline-wrap.show { display: inline-flex; }
+    .deadline-input, .answer-input, .name-input {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      outline: none;
+    }
+    .deadline-input:focus, .answer-input:focus, .name-input:focus {
+      border-color: rgba(137,181,255,.45);
+    }
+
+    .goal-card {
+      display: none;
+      width: fit-content;
+      max-width: min(100%, 520px);
+      border: none;
+      background: transparent;
+      margin: 10px 0 6px;
+      padding: 0;
+    }
+    .goal-card.show { display: block; }
+    .goal-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 520;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+    .goal-dot { width: 10px; height: 10px; border-radius: 999px; background: var(--red); }
+    .goal-card.not .goal-dot { background: var(--red); }
+    .goal-card.mostly .goal-dot { background: var(--accent); }
+    .goal-card.complete .goal-dot { background: var(--green); }
+    .goal-detail { color: var(--muted-2); margin: 6px 0 0 18px; font-size: .92rem; }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: clamp(14px, 1.15vh, 24px) 4px;
+      color: var(--muted);
+      font-size: .96rem;
+      min-height: clamp(54px, 4.6dvh, 84px);
+    }
+    .progress-track {
+      height: 2px;
+      background: rgba(148,163,184,.14);
+      margin-top: -1px;
+      margin-bottom: 0;
+    }
+    .progress-bar { height: 100%; background: #89b5ff; width: 0; }
+    .card-stage {
+      height: var(--study-stage-height);
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      padding: clamp(14px, 1.2vh, 28px) 0 clamp(6px, .6vh, 14px);
+    }
+    .card {
+      width: min(86%, 3200px);
+      height: 100%;
+      min-height: 0;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform .52s ease;
+      cursor: pointer;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      border: 1px solid rgba(148, 163, 184, .32);
+      outline: none;
+    }
+    .card:focus-visible { box-shadow: inset 0 0 0 1px rgba(137,181,255,.55); }
+    .card.flipped { transform: rotateY(180deg); }
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 34px 26px 40px;
+      border-radius: 0;
+      background: transparent;
+      color: var(--text);
+    }
+    .card-front {
+      transform: rotateY(0deg);
+      background: rgba(9, 13, 19, .20);
+    }
+    .card-back {
+      transform: rotateY(180deg);
+      background: rgba(15, 21, 30, .30);
+    }
+    .face-label {
+      position: absolute;
+      top: 14px;
+      left: 0;
+      font-size: .82rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+      font-weight: 620;
+      display: none;
+    }
+    .card-text {
+      font-size: clamp(4.35rem, 6.35vw, 10.5rem);
+      font-weight: 460;
+      line-height: .95;
+      text-align: center;
+      max-width: 100%;
+      letter-spacing: -.04em;
+      text-wrap: balance;
+    }
+    .flip-hint {
+      color: var(--muted-2);
+      font-size: .93rem;
+      opacity: .9;
+    }
+
+    .typed-area {
+      display: none;
+      width: min(820px, 100%);
+      margin: -14px auto 18px;
+    }
+    .typed-area.show { display: block; }
+    .typed-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+    .answer-input {
+      width: 100%;
+      min-height: 52px;
+      font-size: 1.08rem;
+      border-radius: 0;
+      border-width: 0 0 1px 0;
+      padding-left: 0;
+      padding-right: 0;
+    }
+    .submit-btn { min-height: 46px; }
+    .typed-feedback { margin-top: 10px; color: var(--muted); min-height: 24px; }
+    .typed-feedback.correct { color: var(--green); }
+    .typed-feedback.wrong { color: var(--red); }
+    .suggestions {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .suggestion,
+    .suggestion-btn {
+      background: rgba(16,21,29,.72);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 9px 10px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .suggestion:hover,
+    .suggestion-btn:hover {
+      border-color: rgba(137,181,255,.5);
+      background: rgba(22,29,40,.9);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      min-height: var(--action-height);
+    }
+    .action-btn {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: var(--action-height);
+      padding: clamp(14px, 1.2vh, 24px) clamp(16px, 1.1vw, 30px);
+      font-size: clamp(1rem, 1.15vw, 1.2rem);
+      cursor: pointer;
+      position: relative;
+    }
+    .action-btn + .action-btn { border-left: 1px solid var(--line); }
+    .action-btn.wrong { color: var(--red); }
+    .action-btn.skip { color: var(--accent); }
+    .action-btn.undo { color: var(--blue); }
+    .action-btn.right { color: var(--green); }
+    .action-btn:hover { background: rgba(255,255,255,.015); }
+    .keyhint {
+      display: inline-flex;
+      align-items: center;
+      color: var(--muted-2);
+      font-size: .85rem;
+    }
+    .nav-hints {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 4px 0;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+    .nav-hints kbd {
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      background: rgba(255,255,255,.02);
+      border-radius: 8px;
+      padding: 4px 8px;
+      font: inherit;
+      margin-right: 8px;
+      color: var(--text);
+    }
+
+    .summary {
+      display: none;
+      padding: 70px 0 40px;
+      text-align: center;
+    }
+    .summary.show { display: block; }
+    .summary h2 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 500;
+    }
+    .summary p { color: var(--muted); font-size: 1.02rem; margin-bottom: 24px; }
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      max-width: 860px;
+      margin: 0 auto 26px;
+    }
+    .score-box {
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 24px 14px;
+      display: grid;
+      gap: 6px;
+    }
+    .score-box b { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 500; }
+    .score-box span { color: var(--muted); text-transform: uppercase; letter-spacing: .12em; font-size: .78rem; }
+
+    .stats-view, .decks-view {
+      border-top: 1px solid var(--line);
+      padding-top: 28px;
+    }
+    .stats-header, .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .stats-header h2, .section-header h2 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.1rem);
+      font-weight: 460;
+      letter-spacing: -.04em;
+    }
+    .section-head-right { display: flex; gap: 10px; align-items: center; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .stats-card {
+      grid-column: span 6;
+      border-top: 1px solid var(--line);
+      padding: 18px 6px 0;
+      background: transparent;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .stats-card.hero {
+      grid-column: span 12;
+      display: grid;
+      grid-template-columns: 1.3fr 1.7fr;
+      gap: 24px;
+      align-items: start;
+      padding-top: 10px;
+    }
+    .stats-card.full { grid-column: span 12; }
+    .stats-card h3 {
+      margin: 0 0 16px;
+      font-size: 1.5rem;
+      font-weight: 520;
+    }
+    .hero-main {
+      display: flex;
+      align-items: flex-start;
+      gap: 26px;
+      min-height: 180px;
+    }
+    .hero-main .metric {
+      display: grid;
+      gap: 8px;
+      min-width: 160px;
+    }
+    .hero-main .metric b {
+      font-size: clamp(5rem, 10vw, 7rem);
+      line-height: .9;
+      color: var(--accent);
+      font-weight: 470;
+    }
+    .hero-main .metric span { color: var(--muted); font-size: 1.2rem; text-transform: none; letter-spacing: 0; }
+    .hero-sub {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      border-left: 1px solid var(--line);
+      padding-left: 26px;
+      min-height: 160px;
+    }
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .metric {
+      display: grid;
+      gap: 4px;
+    }
+    .metric b {
+      font-size: clamp(2.4rem, 4vw, 3.5rem);
+      font-weight: 500;
+    }
+    .metric span {
+      color: var(--muted);
+      font-size: .92rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+    }
+    .stats-muted, .import-note, #knowledgeDetail, #sessionDetail, #lifeDetail, #profileStats {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .backup-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .backup-btn.danger, .deck-action.danger { color: var(--red); }
+
+    .stats-table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: var(--text);
+      min-width: 620px;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 6px;
+      border-bottom: 1px solid rgba(148,163,184,.14);
+      vertical-align: top;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 560;
+      font-size: .92rem;
+    }
+
+    .decks-view { min-height: 52vh; }
+    .deck-list {
+      display: grid;
+      gap: 0;
+      border-top: 1px solid var(--line);
+    }
+    .deck-row {
+      border-bottom: 1px solid var(--line);
+      padding: 22px 10px 22px 16px;
+      position: relative;
+    }
+    .deck-row::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 0;
+      background: var(--accent);
+      opacity: 0;
+    }
+    .deck-row.active-row::before { width: 4px; opacity: 1; }
+    .deck-row-main {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .deck-row-title { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 480; letter-spacing: -.03em; }
+    .deck-row-meta { color: var(--muted); margin-top: 10px; font-size: 1rem; }
+    .deck-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: .75rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-left: 8px;
+    }
+    .deck-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .deck-action {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      padding: 9px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    .deck-action.primary { color: var(--accent); }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(6,10,15,.72);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      z-index: 30;
+    }
+    .overlay.show { display: flex; }
+    .onboard-card, .modal-card {
+      width: min(860px, 100%);
+      background: linear-gradient(180deg, rgba(15,20,28,.96), rgba(12,17,24,.96));
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 30px 34px;
+      box-shadow: 0 22px 70px rgba(0,0,0,.34);
+    }
+    .onboard-card {
+      width: min(620px, 100%);
+      text-align: center;
+      padding: 52px 42px;
+    }
+    .onboard-card h2 {
+      margin: 0 0 10px;
+      font-size: clamp(2.7rem, 6vw, 4.8rem);
+      font-weight: 470;
+      letter-spacing: -.05em;
+    }
+    .onboard-card p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0 auto 26px;
+      max-width: 48ch;
+    }
+    .name-row {
+      display: grid;
+      gap: 14px;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+    .name-input {
+      border-width: 0 0 1px 0;
+      border-radius: 0;
+      padding: 12px 0;
+      font-size: 1.08rem;
+    }
+    .name-start {
+      justify-self: center;
+      min-width: 180px;
+      color: var(--accent);
+    }
+    .storage-warning {
+      display: none;
+      margin-top: 22px;
+      color: var(--muted-2);
+      font-size: .95rem;
+    }
+    .storage-warning.show { display: block; }
+    .modal-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+    .modal-top h2 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 480;
+      letter-spacing: -.04em;
+    }
+    .modal-close {
+      appearance: none;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 2rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+    }
+    .import-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 22px 0;
+      margin-bottom: 18px;
+    }
+    .import-stat { text-align: center; display: grid; gap: 6px; }
+    .import-stat b { font-size: 2.35rem; font-weight: 520; }
+    .import-stat span { color: var(--muted); letter-spacing: .12em; font-size: .8rem; text-transform: uppercase; }
+    .import-preview-list {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      margin: 14px 0 18px;
+      display: grid;
+    }
+    .import-preview-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 14px;
+      align-items: center;
+      padding: 13px 16px;
+      border-bottom: 1px solid rgba(148,163,184,.12);
+    }
+    .import-preview-row:last-child { border-bottom: none; }
+    .import-preview-row span:last-child { text-align: right; }
+    .import-preview-arrow {
+      color: var(--muted);
+      text-align: center;
+    }
+    .import-row, .import-head {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    .import-head {
+      background: rgba(255,255,255,.02);
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .import-row > div, .import-head > div {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(148,163,184,.12);
+    }
+    .import-row > div + div, .import-head > div + div {
+      border-left: 1px solid rgba(148,163,184,.12);
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .modal-btn.primary { background: #eef2f7; color: #141923; border-color: #eef2f7; }
+
+    /* ---------- Responsive monitor tiers ---------- */
+
+    /* Short browser windows / 1366x768 class laptops: preserve room for the card. */
+    @media (max-height: 820px) and (min-width: 781px) {
+      :root {
+        --study-stage-height: clamp(350px, 50dvh, 520px);
+        --action-height: 72px;
+      }
+      .topbar { min-height: 62px; }
+      .status-row { min-height: 48px; padding-block: 11px; }
+      .nav-hints { padding-top: 9px; }
+      .card-text { font-size: clamp(3.9rem, 6.7vw, 7.5rem); }
+    }
+
+    /* QHD / 2560-ish desktops. */
+    @media (min-width: 2200px) and (min-height: 1000px) {
+      :root {
+        --shell-width: 94vw;
+        --shell-max: 3200px;
+        --study-stage-height: clamp(560px, 59dvh, 900px);
+      }
+      .deck-select { max-width: min(100%, 620px); }
+      .typed-area { width: min(940px, 100%); }
+    }
+
+    /* 3440x1440 / 21:9 ultrawide class.  Use more horizontal space, but also
+       let height determine the study area so controls do not look miniature. */
+    @media (min-width: 2800px) and (min-aspect-ratio: 21/10) {
+      :root {
+        --shell-width: 93vw;
+        --shell-max: 3900px;
+        --study-stage-height: clamp(650px, 62dvh, 1040px);
+        --action-height: clamp(92px, 7.8dvh, 126px);
+      }
+      .card { width: min(82%, 3000px); }
+      .status-row { padding-inline: .35rem; }
+    }
+
+    /* 4K / very large desktop viewports. */
+    @media (min-width: 3600px) and (min-height: 1500px) {
+      :root {
+        --shell-width: 94vw;
+        --shell-max: 4400px;
+        --study-stage-height: clamp(900px, 68dvh, 1460px);
+        --action-height: clamp(105px, 7.2dvh, 138px);
+      }
+      .topbar { grid-template-columns: minmax(360px, 1.15fr) auto minmax(400px, 1fr); }
+      .deck-select { max-width: min(100%, 780px); }
+      .card { width: min(80%, 3300px); }
+      .typed-area { width: min(1160px, 100%); }
+      .stats-grid { gap: clamp(22px, 1vw, 42px); }
+    }
+
+    /* 5K2K / 5120x2160 class.  The app intentionally occupies most of the
+       monitor instead of stopping at a 1440/2400px desktop cap. */
+    @media (min-width: 4600px) and (min-height: 1800px) {
+      :root {
+        --shell-width: 92vw;
+        --shell-max: 4800px;
+        --shell-pad-x: clamp(52px, 1.3vw, 78px);
+        --shell-pad-y: clamp(28px, 1.25vh, 42px);
+        --study-stage-height: clamp(1100px, 68dvh, 1500px);
+        --action-height: clamp(118px, 6.8dvh, 150px);
+      }
+      .card { width: min(76%, 3500px); }
+      .card-text { font-size: clamp(7rem, 5.4vw, 11rem); }
+      .nav-hints { padding-top: 18px; }
+    }
+
+    /* Wide monitors with OS scaling often expose a 3000-3800px CSS viewport
+       instead of the physical 5120px.  Aspect ratio catches that case. */
+    @media (min-width: 2400px) and (max-width: 4599px) and (min-aspect-ratio: 7/3) {
+      :root {
+        --shell-width: 93vw;
+        --study-stage-height: clamp(620px, 62dvh, 1180px);
+      }
+    }
+
+    /* 5120x1440 / 32:9 super-ultrawide: wide shell, but height remains the
+       limiting dimension so the footer stays visible without scrolling. */
+    @media (min-width: 4600px) and (max-height: 1799px) {
+      :root {
+        --shell-width: 92vw;
+        --shell-max: 4800px;
+        --study-stage-height: clamp(620px, 62dvh, 1040px);
+        --action-height: clamp(88px, 7dvh, 118px);
+      }
+      .card { width: min(72%, 3500px); }
+    }
+
+    @media (max-width: 1100px) {
+      html { font-size: 16px; }
+      :root {
+        --shell-width: calc(100vw - 20px);
+        --shell-pad-x: 14px;
+        --study-stage-height: clamp(390px, 52dvh, 650px);
+      }
+      .topbar {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .topbar-left { flex-wrap: wrap; }
+      .brand-mark {
+        border-right: none;
+        padding-right: 2px;
+      }
+      .page-nav { justify-content: flex-start; }
+      .topbar-right { justify-content: flex-start; }
+      .study-toolbar { align-items: stretch; }
+      .study-settings { justify-content: flex-start; margin-left: 0; }
+      .stats-card.hero { grid-template-columns: 1fr; }
+      .hero-sub { border-left: none; padding-left: 0; border-top: 1px solid var(--line); padding-top: 18px; }
+    }
+
+    @media (max-width: 780px) {
+      :root {
+        --study-stage-height: clamp(340px, 46dvh, 520px);
+        --action-height: 72px;
+      }
+      .app { padding: 18px 16px 20px; }
+      .card { width: 96%; }
+      .card-text { font-size: clamp(3.2rem, 15vw, 5.8rem); }
+      .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .action-btn:nth-child(3) { border-left: none; }
+      .action-btn:nth-child(n+3) { border-top: 1px solid var(--line); }
+      .nav-hints { flex-wrap: wrap; }
+      .stats-card { grid-column: span 12; }
+      .metric-row { grid-template-columns: 1fr; }
+      .score-grid, .import-summary { grid-template-columns: 1fr; }
+      .typed-row { grid-template-columns: 1fr; }
+    }
+  </style>
+
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="brand-mark" aria-label="SkyStudee">SkyStudee</span>
+        <label class="deck-picker" aria-label="Active deck">
+          <select id="deckSelect" class="deck-select" aria-label="Active deck"></select>
+        </label>
+      </div>
+
+      <nav class="page-nav" aria-label="Primary navigation">
+        <button id="studyPageBtn" class="page-nav-btn active" type="button">Study</button>
+        <button id="statsTab" class="page-nav-btn" type="button">Statistics</button>
+        <button id="decksPageBtn" class="page-nav-btn" type="button">Decks</button>
+      </nav>
+
+      <div class="topbar-right">
+        <div id="memoryChip" class="memory-chip">
+          <span id="memoryDot" class="memory-dot"></span>
+          <span id="memoryChipText">Memory not loaded</span>
+        </div>
+      </div>
+    </header>
+
+    <p id="subtitle" class="visually-hidden">SkyStudee adaptive retrieval practice.</p>
+    <button id="manageDecksBtn" class="hidden" type="button">Manage Decks</button>
+    <input id="deckFileInput" type="file" accept=".json,.csv,.tsv,text/csv,text/tab-separated-values,application/json" class="hidden" />
+
+    <section id="studyShell" class="show">
+      <div class="study-toolbar">
+        <div class="mode-tabs" aria-label="Study modes">
+          <button class="tab-btn active" id="cramTab" type="button">Cram</button>
+          <button class="tab-btn" id="memoryTab" type="button">Memory</button>
+          <button class="tab-btn" id="coldTab" type="button">Cold Test</button>
+        </div>
+
+        <div class="study-settings">
+          <div class="control-group">
+            <span class="control-label">Direction</span>
+            <button id="dirFront" class="seg-btn active" type="button">Front</button>
+            <button id="dirBack" class="seg-btn" type="button">Back</button>
+            <button id="dirBoth" class="seg-btn" type="button">Both</button>
+          </div>
+
+          <div class="control-group">
+            <span class="control-label">Answer</span>
+            <button id="answerSelf" class="seg-btn active" type="button">Self Grade</button>
+            <button id="answerTyped" class="seg-btn" type="button">Type Answer</button>
+          </div>
+
+          <div class="control-group">
+            <button id="autocompleteBtn" class="small-btn active" type="button">Autocomplete: On</button>
+          </div>
+
+          <div id="coldShuffleWrap" class="control-group hidden">
+            <button id="coldShuffleBtn" class="small-btn active" type="button">Shuffle: On</button>
+          </div>
+
+          <div id="deadlineWrap" class="deadline-wrap">
+            <span class="control-label">Deadline</span>
+            <input id="deadlineInput" class="deadline-input" type="date" />
+          </div>
+        </div>
+      </div>
+
+      <div id="goalCard" class="goal-card not">
+        <div class="goal-title"><span class="goal-dot"></span><span id="goalTitle">Not complete</span></div>
+        <div id="goalDetail" class="goal-detail"></div>
+      </div>
+
+      <section id="studyView">
+        <div class="status-row">
+          <span id="leftStatus"></span>
+          <span id="rightStatus"></span>
+        </div>
+
+        <div id="progressTrack" class="progress-track hidden">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+
+        <div class="card-stage">
+          <div id="flashcard" class="card" tabindex="0" role="button" aria-label="Flashcard">
+            <div class="card-face card-front">
+              <span class="face-label">Prompt</span>
+              <div id="frontText" class="card-text"></div>
+              <span id="frontHint" class="flip-hint">Click or press Space to flip</span>
+            </div>
+            <div class="card-face card-back">
+              <span class="face-label">Answer</span>
+              <div id="backText" class="card-text"></div>
+              <span id="backHint" class="flip-hint">Click or press Space to flip</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="typedArea" class="typed-area">
+          <div class="typed-row">
+            <input id="answerInput" class="answer-input" type="text" autocomplete="off" spellcheck="false" placeholder="Type your answer…" />
+            <button id="submitAnswerBtn" class="submit-btn" type="button">Submit</button>
+          </div>
+          <div id="typedFeedback" class="typed-feedback"></div>
+          <div id="suggestions" class="suggestions"></div>
+        </div>
+
+        <div id="selfActions" class="actions">
+          <button id="wrongBtn" class="action-btn wrong" type="button">✕ <span>Don't know</span><span class="keyhint">X / ←</span></button>
+          <button id="skipBtn" class="action-btn skip" type="button">↑ <span>Later</span><span class="keyhint">↑</span></button>
+          <button id="undoBtn" class="action-btn undo" type="button">↓ <span>Undo</span><span class="keyhint">↓</span></button>
+          <button id="rightBtn" class="action-btn right" type="button">→ <span>Know</span><span class="keyhint">Enter / →</span></button>
+        </div>
+
+        <div class="nav-hints">
+          <span><kbd>Space</kbd><span id="spaceHintText">Flip</span></span>
+          <span><kbd>↑</kbd>Skip for later</span>
+          <span><kbd>↓</kbd>Undo / go back</span>
+        </div>
+      </section>
+
+      <section id="summaryView" class="summary">
+        <h2 id="summaryTitle">Cold Test Complete</h2>
+        <p id="summaryMessage"></p>
+        <div class="score-grid">
+          <div class="score-box"><b id="summaryCorrect">0</b><span>Correct</span></div>
+          <div class="score-box"><b id="summaryWrong">0</b><span>Missed</span></div>
+          <div class="score-box"><b id="summaryPercent">0%</b><span>Score</span></div>
+        </div>
+        <button id="restartColdBtn" class="summary-btn" type="button">Start Another Cold Test</button>
+      </section>
+    </section>
+
+    <section id="statsView" class="stats-view page-view">
+      <div class="stats-header">
+        <h2>Statistics / <span id="statsDeckName">German—Verben im Perfekt</span></h2>
+      </div>
+      <div class="stats-grid">
+        <article class="stats-card hero full">
+          <div class="hero-main">
+            <div class="metric"><b id="knowledgeIndex">—</b><span>Knowledge</span></div>
+          </div>
+          <div class="hero-sub">
+            <div class="metric"><b id="frontBackMetric">84</b><span>Front → Back</span></div>
+            <div class="metric"><b id="backFrontMetric">72</b><span>Back → Front</span></div>
+          </div>
+        </article>
+
+        <article class="stats-card">
+          <h3>Session</h3>
+          <div class="metric-row">
+            <div class="metric"><b id="sessionAnswers">0</b><span>Answers</span></div>
+            <div class="metric"><b id="sessionAccuracy">—</b><span>Accuracy</span></div>
+            <div class="metric"><b id="sessionUnique">0</b><span>Unique facts</span></div>
+          </div>
+          <p id="sessionDetail" class="stats-muted"></p>
+        </article>
+
+        <article class="stats-card">
+          <h3>Lifetime</h3>
+          <div class="metric-row">
+            <div class="metric"><b id="lifeAnswers">0</b><span>Answers</span></div>
+            <div class="metric"><b id="lifeAccuracy">—</b><span>Accuracy</span></div>
+            <div class="metric"><b id="lifeColdTests">0</b><span>Cold Tests</span></div>
+          </div>
+          <p id="lifeDetail" class="stats-muted"></p>
+        </article>
+
+        <article class="stats-card">
+          <h3>Memory profile</h3>
+          <div id="profileStats" class="stats-muted"></div>
+          <div class="backup-actions">
+            <button id="backupBtn" class="backup-btn" type="button">Backup Memory</button>
+            <button id="restoreBtn" class="backup-btn" type="button">Restore Memory</button>
+            <button id="renameBtn" class="backup-btn" type="button">Rename Profile</button>
+            <button id="resetMemoryBtn" class="backup-btn danger" type="button">Reset All Memory</button>
+            <input id="restoreFile" type="file" accept=".json,application/json" class="hidden" />
+          </div>
+        </article>
+
+        <article class="stats-card">
+          <h3>Current knowledge</h3>
+          <div class="metric-row">
+            <div class="metric"><b id="testedFacts">—</b><span>Facts tested</span></div>
+            <div class="metric"><b id="weakFacts">—</b><span>Weak facts</span></div>
+            <div class="metric"><b id="knowledgeSecondary">—</b><span>Deck mastery</span></div>
+          </div>
+          <p id="knowledgeDetail" class="stats-muted"></p>
+        </article>
+
+        <article class="stats-card full">
+          <h3>Lowest Mastery</h3>
+          <div class="stats-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fact</th>
+                  <th>Mastery</th>
+                  <th>Direct attempts</th>
+                  <th>Last checked</th>
+                  <th>Evidence freshness</th>
+                </tr>
+              </thead>
+              <tbody id="hardestFactsBody"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="stats-card full">
+          <h3>Cold Test History</h3>
+          <div id="coldHistoryEmpty" class="stats-muted">No completed cold tests yet.</div>
+          <div class="stats-table-wrap">
+            <table id="coldHistoryTable" class="hidden">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Direction</th>
+                  <th>Answer mode</th>
+                  <th>Autocomplete</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody id="coldHistoryBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="decksView" class="decks-view page-view">
+      <div class="section-header">
+        <h2>Decks</h2>
+        <div class="section-head-right">
+          <button id="copyAiDeckPromptBtn" class="deck-bar-btn" type="button">Copy AI deck creation prompt</button>
+          <button id="importDeckBtn" class="deck-bar-btn" type="button">+ Import</button>
+        </div>
+      </div>
+      <div id="deckList" class="deck-list"></div>
+    </section>
+  </main>
+
+  <div id="onboardingOverlay" class="overlay">
+    <div class="onboard-card">
+      <h2>SkyStudee</h2>
+      <p>No memory profile found</p>
+      <p>What’s your name?</p>
+      <div class="name-row">
+        <input id="nameInput" class="name-input" type="text" maxlength="60" placeholder="Your name" autocomplete="name" />
+        <button id="startBtn" class="name-start" type="button">Continue →</button>
+      </div>
+      <div class="storage-warning" id="storageWarning">Browser storage is not available for this file. The app can still run, but its memory will not survive closing/reopening unless you make a backup.</div>
+    </div>
+  </div>
+
+  <div id="deckManagerOverlay" class="hidden">
+    <button id="closeDeckManagerBtn" type="button"></button>
+    <button id="managerImportBtn" type="button"></button>
+  </div>
+
+  <div id="importPreviewOverlay" class="overlay">
+    <div class="modal-card">
+      <div class="modal-top">
+        <div>
+          <h2 id="importPreviewTitle">Import Deck</h2>
+          <p id="importPreviewSubtitle" class="import-note"></p>
+        </div>
+        <button id="closeImportPreviewBtn" class="modal-close" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="import-summary">
+        <div class="import-stat"><b id="importValidCount">0</b><span>Valid cards</span></div>
+        <div class="import-stat"><b id="importDuplicateCount">0</b><span>Duplicates skipped</span></div>
+        <div class="import-stat"><b id="importInvalidCount">0</b><span>Invalid rows</span></div>
+      </div>
+      <div id="importExistingNote" class="import-note"></div>
+      <div id="importPreviewList" class="import-preview-list"></div>
+      <div class="modal-actions">
+        <button id="cancelImportBtn" class="modal-btn" type="button">Cancel</button>
+        <button id="importAsCopyBtn" class="modal-btn hidden" type="button">Import as Copy</button>
+        <button id="updateExistingBtn" class="modal-btn hidden" type="button">Update Existing</button>
+        <button id="confirmImportBtn" class="modal-btn primary" type="button">Import</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+
+    // ==========================================================
+    // BUILT-IN DECK
+    // ==========================================================
+    const BUILTIN_DECK_ID = "builtin:german-perfect:v1";
+    const BUILTIN_CARDS = [
+      { id: "arbeiten__gearbeitet", front: "arbeiten", back: "gearbeitet" },
+      { id: "anrufen__angerufen", front: "anrufen", back: "angerufen" },
+      { id: "antworten__geantwortet", front: "antworten", back: "geantwortet" },
+      { id: "anziehen__angezogen", front: "anziehen", back: "angezogen" },
+      { id: "aufstehen__aufgestanden", front: "aufstehen", back: "aufgestanden" },
+      { id: "aufwachen__aufgewacht", front: "aufwachen", back: "aufgewacht" },
+      { id: "aussehen__ausgesehen", front: "aussehen", back: "ausgesehen" },
+      { id: "bauen__gebaut", front: "bauen", back: "gebaut" },
+      { id: "bekommen__bekommen", front: "bekommen", back: "bekommen" },
+      { id: "besuchen__besucht", front: "besuchen", back: "besucht" },
+      { id: "beten__gebetet", front: "beten", back: "gebetet" },
+      { id: "bezahlen__bezahlt", front: "bezahlen", back: "bezahlt" },
+      { id: "bleiben__geblieben", front: "bleiben", back: "geblieben" },
+      { id: "brauchen__gebraucht", front: "brauchen", back: "gebraucht" },
+      { id: "brechen__gebrochen", front: "brechen", back: "gebrochen" },
+      { id: "bringen__gebracht", front: "bringen", back: "gebracht" },
+      { id: "danken__gedankt", front: "danken", back: "gedankt" },
+      { id: "dauern__gedauert", front: "dauern", back: "gedauert" },
+      { id: "diskutieren__diskutiert", front: "diskutieren", back: "diskutiert" },
+      { id: "denken__gedacht", front: "denken", back: "gedacht" },
+      { id: "einkaufen__eingekauft", front: "einkaufen", back: "eingekauft" },
+      { id: "essen__gegessen", front: "essen", back: "gegessen" },
+      { id: "fahren__gefahren", front: "fahren", back: "gefahren" },
+      { id: "fallen__gefallen", front: "fallen", back: "gefallen" },
+      { id: "faulenzen__gefaulenzt", front: "faulenzen", back: "gefaulenzt" },
+      { id: "feiern__gefeiert", front: "feiern", back: "gefeiert" },
+      { id: "fernsehen__ferngesehen", front: "fernsehen", back: "ferngesehen" },
+      { id: "finden__gefunden", front: "finden", back: "gefunden" },
+      { id: "fliegen__geflogen", front: "fliegen", back: "geflogen" },
+      { id: "fragen__gefragt", front: "fragen", back: "gefragt" },
+      { id: "geben__gegeben", front: "geben", back: "gegeben" },
+      { id: "gehen__gegangen", front: "gehen", back: "gegangen" },
+      { id: "halten__gehalten", front: "halten", back: "gehalten" },
+      { id: "handeln__gehandelt", front: "handeln", back: "gehandelt" },
+      { id: "helfen__geholfen", front: "helfen", back: "geholfen" },
+      { id: "holen__geholt", front: "holen", back: "geholt" },
+      { id: "h_ren__geh_rt", front: "hören", back: "gehört" },
+      { id: "heiraten__geheiratet", front: "heiraten", back: "geheiratet" },
+      { id: "joggen__gejoggt", front: "joggen", back: "gejoggt" },
+      { id: "kaufen__gekauft", front: "kaufen", back: "gekauft" },
+      { id: "kennen__gekannt", front: "kennen", back: "gekannt" },
+      { id: "kommen__gekommen", front: "kommen", back: "gekommen" },
+      { id: "kosten__gekostet", front: "kosten", back: "gekostet" },
+      { id: "k_ssen__gek_sst", front: "küssen", back: "geküsst" },
+      { id: "lachen__gelacht", front: "lachen", back: "gelacht" },
+      { id: "laufen__gelaufen", front: "laufen", back: "gelaufen" },
+      { id: "lesen__gelesen", front: "lesen", back: "gelesen" },
+      { id: "lieben__geliebt", front: "lieben", back: "geliebt" },
+      { id: "machen__gemacht", front: "machen", back: "gemacht" },
+      { id: "nehmen__genommen", front: "nehmen", back: "genommen" },
+      { id: "ffnen__ge_ffnet", front: "öffnen", back: "geöffnet" },
+      { id: "probieren__probiert", front: "probieren", back: "probiert" },
+      { id: "rad_fahren__rad_gefahren", front: "Rad fahren", back: "Rad gefahren" },
+      { id: "regnen__geregnet", front: "regnen", back: "geregnet" },
+      { id: "reisen__gereist", front: "reisen", back: "gereist" },
+      { id: "rennen__gerannt", front: "rennen", back: "gerannt" },
+      { id: "sagen__gesagt", front: "sagen", back: "gesagt" },
+      { id: "sammeln__gesammelt", front: "sammeln", back: "gesammelt" },
+      { id: "schauen__geschaut", front: "schauen", back: "geschaut" },
+      { id: "schenken__geschenkt", front: "schenken", back: "geschenkt" },
+      { id: "schlafen__geschlafen", front: "schlafen", back: "geschlafen" },
+      { id: "schmecken__geschmeckt", front: "schmecken", back: "geschmeckt" },
+      { id: "schneien__geschneit", front: "schneien", back: "geschneit" },
+      { id: "schreiben__geschrieben", front: "schreiben", back: "geschrieben" },
+      { id: "schwimmen__geschwommen", front: "schwimmen", back: "geschwommen" },
+      { id: "sehen__gesehen", front: "sehen", back: "gesehen" },
+      { id: "sein__gewesen", front: "sein", back: "gewesen" },
+      { id: "singen__gesungen", front: "singen", back: "gesungen" },
+      { id: "spielen__gespielt", front: "spielen", back: "gespielt" },
+      { id: "sprechen__gesprochen", front: "sprechen", back: "gesprochen" },
+      { id: "springen__gesprungen", front: "springen", back: "gesprungen" },
+      { id: "stehen__gestanden", front: "stehen", back: "gestanden" },
+      { id: "sterben__gestorben", front: "sterben", back: "gestorben" },
+      { id: "sp_len__gesp_lt", front: "spülen", back: "gespült" },
+      { id: "suchen__gesucht", front: "suchen", back: "gesucht" },
+      { id: "surfen__gesurft", front: "surfen", back: "gesurft" },
+      { id: "tanzen__getanzt", front: "tanzen", back: "getanzt" },
+      { id: "telefonieren__telefoniert", front: "telefonieren", back: "telefoniert" },
+      { id: "t_ten__get_tet", front: "töten", back: "getötet" },
+      { id: "tragen__getragen", front: "tragen", back: "getragen" },
+      { id: "trinken__getrunken", front: "trinken", back: "getrunken" },
+      { id: "tun__getan", front: "tun", back: "getan" },
+      { id: "umziehen__umgezogen", front: "umziehen", back: "umgezogen" },
+      { id: "vergessen__vergessen", front: "vergessen", back: "vergessen" },
+      { id: "sich_verlieben__sich_verliebt", front: "sich verlieben", back: "sich verliebt" },
+      { id: "verlieren__verloren", front: "verlieren", back: "verloren" },
+      { id: "verstehen__verstanden", front: "verstehen", back: "verstanden" },
+      { id: "wandern__gewandert", front: "wandern", back: "gewandert" },
+      { id: "warten__gewartet", front: "warten", back: "gewartet" },
+      { id: "waschen__gewaschen", front: "waschen", back: "gewaschen" },
+      { id: "weinen__geweint", front: "weinen", back: "geweint" },
+      { id: "werfen__geworfen", front: "werfen", back: "geworfen" },
+      { id: "wissen__gewusst", front: "wissen", back: "gewusst" },
+      { id: "wohnen__gewohnt", front: "wohnen", back: "gewohnt" },
+      { id: "zeigen__gezeigt", front: "zeigen", back: "gezeigt" }
+    ];
+
+    const APP_VERSION = 5;
+    const STORAGE_KEY = "study_cards_multideck_engine_v5";
+    const OLD_STORAGE_KEY = "study_cards_memory_engine_v4";
+    const PRIOR_ALPHA = 2;
+    const PRIOR_BETA = 2;
+    const DAY_MS = 86400000;
+    const SESSION_RESUME_HOURS = 8;
+    const COLD_RESUME_HOURS = 36;
+
+    let storageAvailable = true;
+    let lastSaveError = "";
+    let appState = loadAppState();
+
+    let activeDeckId = appState.activeDeckId;
+    let mode = activeDeck().settings.mode || "cram";
+    let view = "study";
+    let currentFact = null;
+    let session = makeFreshSession(mode);
+    let displayedFactId = null;
+    let isTransitioning = false;
+
+    // The visual flip lasts long enough to read as a real card rotation, but
+    // input is blocked only for the first 20%.  That short guard prevents an
+    // accidental double press without making fast studying feel unresponsive.
+    const CARD_FLIP_MS = 520;
+    const FLIP_GUARD_MS = Math.round(CARD_FLIP_MS * 0.20);
+    const CARD_SETTLE_MS = CARD_FLIP_MS - FLIP_GUARD_MS;
+    let cardMotionToken = 0;
+    let cardMotionTimer = null;
+    let flipGuardToken = 0;
+    let flipGuardTimer = null;
+
+    let pendingImport = null;
+
+    // ==========================================================
+    // DOM
+    // ==========================================================
+    const studyShell = document.getElementById("studyShell");
+    const studyView = document.getElementById("studyView");
+    const summaryView = document.getElementById("summaryView");
+    const statsView = document.getElementById("statsView");
+    const decksView = document.getElementById("decksView");
+
+    const studyPageBtn = document.getElementById("studyPageBtn");
+    const cramTab = document.getElementById("cramTab");
+    const memoryTab = document.getElementById("memoryTab");
+    const coldTab = document.getElementById("coldTab");
+    const statsTab = document.getElementById("statsTab");
+    const decksPageBtn = document.getElementById("decksPageBtn");
+
+    const deckSelect = document.getElementById("deckSelect");
+    const copyAiDeckPromptBtn = document.getElementById("copyAiDeckPromptBtn");
+    const importDeckBtn = document.getElementById("importDeckBtn");
+    const manageDecksBtn = document.getElementById("manageDecksBtn");
+    const deckFileInput = document.getElementById("deckFileInput");
+
+    const deckManagerOverlay = document.getElementById("deckManagerOverlay");
+    const closeDeckManagerBtn = document.getElementById("closeDeckManagerBtn");
+    const managerImportBtn = document.getElementById("managerImportBtn");
+    const deckList = document.getElementById("deckList");
+
+    const importPreviewOverlay = document.getElementById("importPreviewOverlay");
+    const importPreviewTitle = document.getElementById("importPreviewTitle");
+    const importPreviewSubtitle = document.getElementById("importPreviewSubtitle");
+    const importValidCount = document.getElementById("importValidCount");
+    const importInvalidCount = document.getElementById("importInvalidCount");
+    const importDuplicateCount = document.getElementById("importDuplicateCount");
+    const importExistingNote = document.getElementById("importExistingNote");
+    const importPreviewList = document.getElementById("importPreviewList");
+    const closeImportPreviewBtn = document.getElementById("closeImportPreviewBtn");
+    const cancelImportBtn = document.getElementById("cancelImportBtn");
+    const importAsCopyBtn = document.getElementById("importAsCopyBtn");
+    const updateExistingBtn = document.getElementById("updateExistingBtn");
+    const confirmImportBtn = document.getElementById("confirmImportBtn");
+
+    const dirFront = document.getElementById("dirFront");
+    const dirBack = document.getElementById("dirBack");
+    const dirBoth = document.getElementById("dirBoth");
+    const answerSelf = document.getElementById("answerSelf");
+    const answerTyped = document.getElementById("answerTyped");
+    const autocompleteBtn = document.getElementById("autocompleteBtn");
+    const coldShuffleWrap = document.getElementById("coldShuffleWrap");
+    const coldShuffleBtn = document.getElementById("coldShuffleBtn");
+    const deadlineWrap = document.getElementById("deadlineWrap");
+    const deadlineInput = document.getElementById("deadlineInput");
+
+    const goalCard = document.getElementById("goalCard");
+    const goalTitle = document.getElementById("goalTitle");
+    const goalDetail = document.getElementById("goalDetail");
+
+    const leftStatus = document.getElementById("leftStatus");
+    const rightStatus = document.getElementById("rightStatus");
+    const progressTrack = document.getElementById("progressTrack");
+    const progressBar = document.getElementById("progressBar");
+
+    const flashcard = document.getElementById("flashcard");
+    const frontText = document.getElementById("frontText");
+    const backText = document.getElementById("backText");
+    const frontHint = document.getElementById("frontHint");
+    const backHint = document.getElementById("backHint");
+
+    const typedArea = document.getElementById("typedArea");
+    const answerInput = document.getElementById("answerInput");
+    const submitAnswerBtn = document.getElementById("submitAnswerBtn");
+    const typedFeedback = document.getElementById("typedFeedback");
+    const suggestions = document.getElementById("suggestions");
+    const selfActions = document.getElementById("selfActions");
+
+    const wrongBtn = document.getElementById("wrongBtn");
+    const skipBtn = document.getElementById("skipBtn");
+    const undoBtn = document.getElementById("undoBtn");
+    const rightBtn = document.getElementById("rightBtn");
+    const spaceHintText = document.getElementById("spaceHintText");
+
+    const summaryTitle = document.getElementById("summaryTitle");
+    const summaryMessage = document.getElementById("summaryMessage");
+    const summaryCorrect = document.getElementById("summaryCorrect");
+    const summaryWrong = document.getElementById("summaryWrong");
+    const summaryPercent = document.getElementById("summaryPercent");
+    const restartColdBtn = document.getElementById("restartColdBtn");
+
+    const subtitle = document.getElementById("subtitle");
+    const memoryDot = document.getElementById("memoryDot");
+    const memoryChipText = document.getElementById("memoryChipText");
+
+    const onboardingOverlay = document.getElementById("onboardingOverlay");
+    const nameInput = document.getElementById("nameInput");
+    const startBtn = document.getElementById("startBtn");
+    const storageWarning = document.getElementById("storageWarning");
+
+    const backupBtn = document.getElementById("backupBtn");
+    const restoreBtn = document.getElementById("restoreBtn");
+    const renameBtn = document.getElementById("renameBtn");
+    const resetMemoryBtn = document.getElementById("resetMemoryBtn");
+    const restoreFile = document.getElementById("restoreFile");
+
+    // ==========================================================
+    // STATE SHAPES / MIGRATION
+    // ==========================================================
+    function defaultFactMemory() {
+      return {
+        alpha: PRIOR_ALPHA,
+        beta: PRIOR_BETA,
+        directCorrect: 0,
+        directWrong: 0,
+        transferredEvidence: 0,
+        typedCorrect: 0,
+        typedWrong: 0,
+        selfCorrect: 0,
+        selfWrong: 0,
+        autocompleteCorrect: 0,
+        lastReviewedAt: null,
+        lastResult: null
+      };
+    }
+
+    function defaultDeckSettings() {
+      return {
+        mode: "cram",
+        direction: "front",
+        answerMode: "self",
+        autocomplete: true,
+        coldShuffle: true,
+        deadline: ""
+      };
+    }
+
+    function createDeckRecord({ id, name, cards, builtin = false }) {
+      const now = new Date().toISOString();
+      const deck = {
+        id,
+        name: name || "Untitled Deck",
+        builtin: Boolean(builtin),
+        createdAt: now,
+        updatedAt: now,
+        cards: normalizeStoredCards(cards || []),
+        settings: defaultDeckSettings(),
+        facts: {},
+        lifetime: {
+          answers: 0,
+          correct: 0,
+          wrong: 0,
+          typedAnswers: 0,
+          selfAnswers: 0
+        },
+        dailyEvidence: {},
+        dailyGoals: {},
+        coldTests: [],
+        sessionState: null
+      };
+      ensureDeckMemory(deck);
+      return deck;
+    }
+
+    function defaultAppState() {
+      const builtin = createDeckRecord({
+        id: BUILTIN_DECK_ID,
+        name: "German — Verben im Perfekt",
+        cards: BUILTIN_CARDS,
+        builtin: true
+      });
+
+      return {
+        version: APP_VERSION,
+        userName: "",
+        createdAt: null,
+        lastSavedAt: null,
+        activeDeckId: BUILTIN_DECK_ID,
+        decks: {
+          [BUILTIN_DECK_ID]: builtin
+        }
+      };
+    }
+
+    function normalizeStoredCards(cards) {
+      const out = [];
+      const used = new Set();
+
+      for (const raw of Array.isArray(cards) ? cards : []) {
+        if (!raw) continue;
+        const front = String(raw.front ?? "").trim();
+        const back = String(raw.back ?? "").trim();
+        if (!front || !back) continue;
+
+        let id = sanitizeCardId(raw.id || generatedCardId(front, back));
+        if (!id) id = generatedCardId(front, back);
+
+        if (used.has(id)) {
+          let suffix = 2;
+          let candidate = `${id}_${suffix}`;
+          while (used.has(candidate)) candidate = `${id}_${++suffix}`;
+          id = candidate;
+        }
+
+        used.add(id);
+        out.push({ id, front, back });
+      }
+
+      return out;
+    }
+
+    function normalizeDeckRecord(raw, fallbackId) {
+      const id = normalizeDeckId(raw?.id || fallbackId || uniqueDeckId("deck"));
+      const deck = {
+        id,
+        name: String(raw?.name || "Untitled Deck"),
+        builtin: Boolean(raw?.builtin),
+        createdAt: raw?.createdAt || new Date().toISOString(),
+        updatedAt: raw?.updatedAt || new Date().toISOString(),
+        cards: normalizeStoredCards(raw?.cards || []),
+        settings: { ...defaultDeckSettings(), ...(raw?.settings || {}) },
+        facts: raw?.facts && typeof raw.facts === "object" ? raw.facts : {},
+        lifetime: {
+          answers: 0,
+          correct: 0,
+          wrong: 0,
+          typedAnswers: 0,
+          selfAnswers: 0,
+          ...(raw?.lifetime || {})
+        },
+        dailyEvidence:
+          raw?.dailyEvidence && typeof raw.dailyEvidence === "object"
+            ? raw.dailyEvidence
+            : {},
+        dailyGoals:
+          raw?.dailyGoals && typeof raw.dailyGoals === "object"
+            ? raw.dailyGoals
+            : {},
+        coldTests: Array.isArray(raw?.coldTests)
+          ? raw.coldTests.slice(-100)
+          : [],
+        sessionState:
+          raw?.sessionState && typeof raw.sessionState === "object"
+            ? raw.sessionState
+            : null
+      };
+
+      ensureDeckMemory(deck);
+      return deck;
+    }
+
+    function ensureBuiltInDeck(target) {
+      let deck = target.decks[BUILTIN_DECK_ID];
+
+      if (!deck) {
+        deck = createDeckRecord({
+          id: BUILTIN_DECK_ID,
+          name: "German — Verben im Perfekt",
+          cards: BUILTIN_CARDS,
+          builtin: true
+        });
+        target.decks[BUILTIN_DECK_ID] = deck;
+      } else {
+        deck = normalizeDeckRecord(deck, BUILTIN_DECK_ID);
+        deck.id = BUILTIN_DECK_ID;
+        deck.builtin = true;
+
+        // The HTML is the source of truth for the built-in content.
+        // Existing fact memory remains keyed by stable card IDs.
+        deck.cards = normalizeStoredCards(BUILTIN_CARDS);
+        deck.updatedAt = deck.updatedAt || new Date().toISOString();
+        ensureDeckMemory(deck);
+        target.decks[BUILTIN_DECK_ID] = deck;
+      }
+    }
+
+    function mergeAppState(saved) {
+      const base = defaultAppState();
+
+      if (!saved || typeof saved !== "object") return base;
+
+      const target = {
+        version: APP_VERSION,
+        userName: typeof saved.userName === "string" ? saved.userName : "",
+        createdAt: saved.createdAt || null,
+        lastSavedAt: saved.lastSavedAt || null,
+        activeDeckId: saved.activeDeckId || BUILTIN_DECK_ID,
+        decks: {}
+      };
+
+      if (saved.decks && typeof saved.decks === "object") {
+        for (const [id, rawDeck] of Object.entries(saved.decks)) {
+          const normalized = normalizeDeckRecord(rawDeck, id);
+          target.decks[normalized.id] = normalized;
+        }
+      }
+
+      ensureBuiltInDeck(target);
+
+      if (!target.decks[target.activeDeckId]) {
+        target.activeDeckId = BUILTIN_DECK_ID;
+      }
+
+      return target;
+    }
+
+    function migrateOldSingleDeckState(oldState) {
+      const target = defaultAppState();
+
+      if (!oldState || typeof oldState !== "object") return target;
+
+      target.userName = typeof oldState.userName === "string"
+        ? oldState.userName
+        : "";
+      target.createdAt = oldState.createdAt || null;
+      target.lastSavedAt = oldState.lastSavedAt || null;
+
+      const deck = target.decks[BUILTIN_DECK_ID];
+      deck.settings = {
+        ...deck.settings,
+        ...(oldState.settings || {})
+      };
+      deck.facts =
+        oldState.facts && typeof oldState.facts === "object"
+          ? oldState.facts
+          : deck.facts;
+      deck.lifetime = {
+        ...deck.lifetime,
+        ...(oldState.lifetime || {})
+      };
+      deck.dailyEvidence =
+        oldState.dailyEvidence && typeof oldState.dailyEvidence === "object"
+          ? oldState.dailyEvidence
+          : {};
+      deck.dailyGoals =
+        oldState.dailyGoals && typeof oldState.dailyGoals === "object"
+          ? oldState.dailyGoals
+          : {};
+      deck.coldTests = Array.isArray(oldState.coldTests)
+        ? oldState.coldTests.slice(-100)
+        : [];
+
+      ensureDeckMemory(deck);
+      target.activeDeckId = BUILTIN_DECK_ID;
+      return target;
+    }
+
+    function loadAppState() {
+      let parsed = null;
+
+      try {
+        const testKey = "__study_cards_storage_test__";
+        localStorage.setItem(testKey, "1");
+        localStorage.removeItem(testKey);
+
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          parsed = JSON.parse(raw);
+          return mergeAppState(parsed);
+        }
+
+        // Automatic migration from the previous single-deck app if that
+        // memory is visible to this local-file origin.
+        const oldRaw = localStorage.getItem(OLD_STORAGE_KEY);
+        if (oldRaw) {
+          const oldState = JSON.parse(oldRaw);
+          const migrated = migrateOldSingleDeckState(oldState);
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+          } catch (error) {}
+          return migrated;
+        }
+      } catch (error) {
+        storageAvailable = false;
+        lastSaveError = String(error?.message || error);
+      }
+
+      return defaultAppState();
+    }
+
+    function ensureDeckMemory(deck) {
+      for (const fact of factsForDeck(deck)) {
+        deck.facts[fact.id] = {
+          ...defaultFactMemory(),
+          ...(deck.facts[fact.id] || {})
+        };
+      }
+    }
+
+    function activeDeck() {
+      return appState.decks[activeDeckId] ||
+        appState.decks[BUILTIN_DECK_ID];
+    }
+
+    function activeSettings() {
+      return activeDeck().settings;
+    }
+
+    function persistState({ includeSession = true } = {}) {
+      if (includeSession) storeCurrentSession();
+      ensureBuiltInDeck(appState);
+      for (const deck of Object.values(appState.decks)) {
+        ensureDeckMemory(deck);
+      }
+
+      appState.version = APP_VERSION;
+      appState.activeDeckId = activeDeckId;
+      appState.lastSavedAt = new Date().toISOString();
+
+      if (!storageAvailable) {
+        updateMemoryChip();
+        return false;
+      }
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+        lastSaveError = "";
+        updateMemoryChip();
+        return true;
+      } catch (error) {
+        lastSaveError = String(error?.message || error);
+        updateMemoryChip();
+        return false;
+      }
+    }
+
+    // ==========================================================
+    // DECK / FACT HELPERS
+    // ==========================================================
+    function factsForDeck(deck) {
+      return deck.cards.flatMap(card => ([
+        {
+          id: `${card.id}|front`,
+          pairId: card.id,
+          direction: "front",
+          prompt: card.front,
+          answer: card.back
+        },
+        {
+          id: `${card.id}|back`,
+          pairId: card.id,
+          direction: "back",
+          prompt: card.back,
+          answer: card.front
+        }
+      ]));
+    }
+
+    function activeFacts() {
+      return factsForDeck(activeDeck());
+    }
+
+    function activeFactMap() {
+      return new Map(activeFacts().map(fact => [fact.id, fact]));
+    }
+
+    function getFactById(factId) {
+      return activeFactMap().get(factId) || null;
+    }
+
+    function getEligibleFacts(direction = activeSettings().direction) {
+      const facts = activeFacts();
+      if (direction === "both") return facts;
+      return facts.filter(fact => fact.direction === direction);
+    }
+
+    function siblingFact(fact) {
+      if (!fact) return null;
+      return getFactById(
+        `${fact.pairId}|${fact.direction === "front" ? "back" : "front"}`
+      );
+    }
+
+    function sanitizeCardId(value) {
+      return String(value || "")
+        .trim()
+        .replace(/\|/g, "_")
+        .replace(/\s+/g, "_")
+        .replace(/[^A-Za-z0-9_.:-]/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .slice(0, 120);
+    }
+
+    function normalizeDeckId(value) {
+      const cleaned = String(value || "")
+        .trim()
+        .replace(/\s+/g, "_")
+        .replace(/[^A-Za-z0-9_.:-]/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .slice(0, 140);
+
+      return cleaned || uniqueDeckId("deck");
+    }
+
+    function slugify(value) {
+      return String(value || "deck")
+        .trim()
+        .toLowerCase()
+        .replace(/\.[^.]+$/, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 70) || "deck";
+    }
+
+    function fnv1a(text) {
+      let hash = 0x811c9dc5;
+      for (let i = 0; i < text.length; i++) {
+        hash ^= text.charCodeAt(i);
+        hash = Math.imul(hash, 0x01000193);
+      }
+      return (hash >>> 0).toString(16).padStart(8, "0");
+    }
+
+    function generatedCardId(front, back) {
+      return `card_${fnv1a(`${normalizeAnswer(front)}\u241f${normalizeAnswer(back)}`)}`;
+    }
+
+    function uniqueDeckId(prefix = "deck") {
+      const random = (
+        globalThis.crypto?.randomUUID?.() ||
+        `${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`
+      );
+      return normalizeDeckId(`${prefix}:${random}`);
+    }
+
+    function deepClone(obj) {
+      return JSON.parse(JSON.stringify(obj));
+    }
+
+    // ==========================================================
+    // SESSION PERSISTENCE
+    // ==========================================================
+    function makeFreshSession(targetMode) {
+      return {
+        mode: targetMode,
+        startedAt: new Date().toISOString(),
+        answers: 0,
+        correct: 0,
+        wrong: 0,
+        unique: new Set(),
+        runtime: {},
+        recentPairs: [],
+        servedCount: 0,
+        history: [],
+        typedSubmitted: false,
+        typedWasCorrect: null,
+        typedValue: "",
+        autocompleteUsed: false,
+        suggestionOrder: [],
+        cold: {
+          order: [],
+          index: 0,
+          results: []
+        }
+      };
+    }
+
+    function serializeSessionData() {
+      return {
+        mode,
+        startedAt: session.startedAt,
+        answers: session.answers,
+        correct: session.correct,
+        wrong: session.wrong,
+        unique: [...session.unique],
+        runtime: deepClone(session.runtime),
+        recentPairs: [...session.recentPairs],
+        servedCount: session.servedCount,
+        typedSubmitted: session.typedSubmitted,
+        typedWasCorrect: session.typedWasCorrect,
+        typedValue: session.typedValue,
+        autocompleteUsed: session.autocompleteUsed,
+        suggestionOrder: [...session.suggestionOrder],
+        cold: deepClone(session.cold),
+        currentFactId: currentFact ? currentFact.id : null
+      };
+    }
+
+    function storeCurrentSession() {
+      const deck = activeDeck();
+      if (!deck || !session) return;
+
+      deck.sessionState = {
+        savedAt: new Date().toISOString(),
+        data: serializeSessionData()
+      };
+    }
+
+    function restoreSessionForDeck(deck) {
+      const snapshot = deck.sessionState;
+      if (!snapshot?.savedAt || !snapshot?.data) return false;
+
+      const ageHours =
+        (Date.now() - new Date(snapshot.savedAt).getTime()) / 3600000;
+      if (!Number.isFinite(ageHours) || ageHours < 0) return false;
+
+      const savedMode = snapshot.data.mode;
+      const maxAge =
+        savedMode === "cold"
+          ? COLD_RESUME_HOURS
+          : SESSION_RESUME_HOURS;
+
+      if (ageHours > maxAge) return false;
+      if (!["cram", "memory", "cold"].includes(savedMode)) return false;
+
+      const eligibleMap = activeFactMap();
+      const savedFactId = snapshot.data.currentFactId;
+      if (savedFactId && !eligibleMap.has(savedFactId)) return false;
+
+      const data = snapshot.data;
+      mode = savedMode;
+      deck.settings.mode = savedMode;
+      session = {
+        mode: savedMode,
+        startedAt: data.startedAt || new Date().toISOString(),
+        answers: Number(data.answers) || 0,
+        correct: Number(data.correct) || 0,
+        wrong: Number(data.wrong) || 0,
+        unique: new Set(Array.isArray(data.unique) ? data.unique : []),
+        runtime: data.runtime && typeof data.runtime === "object"
+          ? data.runtime
+          : {},
+        recentPairs: Array.isArray(data.recentPairs)
+          ? data.recentPairs
+          : [],
+        servedCount: Number(data.servedCount) || 0,
+        history: [],
+        typedSubmitted: Boolean(data.typedSubmitted),
+        typedWasCorrect:
+          typeof data.typedWasCorrect === "boolean"
+            ? data.typedWasCorrect
+            : null,
+        typedValue: String(data.typedValue || ""),
+        autocompleteUsed: Boolean(data.autocompleteUsed),
+        suggestionOrder: Array.isArray(data.suggestionOrder)
+          ? data.suggestionOrder
+          : [],
+        cold: {
+          order: Array.isArray(data.cold?.order)
+            ? data.cold.order.filter(id => eligibleMap.has(id))
+            : [],
+          index: Number(data.cold?.index) || 0,
+          results: Array.isArray(data.cold?.results)
+            ? data.cold.results
+            : []
+        }
+      };
+
+      currentFact = savedFactId ? eligibleMap.get(savedFactId) : null;
+
+      if (
+        savedMode === "cold" &&
+        (!session.cold.order.length ||
+          session.cold.index >= session.cold.order.length)
+      ) {
+        return false;
+      }
+
+      if (!currentFact) return false;
+      return true;
+    }
+
+    function clearSessionState(deck = activeDeck()) {
+      if (deck) deck.sessionState = null;
+    }
+
+    // ==========================================================
+    // GENERAL HELPERS
+    // ==========================================================
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function normalizeAnswer(value) {
+      return String(value || "")
+        .trim()
+        .toLocaleLowerCase()
+        .replace(/\s+/g, " ");
+    }
+
+    function localDateKey(date = new Date()) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function daysSince(iso) {
+      if (!iso) return null;
+      const ms = Date.now() - new Date(iso).getTime();
+      if (!Number.isFinite(ms)) return null;
+      return Math.max(0, ms / DAY_MS);
+    }
+
+    function daysUntilDeadline(deck = activeDeck()) {
+      const raw = deck.settings.deadline;
+      if (!raw) return null;
+      const deadline = new Date(`${raw}T23:59:59`);
+      if (!Number.isFinite(deadline.getTime())) return null;
+      return Math.max(0, (deadline.getTime() - Date.now()) / DAY_MS);
+    }
+
+    function formatRelativeReview(iso) {
+      if (!iso) return "Never";
+      const days = daysSince(iso);
+      if (days === null) return "Unknown";
+      if (days < 1 / 24) return "Just now";
+      if (days < 1) return `${Math.max(1, Math.round(days * 24))}h ago`;
+      if (days < 2) return "Yesterday";
+      if (days < 30) return `${Math.round(days)}d ago`;
+      if (days < 365) return `${Math.round(days / 30)}mo ago`;
+      return `${(days / 365).toFixed(1)}y ago`;
+    }
+
+    function evidenceFreshnessLabel(memory) {
+      if (!memory.lastReviewedAt) return "Untested";
+      const days = daysSince(memory.lastReviewedAt);
+      if (days < 2) return "Fresh";
+      if (days < 10) return "Recent";
+      if (days < 35) return "Aging";
+      return "Old";
+    }
+
+    function directionDisplay(direction) {
+      if (direction === "front") return "Front → Back";
+      if (direction === "back") return "Back → Front";
+      return "Both directions";
+    }
+
+    function modeDisplay(targetMode) {
+      if (targetMode === "cram") return "Cram";
+      if (targetMode === "memory") return "Memory";
+      return "Cold Test";
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // ==========================================================
+    // MASTERY / EVIDENCE
+    // ==========================================================
+    function factMastery(factId, deck = activeDeck()) {
+      const memory = deck.facts[factId] || defaultFactMemory();
+      return 100 * memory.alpha / (memory.alpha + memory.beta);
+    }
+
+    function factDirectAttempts(factId, deck = activeDeck()) {
+      const memory = deck.facts[factId] || defaultFactMemory();
+      return memory.directCorrect + memory.directWrong;
+    }
+
+    function evidenceWeight(meta = {}) {
+      if (meta.source === "cold") {
+        if (meta.answerMode === "typed") {
+          return meta.autocompleteUsed ? 1.00 : 1.20;
+        }
+        return 1.10;
+      }
+
+      if (meta.answerMode === "typed") {
+        return meta.autocompleteUsed ? 0.85 : 1.10;
+      }
+
+      return 1.00;
+    }
+
+    function recordPersistentResult(fact, known, meta = {}) {
+      const deck = activeDeck();
+      const memory = deck.facts[fact.id];
+      const weight = evidenceWeight(meta);
+      const now = new Date().toISOString();
+
+      if (known) {
+        memory.alpha += weight;
+        memory.directCorrect += 1;
+
+        if (meta.answerMode === "typed") {
+          memory.typedCorrect += 1;
+          if (meta.autocompleteUsed) memory.autocompleteCorrect += 1;
+        } else {
+          memory.selfCorrect += 1;
+        }
+
+        // Weak positive cross-direction evidence only.
+        const sibling = siblingFact(fact);
+        if (sibling) {
+          const siblingMemory = deck.facts[sibling.id];
+          const transfer = weight * 0.10;
+          siblingMemory.alpha += transfer;
+          siblingMemory.transferredEvidence += transfer;
+        }
+      } else {
+        memory.beta += weight;
+        memory.directWrong += 1;
+        if (meta.answerMode === "typed") memory.typedWrong += 1;
+        else memory.selfWrong += 1;
+      }
+
+      memory.lastReviewedAt = now;
+      memory.lastResult = known ? "correct" : "wrong";
+
+      deck.lifetime.answers += 1;
+      if (known) deck.lifetime.correct += 1;
+      else deck.lifetime.wrong += 1;
+      if (meta.answerMode === "typed") deck.lifetime.typedAnswers += 1;
+      else deck.lifetime.selfAnswers += 1;
+
+      recordDailyEvidence(fact, known);
+      persistState();
+    }
+
+    function recordDailyEvidence(fact, known) {
+      const deck = activeDeck();
+      const date = localDateKey();
+
+      if (!deck.dailyEvidence[date]) deck.dailyEvidence[date] = {};
+      if (!deck.dailyEvidence[date][fact.id]) {
+        deck.dailyEvidence[date][fact.id] = {
+          attempts: 0,
+          correct: 0,
+          wrong: 0
+        };
+      }
+
+      const item = deck.dailyEvidence[date][fact.id];
+      item.attempts += 1;
+      if (known) item.correct += 1;
+      else item.wrong += 1;
+
+      const days = Object.keys(deck.dailyEvidence).sort();
+      while (days.length > 120) {
+        delete deck.dailyEvidence[days.shift()];
+      }
+    }
+
+    function percentile(sortedValues, p) {
+      if (!sortedValues.length) return 0;
+      const index = (sortedValues.length - 1) * p;
+      const lo = Math.floor(index);
+      const hi = Math.ceil(index);
+      if (lo === hi) return sortedValues[lo];
+      const t = index - lo;
+      return sortedValues[lo] * (1 - t) + sortedValues[hi] * t;
+    }
+
+    function knowledgeMetrics(facts = getEligibleFacts(), deck = activeDeck()) {
+      const values = facts
+        .map(fact => factMastery(fact.id, deck))
+        .sort((a, b) => a - b);
+
+      if (!values.length) {
+        return {
+          knowledge: 0,
+          mean: 0,
+          p20: 0,
+          weak: 0,
+          tested: 0,
+          total: 0
+        };
+      }
+
+      const mean =
+        values.reduce((sum, value) => sum + value, 0) / values.length;
+      const p20 = percentile(values, 0.20);
+      const knowledge = 0.65 * mean + 0.35 * p20;
+
+      return {
+        knowledge,
+        mean,
+        p20,
+        weak: facts.filter(fact => factMastery(fact.id, deck) < 55).length,
+        tested: facts.filter(
+          fact => factDirectAttempts(fact.id, deck) > 0
+        ).length,
+        total: facts.length
+      };
+    }
+
+    // ==========================================================
+    // MEMORY DAILY GOAL (PER DECK)
+    // ==========================================================
+    function dailyGoalKey(direction = activeSettings().direction) {
+      return `${localDateKey()}|${direction}|${activeSettings().deadline || "none"}`;
+    }
+
+    function getOrCreateDailyGoal(direction = activeSettings().direction) {
+      const deck = activeDeck();
+      const key = dailyGoalKey(direction);
+      if (deck.dailyGoals[key]) return deck.dailyGoals[key];
+
+      const facts = getEligibleFacts(direction);
+      const metrics = knowledgeMetrics(facts, deck);
+      const d = daysUntilDeadline(deck);
+
+      const planningDays =
+        d === null ? 10 : clamp(Math.ceil(d), 1, 14);
+
+      const desiredFinal = d !== null && d <= 3 ? 92 : 90;
+      const gap = Math.max(0, desiredFinal - metrics.knowledge);
+
+      let desiredGain = gap / Math.max(3, planningDays);
+      desiredGain = clamp(
+        desiredGain,
+        0.60,
+        d !== null && d <= 2 ? 4.5 : 3.2
+      );
+
+      if (metrics.knowledge >= 92) desiredGain = 0.35;
+
+      const urgency =
+        d === null ? 0.35 : 1 / Math.sqrt(Math.max(1, d + 1));
+      let sampleGoal = Math.ceil(
+        facts.length * (0.12 + 0.06 * urgency)
+      );
+      sampleGoal = clamp(sampleGoal, 6, 20);
+
+      if (metrics.knowledge >= 90) {
+        sampleGoal = Math.max(4, Math.ceil(sampleGoal * 0.7));
+      }
+
+      const goal = {
+        createdAt: new Date().toISOString(),
+        date: localDateKey(),
+        direction,
+        deadline: activeSettings().deadline || "",
+        baselineKnowledge: metrics.knowledge,
+        targetKnowledge: clamp(
+          metrics.knowledge + desiredGain,
+          0,
+          96
+        ),
+        sampleGoal
+      };
+
+      deck.dailyGoals[key] = goal;
+
+      const goalKeys = Object.keys(deck.dailyGoals).sort();
+      while (goalKeys.length > 180) {
+        delete deck.dailyGoals[goalKeys.shift()];
+      }
+
+      persistState();
+      return goal;
+    }
+
+    function todayUniqueFacts(direction = activeSettings().direction) {
+      const deck = activeDeck();
+      const day = deck.dailyEvidence[localDateKey()] || {};
+      const allowed = new Set(
+        getEligibleFacts(direction).map(fact => fact.id)
+      );
+
+      return Object.entries(day)
+        .filter(([factId, item]) =>
+          allowed.has(factId) && item.attempts > 0
+        )
+        .map(([factId]) => factId);
+    }
+
+    function memoryGoalStatus() {
+      const goal = getOrCreateDailyGoal();
+      const metrics = knowledgeMetrics();
+      const unique = todayUniqueFacts().length;
+
+      const goalRange = Math.max(
+        0.1,
+        goal.targetKnowledge - goal.baselineKnowledge
+      );
+
+      const knowledgeProgress = clamp(
+        (metrics.knowledge - goal.baselineKnowledge) / goalRange,
+        0,
+        1
+      );
+
+      const sampleProgress = clamp(
+        unique / Math.max(1, goal.sampleGoal),
+        0,
+        1
+      );
+
+      const complete =
+        metrics.knowledge >= goal.targetKnowledge &&
+        unique >= goal.sampleGoal;
+
+      const mostly =
+        !complete && (
+          (
+            metrics.knowledge >= 90 &&
+            unique >= Math.max(2, Math.ceil(goal.sampleGoal * 0.30))
+          ) ||
+          (
+            knowledgeProgress >= 0.65 &&
+            sampleProgress >= 0.50
+          ) ||
+          (
+            metrics.knowledge >= goal.targetKnowledge - 1.5 &&
+            sampleProgress >= 0.55
+          )
+        );
+
+      return {
+        level: complete ? "complete" : mostly ? "mostly" : "not",
+        metrics,
+        goal,
+        unique
+      };
+    }
+
+    // ==========================================================
+    // PRIORITY / SCHEDULING (ONLY ACTIVE DECK PARTICIPATES)
+    // ==========================================================
+    function baseMasteryNeed(fact) {
+      const mastery = factMastery(fact.id) / 100;
+      return 0.34 + 1.90 * Math.pow(1 - mastery, 1.35);
+    }
+
+    function freshnessFactor(fact) {
+      const memory = activeDeck().facts[fact.id];
+      if (!memory.lastReviewedAt) return 1.35;
+
+      const age = daysSince(memory.lastReviewedAt);
+      const stale = clamp(
+        Math.log1p(age || 0) / 3.0,
+        0,
+        1.5
+      );
+
+      return 1 + stale * 0.78;
+    }
+
+    function deadlineFactor(fact) {
+      const d = daysUntilDeadline();
+      if (d === null) return 1;
+
+      const mastery = factMastery(fact.id) / 100;
+      const age = daysSince(
+        activeDeck().facts[fact.id].lastReviewedAt
+      );
+      const stale =
+        age === null
+          ? 1
+          : clamp(Math.log1p(age) / 3.2, 0, 1.4);
+      const urgency =
+        1 / Math.sqrt(Math.max(1, d + 1));
+
+      const risk = (1 - mastery) * 1.05 + stale * 0.35;
+      return 1 + urgency * risk * 1.65;
+    }
+
+    function runtimeForFact(factId) {
+      if (!session.runtime[factId]) {
+        session.runtime[factId] = {
+          missBoost: 0,
+          restUntil: 0,
+          skipUntil: 0
+        };
+      }
+      return session.runtime[factId];
+    }
+
+    function displayPriority(fact, targetMode) {
+      const rt = runtimeForFact(fact.id);
+      let priority = baseMasteryNeed(fact);
+
+      const attempts = factDirectAttempts(fact.id);
+      if (attempts === 0) priority *= 1.22;
+      else if (attempts === 1) priority *= 1.10;
+
+      if (targetMode === "memory") {
+        priority *= freshnessFactor(fact);
+        priority *= deadlineFactor(fact);
+      }
+
+      priority *= 1 + rt.missBoost;
+      return clamp(priority, 0.04, 8.0);
+    }
+
+    function adaptivePriority(
+      fact,
+      targetMode,
+      options = {}
+    ) {
+      const rt = runtimeForFact(fact.id);
+
+      if (!options.ignoreRest) {
+        if (session.servedCount < rt.restUntil) return 0;
+        if (session.servedCount < rt.skipUntil) return 0;
+      }
+
+      const recentPairPosition =
+        session.recentPairs.indexOf(fact.pairId);
+
+      // Hard no-repeat, including reverse direction of same card.
+      if (
+        recentPairPosition === 0 &&
+        getEligibleFacts().length > 1
+      ) {
+        return 0;
+      }
+
+      let priority = displayPriority(fact, targetMode);
+
+      if (recentPairPosition === 1) priority *= 0.28;
+      else if (recentPairPosition === 2) priority *= 0.55;
+      else if (recentPairPosition === 3) priority *= 0.78;
+
+      return clamp(priority, 0.04, 8.0);
+    }
+
+    function weightedRandomFact(targetMode) {
+      const facts = getEligibleFacts();
+      if (!facts.length) return null;
+
+      let entries = facts.map(fact => ({
+        fact,
+        weight: adaptivePriority(fact, targetMode)
+      }));
+
+      let total = entries.reduce(
+        (sum, entry) => sum + entry.weight,
+        0
+      );
+
+      if (total <= 0) {
+        entries = facts.map(fact => ({
+          fact,
+          weight: adaptivePriority(
+            fact,
+            targetMode,
+            { ignoreRest: true }
+          )
+        }));
+
+        total = entries.reduce(
+          (sum, entry) => sum + entry.weight,
+          0
+        );
+      }
+
+      if (total <= 0) return facts[0];
+
+      let roll = Math.random() * total;
+      for (const entry of entries) {
+        roll -= entry.weight;
+        if (roll <= 0) return entry.fact;
+      }
+
+      return entries[entries.length - 1].fact;
+    }
+
+    function recordServed(fact) {
+      if (!fact) return;
+
+      session.servedCount += 1;
+      session.recentPairs = [
+        fact.pairId,
+        ...session.recentPairs.filter(
+          id => id !== fact.pairId
+        )
+      ].slice(0, 5);
+
+      session.unique.add(fact.id);
+    }
+
+    function updateRuntimeAfterResult(fact, known) {
+      const rt = runtimeForFact(fact.id);
+
+      if (known) {
+        rt.missBoost *= 0.46;
+        if (rt.missBoost < 0.08) rt.missBoost = 0;
+        rt.restUntil = 0;
+      } else {
+        rt.restUntil =
+          session.servedCount + randomInt(4, 7);
+        rt.missBoost = clamp(
+          rt.missBoost + 1.75,
+          0,
+          4.2
+        );
+      }
+    }
+
+    function skipAdaptiveFact(fact) {
+      const rt = runtimeForFact(fact.id);
+      rt.skipUntil = session.servedCount + 3;
+    }
+
+    // ==========================================================
+    // UNDO / COLD TEST
+    // ==========================================================
+    function cloneSessionWithoutHistory() {
+      return {
+        ...session,
+        unique: new Set([...session.unique]),
+        runtime: deepClone(session.runtime),
+        recentPairs: [...session.recentPairs],
+        history: [],
+        suggestionOrder: [...session.suggestionOrder],
+        cold: deepClone(session.cold)
+      };
+    }
+
+    function saveUndoPoint() {
+      session.history.push({
+        deckId: activeDeckId,
+        deckState: deepClone(activeDeck()),
+        session: cloneSessionWithoutHistory(),
+        currentFactId: currentFact ? currentFact.id : null
+      });
+
+      if (session.history.length > 80) {
+        session.history.shift();
+      }
+    }
+
+    function restoreUndoPoint() {
+      if (
+        isTransitioning ||
+        session.history.length === 0
+      ) {
+        return;
+      }
+
+      const snapshot = session.history.pop();
+      if (snapshot.deckId !== activeDeckId) return;
+
+      const remainingHistory = session.history;
+
+      appState.decks[activeDeckId] =
+        normalizeDeckRecord(
+          snapshot.deckState,
+          activeDeckId
+        );
+
+      mode = appState.decks[activeDeckId].settings.mode;
+      session = snapshot.session;
+      session.unique = new Set(
+        [...snapshot.session.unique]
+      );
+      session.history = remainingHistory;
+
+      currentFact = snapshot.currentFactId
+        ? getFactById(snapshot.currentFactId)
+        : null;
+
+      summaryView.classList.remove("show");
+      studyView.classList.remove("hidden");
+
+      persistState();
+      updateControls();
+      renderCurrentFact();
+      updateStats();
+    }
+
+    function constrainedPairShuffle(facts) {
+      const remaining = shuffleArray(facts.slice());
+      const result = [];
+      let safety = 0;
+
+      while (remaining.length && safety < 10000) {
+        safety++;
+        const previousPair = result.length
+          ? result[result.length - 1].pairId
+          : null;
+
+        const candidates = remaining
+          .map((fact, index) => ({ fact, index }))
+          .filter(item =>
+            item.fact.pairId !== previousPair
+          );
+
+        const pool = candidates.length
+          ? candidates
+          : remaining.map(
+              (fact, index) => ({ fact, index })
+            );
+
+        const chosen =
+          pool[Math.floor(Math.random() * pool.length)];
+
+        result.push(chosen.fact);
+        remaining.splice(chosen.index, 1);
+      }
+
+      return result;
+    }
+
+    function buildColdOrder() {
+      let facts = getEligibleFacts();
+
+      if (activeSettings().coldShuffle) {
+        facts = constrainedPairShuffle(facts);
+      } else if (activeSettings().direction === "both") {
+        facts = [
+          ...activeFacts().filter(
+            fact => fact.direction === "front"
+          ),
+          ...activeFacts().filter(
+            fact => fact.direction === "back"
+          )
+        ];
+      }
+
+      session.cold.order = facts.map(fact => fact.id);
+      session.cold.index = 0;
+      session.cold.results = [];
+    }
+
+    function startMode(targetMode, options = {}) {
+      const { tryResume = false } = options;
+
+      mode = targetMode;
+      activeSettings().mode = targetMode;
+
+      summaryView.classList.remove("show");
+      studyView.classList.remove("hidden");
+      displayedFactId = null;
+
+      if (tryResume && restoreSessionForDeck(activeDeck())) {
+        mode = session.mode;
+      } else {
+        session = makeFreshSession(targetMode);
+
+        if (targetMode === "cold") {
+          buildColdOrder();
+          const firstId = session.cold.order[0];
+          currentFact = firstId
+            ? getFactById(firstId)
+            : null;
+        } else {
+          currentFact = weightedRandomFact(targetMode);
+        }
+
+        if (currentFact) recordServed(currentFact);
+      }
+
+      persistState();
+      updateControls();
+      renderCurrentFact({ forceImmediate: true });
+      updateStats();
+    }
+
+    function nextAdaptiveFact() {
+      currentFact = weightedRandomFact(mode);
+      if (!currentFact) return;
+
+      recordServed(currentFact);
+      resetTypedCardState();
+      persistState();
+      renderCurrentFact();
+    }
+
+    function nextColdFact() {
+      session.cold.index += 1;
+
+      if (
+        session.cold.index >= session.cold.order.length
+      ) {
+        finishColdTest();
+        return;
+      }
+
+      currentFact =
+        getFactById(
+          session.cold.order[session.cold.index]
+        );
+
+      recordServed(currentFact);
+      resetTypedCardState();
+      persistState();
+      renderCurrentFact();
+    }
+
+    function finishColdTest() {
+      studyView.classList.add("hidden");
+      summaryView.classList.add("show");
+
+      const total = session.cold.results.length;
+      const correct =
+        session.cold.results.filter(
+          result => result.correct
+        ).length;
+      const wrong = total - correct;
+      const percent = total
+        ? Math.round(100 * correct / total)
+        : 0;
+
+      summaryCorrect.textContent = correct;
+      summaryWrong.textContent = wrong;
+      summaryPercent.textContent = `${percent}%`;
+
+      summaryTitle.textContent = "Cold Test Complete";
+      summaryMessage.textContent =
+        `${activeDeck().name} · ${directionDisplay(activeSettings().direction)} · ` +
+        `${total} facts · ${activeSettings().answerMode === "typed" ? "typed recall" : "self graded"}`;
+
+      activeDeck().coldTests.push({
+        completedAt: new Date().toISOString(),
+        direction: activeSettings().direction,
+        answerMode: activeSettings().answerMode,
+        autocomplete:
+          activeSettings().answerMode === "typed"
+            ? activeSettings().autocomplete
+            : null,
+        total,
+        correct,
+        wrong,
+        percent
+      });
+
+      activeDeck().coldTests =
+        activeDeck().coldTests.slice(-100);
+
+      clearSessionState();
+      persistState({ includeSession: false });
+      updateStats();
+    }
+
+    // ==========================================================
+    // SAFE PROMPT / ANSWER CARD RENDERING
+    // ==========================================================
+    function visibleSide() {
+      return flashcard.classList.contains("flipped")
+        ? "back"
+        : "front";
+    }
+
+    function clearMotionTimer() {
+      if (cardMotionTimer !== null) {
+        clearTimeout(cardMotionTimer);
+        cardMotionTimer = null;
+      }
+    }
+
+    function clearFlipGuardTimer() {
+      if (flipGuardTimer !== null) {
+        clearTimeout(flipGuardTimer);
+        flipGuardTimer = null;
+      }
+    }
+
+    function setTransitionLock(locked) {
+      isTransitioning = locked;
+
+      [
+        wrongBtn,
+        skipBtn,
+        undoBtn,
+        rightBtn,
+        submitAnswerBtn,
+        dirFront,
+        dirBack,
+        dirBoth,
+        answerSelf,
+        answerTyped,
+        coldShuffleBtn,
+        deckSelect,
+        importDeckBtn,
+        manageDecksBtn
+      ].forEach(el => {
+        if (el) el.disabled = locked;
+      });
+
+      autocompleteBtn.disabled =
+        locked ||
+        activeSettings().answerMode !== "typed";
+    }
+
+    function beginShortFlipGuard() {
+      const token = ++flipGuardToken;
+      clearFlipGuardTimer();
+      setTransitionLock(true);
+
+      flipGuardTimer = setTimeout(() => {
+        if (token !== flipGuardToken) return;
+        flipGuardTimer = null;
+        setTransitionLock(false);
+      }, FLIP_GUARD_MS);
+    }
+
+    // Freeze the card exactly where the browser is currently drawing it.
+    // This lets a fast second action smoothly interrupt/reverse an unfinished
+    // flip instead of waiting for the original 520 ms animation to end.
+    function freezeCardAtCurrentTransform() {
+      const computed = getComputedStyle(flashcard).transform;
+      flashcard.style.transition = "none";
+      flashcard.style.transform =
+        computed && computed !== "none"
+          ? computed
+          : visibleSide() === "back"
+          ? "rotateY(180deg)"
+          : "rotateY(0deg)";
+      void flashcard.offsetWidth;
+    }
+
+    function finishInlineCardMotion(token) {
+      if (token !== cardMotionToken) return;
+
+      flashcard.style.transition = "none";
+      flashcard.style.transform = "";
+      void flashcard.offsetWidth;
+      flashcard.style.transition = "";
+      cardMotionTimer = null;
+    }
+
+    function scheduleMotionCleanup(token, delay = CARD_FLIP_MS + 40) {
+      clearMotionTimer();
+      cardMotionTimer = setTimeout(
+        () => finishInlineCardMotion(token),
+        delay
+      );
+    }
+
+    function setCardSideImmediately(side) {
+      ++cardMotionToken;
+      ++flipGuardToken;
+      clearMotionTimer();
+      clearFlipGuardTimer();
+
+      flashcard.style.transition = "none";
+      flashcard.style.transform = "";
+      flashcard.classList.toggle(
+        "flipped",
+        side === "back"
+      );
+      void flashcard.offsetWidth;
+      flashcard.style.transition = "";
+      setTransitionLock(false);
+    }
+
+    function renderCurrentFact(options = {}) {
+      const { forceImmediate = false } = options;
+      if (!currentFact) {
+        frontText.textContent = "No cards";
+        backText.textContent = "";
+        return;
+      }
+
+      updateCardMeta();
+
+      const hasRendered = displayedFactId !== null;
+      const isSameFact = displayedFactId === currentFact.id;
+
+      if (forceImmediate || !hasRendered || isSameFact) {
+        frontText.textContent = currentFact.prompt;
+        backText.textContent = currentFact.answer;
+
+        if (forceImmediate || !hasRendered) {
+          setCardSideImmediately("front");
+        }
+
+        displayedFactId = currentFact.id;
+        resetTypedUIForCurrentState();
+        return;
+      }
+
+      // Fast-safe handoff:
+      // 1) Keep the OLD visible face intact and rotate to the edge.
+      // 2) At the edge (after only 20% of the old lock time), swap both faces.
+      // 3) Unlock input immediately and let the NEW prompt finish rotating in.
+      // The answer can never flash because content changes only at 90 degrees.
+      const token = ++cardMotionToken;
+      ++flipGuardToken;
+      clearMotionTimer();
+      clearFlipGuardTimer();
+      setTransitionLock(true);
+
+      freezeCardAtCurrentTransform();
+      flashcard.style.transition =
+        `transform ${FLIP_GUARD_MS}ms cubic-bezier(.45,0,.85,.55)`;
+
+      requestAnimationFrame(() => {
+        if (token !== cardMotionToken) return;
+        flashcard.style.transform = "rotateY(90deg)";
+      });
+
+      flipGuardTimer = setTimeout(() => {
+        if (token !== cardMotionToken) return;
+
+        // Edge-on: neither face is readable, so this is the safe swap point.
+        frontText.textContent = currentFact.prompt;
+        backText.textContent = currentFact.answer;
+        displayedFactId = currentFact.id;
+        flashcard.classList.remove("flipped");
+
+        flashcard.style.transition = "none";
+        flashcard.style.transform = "rotateY(90deg)";
+        void flashcard.offsetWidth;
+
+        flashcard.style.transition =
+          `transform ${CARD_SETTLE_MS}ms cubic-bezier(.16,.7,.2,1)`;
+
+        // The protected period ends here. The new prompt is now the only face
+        // that can rotate into view, so it is safe to interact again.
+        setTransitionLock(false);
+        flipGuardTimer = null;
+        resetTypedUIForCurrentState();
+
+        requestAnimationFrame(() => {
+          if (token !== cardMotionToken) return;
+          flashcard.style.transform = "";
+        });
+
+        scheduleMotionCleanup(token, CARD_SETTLE_MS + 45);
+      }, FLIP_GUARD_MS);
+    }
+
+    function animateSameCardToSide(side) {
+      if (isTransitioning || !currentFact) return;
+
+      // If this side is already the logical target and no visual transition is
+      // underway, there is nothing to do.
+      if (
+        visibleSide() === side &&
+        flashcard.style.transform === ""
+      ) {
+        resetTypedUIForCurrentState();
+        return;
+      }
+
+      const token = ++cardMotionToken;
+      clearMotionTimer();
+
+      // Preserve the exact in-between angle if the previous flip has not
+      // finished. This makes rapid back-and-forth flipping reverse smoothly.
+      freezeCardAtCurrentTransform();
+      flashcard.classList.toggle(
+        "flipped",
+        side === "back"
+      );
+
+      flashcard.style.transition =
+        `transform ${CARD_FLIP_MS}ms cubic-bezier(.2,.7,.2,1)`;
+
+      beginShortFlipGuard();
+
+      requestAnimationFrame(() => {
+        if (token !== cardMotionToken) return;
+        flashcard.style.transform = "";
+      });
+
+      scheduleMotionCleanup(token);
+      resetTypedUIForCurrentState();
+    }
+
+    function flipCurrentCard() {
+      if (
+        isTransitioning ||
+        !currentFact ||
+        (
+          activeSettings().answerMode === "typed" &&
+          !session.typedSubmitted
+        )
+      ) {
+        return;
+      }
+
+      animateSameCardToSide(
+        visibleSide() === "front" ? "back" : "front"
+      );
+    }
+
+    // ==========================================================
+    // ANSWERS / SKIP
+    // ==========================================================
+    function resultMeta(autocompleteUsed = false) {
+      const autocompleteAssisted =
+        activeSettings().answerMode === "typed" &&
+        activeSettings().autocomplete;
+
+      return {
+        source: mode === "cold" ? "cold" : mode,
+        answerMode: activeSettings().answerMode,
+        autocompleteUsed:
+          autocompleteAssisted || autocompleteUsed
+      };
+    }
+
+    function recordSessionResult(fact, known, meta) {
+      session.answers += 1;
+      if (known) session.correct += 1;
+      else session.wrong += 1;
+
+      recordPersistentResult(fact, known, meta);
+
+      if (mode !== "cold") {
+        updateRuntimeAfterResult(fact, known);
+      } else {
+        session.cold.results.push({
+          factId: fact.id,
+          correct: known,
+          answerMode: activeSettings().answerMode,
+          autocompleteUsed: Boolean(
+            meta.autocompleteUsed
+          )
+        });
+      }
+    }
+
+    function gradeSelf(known) {
+      if (
+        isTransitioning ||
+        !currentFact ||
+        activeSettings().answerMode !== "self" ||
+        summaryView.classList.contains("show")
+      ) {
+        return;
+      }
+
+      saveUndoPoint();
+      recordSessionResult(
+        currentFact,
+        known,
+        resultMeta(false)
+      );
+
+      if (mode === "cold") nextColdFact();
+      else nextAdaptiveFact();
+
+      updateGoalCard();
+      updateStats();
+    }
+
+    function submitTypedAnswer(
+      autocompleteUsed = false
+    ) {
+      if (
+        isTransitioning ||
+        !currentFact ||
+        activeSettings().answerMode !== "typed" ||
+        session.typedSubmitted ||
+        summaryView.classList.contains("show")
+      ) {
+        return;
+      }
+
+      const typed = answerInput.value;
+      if (!typed.trim()) return;
+
+      saveUndoPoint();
+
+      const correct =
+        normalizeAnswer(typed) ===
+        normalizeAnswer(currentFact.answer);
+
+      session.typedSubmitted = true;
+      session.typedWasCorrect = correct;
+      session.typedValue = typed;
+      session.autocompleteUsed = autocompleteUsed;
+
+      recordSessionResult(
+        currentFact,
+        correct,
+        resultMeta(autocompleteUsed)
+      );
+
+      typedFeedback.textContent = correct
+        ? "Correct — press Space or Enter for the next card."
+        : `Not quite — correct answer: ${currentFact.answer}. Press Space or Enter for the next card.`;
+
+      typedFeedback.className =
+        `typed-feedback ${correct ? "correct" : "wrong"}`;
+
+      answerInput.disabled = true;
+      submitAnswerBtn.disabled = true;
+      suggestions.innerHTML = "";
+
+      animateSameCardToSide("back");
+
+      persistState();
+      updateGoalCard();
+      updateStats();
+      updateCardMeta();
+    }
+
+    function continueAfterTyped() {
+      if (
+        !session.typedSubmitted ||
+        isTransitioning
+      ) {
+        return;
+      }
+
+      if (mode === "cold") nextColdFact();
+      else nextAdaptiveFact();
+
+      updateGoalCard();
+      updateStats();
+    }
+
+    function skipCurrent() {
+      if (
+        isTransitioning ||
+        !currentFact ||
+        summaryView.classList.contains("show")
+      ) {
+        return;
+      }
+
+      if (
+        activeSettings().answerMode === "typed" &&
+        session.typedSubmitted
+      ) {
+        return;
+      }
+
+      saveUndoPoint();
+
+      if (mode === "cold") {
+        const idx = session.cold.index;
+        const [factId] =
+          session.cold.order.splice(idx, 1);
+        session.cold.order.push(factId);
+
+        currentFact = getFactById(
+          session.cold.order[idx]
+        );
+        recordServed(currentFact);
+        resetTypedCardState();
+        persistState();
+        renderCurrentFact();
+      } else {
+        skipAdaptiveFact(currentFact);
+        nextAdaptiveFact();
+      }
+
+      updateStats();
+    }
+
+    // ==========================================================
+    // TYPED RECALL / AUTOCOMPLETE
+    // ==========================================================
+    function answerVocabularyForFact(fact) {
+      const values = activeDeck().cards.map(card =>
+        fact.direction === "front"
+          ? card.back
+          : card.front
+      );
+      return [...new Set(values)];
+    }
+
+    function prepareSuggestionOrder() {
+      if (!currentFact) {
+        session.suggestionOrder = [];
+        return;
+      }
+
+      session.suggestionOrder = shuffleArray(
+        answerVocabularyForFact(currentFact).slice()
+      );
+    }
+
+    function autocompleteMatches() {
+      if (
+        activeSettings().answerMode !== "typed" ||
+        !activeSettings().autocomplete ||
+        session.typedSubmitted ||
+        !currentFact
+      ) {
+        return [];
+      }
+
+      const prefix = normalizeAnswer(answerInput.value);
+      if (!prefix) return [];
+
+      return session.suggestionOrder
+        .filter(word =>
+          normalizeAnswer(word).startsWith(prefix)
+        )
+        .slice(0, 10);
+    }
+
+    function acceptFirstAutocompleteChoice() {
+      const matches = autocompleteMatches();
+      if (!matches.length) return false;
+
+      answerInput.value = matches[0];
+      submitTypedAnswer(true);
+      return true;
+    }
+
+    function updateSuggestions() {
+      suggestions.innerHTML = "";
+
+      const matches = autocompleteMatches();
+
+      for (const word of matches) {
+        const button =
+          document.createElement("button");
+        button.type = "button";
+        button.className = "suggestion";
+        button.textContent = word;
+        button.addEventListener("click", () => {
+          answerInput.value = word;
+          submitTypedAnswer(true);
+        });
+        suggestions.appendChild(button);
+      }
+    }
+
+    function resetTypedCardState() {
+      session.typedSubmitted = false;
+      session.typedWasCorrect = null;
+      session.typedValue = "";
+      session.autocompleteUsed = false;
+      prepareSuggestionOrder();
+    }
+
+    function resetTypedUIForCurrentState() {
+      const typed =
+        activeSettings().answerMode === "typed";
+
+      typedArea.classList.toggle("show", typed);
+      selfActions.classList.toggle("hidden", typed);
+
+      if (!typed) {
+        answerInput.value = "";
+        typedFeedback.textContent = "";
+        typedFeedback.className = "typed-feedback";
+        suggestions.innerHTML = "";
+        spaceHintText.textContent = "Flip";
+        frontHint.textContent =
+          "Click or press Space to flip";
+        backHint.textContent =
+          "Click or press Space to flip";
+        return;
+      }
+
+      answerInput.value = session.typedValue || "";
+      answerInput.disabled = session.typedSubmitted;
+      submitAnswerBtn.disabled =
+        session.typedSubmitted;
+      suggestions.innerHTML = "";
+
+      if (session.typedSubmitted) {
+        typedFeedback.textContent =
+          session.typedWasCorrect
+            ? "Correct — press Space or Enter for the next card."
+            : `Not quite — correct answer: ${currentFact.answer}. Press Space or Enter for the next card.`;
+
+        typedFeedback.className =
+          `typed-feedback ${session.typedWasCorrect ? "correct" : "wrong"}`;
+
+        spaceHintText.textContent = "Next";
+      } else {
+        typedFeedback.textContent =
+          activeSettings().autocomplete
+            ? "Start typing to see a randomized list of matching words."
+            : "Autocomplete is off.";
+
+        typedFeedback.className =
+          "typed-feedback";
+        spaceHintText.textContent = "Type";
+
+        setTimeout(() => {
+          answerInput.focus({ preventScroll: true });
+        }, 0);
+
+        updateSuggestions();
+      }
+
+      frontHint.textContent = "Type the answer below";
+      backHint.textContent = "Type the answer below";
+    }
+
+    // ==========================================================
+    // UI
+    // ==========================================================
+    function updateDeckSelector() {
+      const decks = Object.values(appState.decks)
+        .sort((a, b) => {
+          if (a.builtin !== b.builtin) {
+            return a.builtin ? -1 : 1;
+          }
+          return a.name.localeCompare(b.name);
+        });
+
+      deckSelect.innerHTML = "";
+
+      for (const deck of decks) {
+        const option =
+          document.createElement("option");
+        option.value = deck.id;
+        option.textContent =
+          `${deck.name} (${deck.cards.length})`;
+        deckSelect.appendChild(option);
+      }
+
+      deckSelect.value = activeDeckId;
+    }
+
+    function updateTabs() {
+      [cramTab, memoryTab, coldTab]
+        .forEach(btn => btn.classList.remove("active"));
+
+      if (mode === "cram") {
+        cramTab.classList.add("active");
+      } else if (mode === "memory") {
+        memoryTab.classList.add("active");
+      } else {
+        coldTab.classList.add("active");
+      }
+
+      studyPageBtn.classList.toggle("active", view === "study");
+      statsTab.classList.toggle("active", view === "stats");
+      decksPageBtn.classList.toggle("active", view === "decks");
+
+      studyShell.classList.toggle("hidden", view !== "study");
+      studyShell.classList.toggle("show", view === "study");
+      statsView.classList.toggle("show", view === "stats");
+      decksView.classList.toggle("show", view === "decks");
+    }
+
+    function updateControls() {
+      const settings = activeSettings();
+
+      dirFront.classList.toggle(
+        "active",
+        settings.direction === "front"
+      );
+      dirBack.classList.toggle(
+        "active",
+        settings.direction === "back"
+      );
+      dirBoth.classList.toggle(
+        "active",
+        settings.direction === "both"
+      );
+
+      answerSelf.classList.toggle(
+        "active",
+        settings.answerMode === "self"
+      );
+      answerTyped.classList.toggle(
+        "active",
+        settings.answerMode === "typed"
+      );
+
+      autocompleteBtn.classList.toggle(
+        "active",
+        settings.autocomplete
+      );
+      autocompleteBtn.textContent =
+        `Autocomplete: ${settings.autocomplete ? "On" : "Off"}`;
+      autocompleteBtn.disabled =
+        isTransitioning ||
+        settings.answerMode !== "typed";
+
+      coldShuffleWrap.classList.toggle(
+        "hidden",
+        mode !== "cold"
+      );
+      coldShuffleBtn.classList.toggle(
+        "active",
+        settings.coldShuffle
+      );
+      coldShuffleBtn.textContent =
+        `Shuffle: ${settings.coldShuffle ? "On" : "Off"}`;
+
+      deadlineWrap.classList.toggle(
+        "show",
+        mode === "memory"
+      );
+      deadlineInput.value =
+        settings.deadline || "";
+
+      goalCard.classList.toggle(
+        "show",
+        mode === "memory" && view === "study"
+      );
+
+      const statsDeckName = document.getElementById("statsDeckName");
+      if (statsDeckName) statsDeckName.textContent = activeDeck().name;
+
+      updateDeckSelector();
+      updateTabs();
+      updateMemoryChip();
+
+      subtitle.textContent =
+        mode === "cram"
+          ? `${activeDeck().name} · Cram adapts only to this session.`
+          : mode === "memory"
+          ? `${activeDeck().name} · Memory uses this deck's mastery, evidence age, and deadline.`
+          : `${activeDeck().name} · Cold Test shows each selected fact once without adapting.`;
+
+      resetTypedUIForCurrentState();
+      updateGoalCard();
+    }
+
+    function updateCardMeta() {
+      if (!currentFact) return;
+
+      if (mode === "cold") {
+        const total = session.cold.order.length;
+        const position = Math.min(
+          session.cold.index + 1,
+          total
+        );
+
+        leftStatus.textContent =
+          `${activeDeck().name} · Cold Test · ${position} / ${total}`;
+
+        rightStatus.textContent =
+          `${directionDisplay(activeSettings().direction)} · ` +
+          `${session.correct} right / ${session.wrong} missed`;
+
+        progressTrack.classList.remove("hidden");
+        progressBar.style.width =
+          `${total ? (session.cold.index / total) * 100 : 0}%`;
+      } else {
+        leftStatus.textContent =
+          `${activeDeck().name} · ${modeDisplay(mode)} · ` +
+          `${session.answers} answered · ${session.unique.size} unique`;
+
+        const mastery =
+          factMastery(currentFact.id);
+        const priority =
+          displayPriority(currentFact, mode);
+
+        rightStatus.textContent =
+          `Current mastery ${mastery.toFixed(0)}% · base priority ${priority.toFixed(2)}×`;
+
+        progressTrack.classList.add("hidden");
+      }
+
+      if (activeSettings().answerMode === "typed") {
+        spaceHintText.textContent =
+          session.typedSubmitted ? "Next" : "Type";
+      } else {
+        spaceHintText.textContent = "Flip";
+      }
+    }
+
+    function updateGoalCard() {
+      if (
+        mode !== "memory" ||
+        view !== "study"
+      ) {
+        return;
+      }
+
+      const result = memoryGoalStatus();
+
+      goalCard.classList.remove(
+        "not",
+        "mostly",
+        "complete"
+      );
+      goalCard.classList.add(result.level);
+
+      goalTitle.textContent =
+        result.level === "complete"
+          ? "Complete"
+          : result.level === "mostly"
+          ? "Mostly complete"
+          : "Not complete";
+
+      const deadlineText =
+        activeSettings().deadline
+          ? ` · deadline ${activeSettings().deadline}`
+          : "";
+
+      goalDetail.textContent =
+        `Knowledge ${result.metrics.knowledge.toFixed(0)}% · ` +
+        `today ${result.unique}/${result.goal.sampleGoal} distinct facts sampled · ` +
+        `goal ${result.goal.targetKnowledge.toFixed(0)}%${deadlineText}`;
+    }
+
+    function updateMemoryChip() {
+      const hasName = Boolean(
+        appState.userName &&
+        appState.userName.trim()
+      );
+
+      memoryDot.classList.toggle(
+        "bad",
+        !storageAvailable || Boolean(lastSaveError)
+      );
+
+      if (!hasName) {
+        memoryChipText.textContent =
+          storageAvailable
+            ? "Memory not initialized"
+            : "Memory unavailable";
+        return;
+      }
+
+      const count =
+        Object.keys(appState.decks).length;
+
+      if (!storageAvailable) {
+        memoryChipText.textContent =
+          `Temporary memory: ${appState.userName}`;
+      } else if (lastSaveError) {
+        memoryChipText.textContent =
+          `Save error · ${appState.userName}`;
+      } else {
+        memoryChipText.textContent =
+          `Memory: ${appState.userName} · ${count} deck${count === 1 ? "" : "s"}`;
+      }
+    }
+
+    function showStatsView() {
+      view = "stats";
+      studyShell.classList.add("hidden");
+      studyShell.classList.remove("show");
+      decksView.classList.remove("show");
+      statsView.classList.add("show");
+      updateTabs();
+      updateStats();
+    }
+
+    function showStudyView() {
+      view = "study";
+      statsView.classList.remove("show");
+      decksView.classList.remove("show");
+      studyShell.classList.remove("hidden");
+      studyShell.classList.add("show");
+      updateControls();
+
+      if (!summaryView.classList.contains("show")) {
+        renderCurrentFact({
+          forceImmediate: displayedFactId === null
+        });
+      }
+    }
+
+    function showDecksView() {
+      view = "decks";
+      statsView.classList.remove("show");
+      studyShell.classList.add("hidden");
+      studyShell.classList.remove("show");
+      decksView.classList.add("show");
+      renderDeckManager();
+      updateTabs();
+    }
+
+    function maybeConfirmLeavingCold() {
+      if (
+        mode === "cold" &&
+        !summaryView.classList.contains("show") &&
+        session.answers > 0
+      ) {
+        return confirm(
+          "Leave this unfinished Cold Test? The current test session will be replaced, but completed learning progress is already saved."
+        );
+      }
+      return true;
+    }
+
+    function changeMode(targetMode) {
+      if (isTransitioning) return;
+
+      if (targetMode === mode) {
+        if (view !== "study") showStudyView();
+        return;
+      }
+
+      if (!maybeConfirmLeavingCold()) return;
+
+      persistState();
+      clearSessionState();
+      view = "study";
+      statsView.classList.remove("show");
+      decksView.classList.remove("show");
+      studyShell.classList.remove("hidden");
+      studyShell.classList.add("show");
+      startMode(targetMode);
+    }
+
+    function switchDeck(deckId, options = {}) {
+      const { fromManager = false } = options;
+
+      if (
+        isTransitioning ||
+        deckId === activeDeckId ||
+        !appState.decks[deckId]
+      ) {
+        return;
+      }
+
+      if (!maybeConfirmLeavingCold()) {
+        deckSelect.value = activeDeckId;
+        return;
+      }
+
+      persistState();
+
+      activeDeckId = deckId;
+      appState.activeDeckId = deckId;
+      mode = activeDeck().settings.mode || "cram";
+      view = "study";
+      summaryView.classList.remove("show");
+      studyView.classList.remove("hidden");
+      statsView.classList.remove("show");
+      decksView.classList.remove("show");
+      studyShell.classList.remove("hidden");
+      studyShell.classList.add("show");
+      displayedFactId = null;
+
+      const resumed = restoreSessionForDeck(activeDeck());
+
+      if (!resumed) {
+        startMode(mode);
+      } else {
+        persistState();
+        updateControls();
+        renderCurrentFact({ forceImmediate: true });
+        updateStats();
+      }
+
+      if (fromManager) {
+        decksView.classList.remove("show");
+      }
+    }
+
+    function changeDirection(direction) {
+      if (
+        isTransitioning ||
+        activeSettings().direction === direction
+      ) {
+        return;
+      }
+
+      if (
+        mode === "cold" &&
+        session.answers > 0 &&
+        !confirm(
+          "Changing direction will restart this Cold Test. Continue?"
+        )
+      ) {
+        return;
+      }
+
+      activeSettings().direction = direction;
+      clearSessionState();
+      persistState();
+      startMode(mode);
+    }
+
+    function changeAnswerMode(answerMode) {
+      if (
+        isTransitioning ||
+        activeSettings().answerMode === answerMode
+      ) {
+        return;
+      }
+
+      if (
+        mode === "cold" &&
+        session.answers > 0 &&
+        !confirm(
+          "Changing answer mode will restart this Cold Test. Continue?"
+        )
+      ) {
+        return;
+      }
+
+      activeSettings().answerMode = answerMode;
+      persistState();
+
+      if (
+        mode === "cold" &&
+        session.answers > 0
+      ) {
+        clearSessionState();
+        startMode("cold");
+        return;
+      }
+
+      resetTypedCardState();
+      updateControls();
+      renderCurrentFact({ forceImmediate: true });
+    }
+
+    function toggleAutocomplete() {
+      if (
+        activeSettings().answerMode !== "typed" ||
+        isTransitioning
+      ) {
+        return;
+      }
+
+      activeSettings().autocomplete =
+        !activeSettings().autocomplete;
+
+      persistState();
+      updateControls();
+      updateSuggestions();
+    }
+
+    function toggleColdShuffle() {
+      if (mode !== "cold" || isTransitioning) return;
+
+      if (
+        session.answers > 0 &&
+        !confirm(
+          "Changing shuffle will restart this Cold Test. Continue?"
+        )
+      ) {
+        return;
+      }
+
+      activeSettings().coldShuffle =
+        !activeSettings().coldShuffle;
+
+      clearSessionState();
+      persistState();
+      startMode("cold");
+    }
+
+    function changeDeadline() {
+      activeSettings().deadline =
+        deadlineInput.value || "";
+      persistState();
+      updateGoalCard();
+      updateStats();
+    }
+
+    // ==========================================================
+    // STATISTICS (ACTIVE DECK ONLY)
+    // ==========================================================
+    function updateStats() {
+      const deck = activeDeck();
+      const facts = getEligibleFacts();
+      const metrics = knowledgeMetrics(facts, deck);
+
+      document.getElementById(
+        "knowledgeIndex"
+      ).textContent =
+        `${metrics.knowledge.toFixed(0)}%`;
+
+      document.getElementById(
+        "testedFacts"
+      ).textContent =
+        `${metrics.tested}/${metrics.total}`;
+
+      document.getElementById(
+        "weakFacts"
+      ).textContent =
+        metrics.weak;
+
+      const frontKnowledge =
+        knowledgeMetrics(
+          factsForDeck(deck).filter(
+            fact => fact.direction === "front"
+          ),
+          deck
+        ).knowledge;
+
+      const backKnowledge =
+        knowledgeMetrics(
+          factsForDeck(deck).filter(
+            fact => fact.direction === "back"
+          ),
+          deck
+        ).knowledge;
+
+      const knowledgeSecondary = document.getElementById(
+        "knowledgeSecondary"
+      );
+      const frontBackMetric = document.getElementById(
+        "frontBackMetric"
+      );
+      const backFrontMetric = document.getElementById(
+        "backFrontMetric"
+      );
+      if (knowledgeSecondary) {
+        knowledgeSecondary.textContent =
+          `${metrics.knowledge.toFixed(0)}%`;
+      }
+      if (frontBackMetric) {
+        frontBackMetric.textContent =
+          `${frontKnowledge.toFixed(0)}`;
+      }
+      if (backFrontMetric) {
+        backFrontMetric.textContent =
+          `${backKnowledge.toFixed(0)}`;
+      }
+
+      document.getElementById(
+        "knowledgeDetail"
+      ).textContent =
+        `Front → Back ${frontKnowledge.toFixed(0)}% · ` +
+        `Back → Front ${backKnowledge.toFixed(0)}%. ` +
+        `Mastery never drops merely because time passed.`;
+
+      document.getElementById(
+        "sessionAnswers"
+      ).textContent = session.answers;
+
+      document.getElementById(
+        "sessionAccuracy"
+      ).textContent =
+        session.answers
+          ? `${Math.round(100 * session.correct / session.answers)}%`
+          : "—";
+
+      document.getElementById(
+        "sessionUnique"
+      ).textContent =
+        session.unique.size;
+
+      document.getElementById(
+        "sessionDetail"
+      ).textContent =
+        `${modeDisplay(mode)} session for ${deck.name} started ` +
+        `${new Date(session.startedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}.`;
+
+      document.getElementById(
+        "lifeAnswers"
+      ).textContent =
+        deck.lifetime.answers;
+
+      document.getElementById(
+        "lifeAccuracy"
+      ).textContent =
+        deck.lifetime.answers
+          ? `${Math.round(100 * deck.lifetime.correct / deck.lifetime.answers)}%`
+          : "—";
+
+      document.getElementById(
+        "lifeColdTests"
+      ).textContent =
+        deck.coldTests.length;
+
+      document.getElementById(
+        "lifeDetail"
+      ).textContent =
+        `${deck.lifetime.correct} correct · ` +
+        `${deck.lifetime.wrong} missed · ` +
+        `${deck.lifetime.typedAnswers} typed · ` +
+        `${deck.lifetime.selfAnswers} self graded.`;
+
+      const savedText = appState.lastSavedAt
+        ? new Date(appState.lastSavedAt).toLocaleString()
+        : "not yet";
+
+      let serializedSize = "—";
+      try {
+        serializedSize =
+          `${Math.round(JSON.stringify(appState).length / 1024)} KB`;
+      } catch (error) {}
+
+      document.getElementById(
+        "profileStats"
+      ).innerHTML =
+        `<strong>${escapeHtml(appState.userName || "Unnamed")}</strong><br>` +
+        `Active deck: ${escapeHtml(deck.name)} (${deck.cards.length} cards)<br>` +
+        `Saved decks: ${Object.keys(appState.decks).length}<br>` +
+        `${storageAvailable ? "Local browser memory is available." : "Local browser memory is NOT available."}<br>` +
+        `${lastSaveError ? `Last save error: ${escapeHtml(lastSaveError)}<br>` : ""}` +
+        `Last saved: ${escapeHtml(savedText)}<br>` +
+        `Stored data: about ${escapeHtml(serializedSize)}<br>` +
+        `Deadline for this deck: ${escapeHtml(deck.settings.deadline || "not set")}<br>` +
+        `Stats direction: ${escapeHtml(directionDisplay(deck.settings.direction))}`;
+
+      const hardest = facts
+        .slice()
+        .sort((a, b) => {
+          const ma = factMastery(a.id, deck);
+          const mb = factMastery(b.id, deck);
+          if (ma !== mb) return ma - mb;
+          return (
+            factDirectAttempts(a.id, deck) -
+            factDirectAttempts(b.id, deck)
+          );
+        })
+        .slice(0, 12);
+
+      const body =
+        document.getElementById("hardestFactsBody");
+      body.innerHTML = "";
+
+      for (const fact of hardest) {
+        const memory = deck.facts[fact.id];
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          `<td>${escapeHtml(fact.prompt)} → ${escapeHtml(fact.answer)}</td>` +
+          `<td>${factMastery(fact.id, deck).toFixed(0)}%</td>` +
+          `<td>${factDirectAttempts(fact.id, deck)}</td>` +
+          `<td>${escapeHtml(formatRelativeReview(memory.lastReviewedAt))}</td>` +
+          `<td>${escapeHtml(evidenceFreshnessLabel(memory))}</td>`;
+        body.appendChild(tr);
+      }
+
+      const coldHistory =
+        deck.coldTests.slice().reverse().slice(0, 12);
+      const coldEmpty =
+        document.getElementById("coldHistoryEmpty");
+      const coldTable =
+        document.getElementById("coldHistoryTable");
+      const coldBody =
+        document.getElementById("coldHistoryBody");
+
+      coldBody.innerHTML = "";
+
+      if (!coldHistory.length) {
+        coldEmpty.classList.remove("hidden");
+        coldTable.classList.add("hidden");
+      } else {
+        coldEmpty.classList.add("hidden");
+        coldTable.classList.remove("hidden");
+
+        for (const test of coldHistory) {
+          const tr = document.createElement("tr");
+          tr.innerHTML =
+            `<td>${escapeHtml(new Date(test.completedAt).toLocaleString())}</td>` +
+            `<td>${escapeHtml(directionDisplay(test.direction))}</td>` +
+            `<td>${escapeHtml(test.answerMode === "typed" ? "Typed" : "Self grade")}</td>` +
+            `<td>${test.autocomplete === null ? "—" : test.autocomplete ? "On" : "Off"}</td>` +
+            `<td>${test.correct}/${test.total} (${test.percent}%)</td>`;
+          coldBody.appendChild(tr);
+        }
+      }
+    }
+
+    // ==========================================================
+    // AI DECK CREATION PROMPT
+    // This is intentionally kept out of the visible UI. The Decks page
+    // exposes only a copy button so another AI can be given the exact
+    // import contract without cluttering the study app.
+    // ==========================================================
+    const AI_DECK_CREATION_PROMPT = `You are creating an importable flashcard deck file for my local Study Cards web app. This means a study/flashcard deck, NOT a slideshow or presentation. Your job is to turn the topic/material I provide into a valid native Study Cards deck file. Do not merely describe the deck and do not give me a table unless I explicitly ask for one. When I later provide the topic, create the actual downloadable file in the exact format below.
+
+Use the native JSON deck format and name the file with the extension .studydeck.json. The file must contain strict, valid JSON that can be parsed by JSON.parse. The actual file must contain NO JavaScript-style comments, NO // comments, NO /* */ comments, NO trailing commas, NO Markdown code fences, and NO prose before or after the JSON. Unicode characters such as German umlauts are allowed normally in JSON strings.
+
+The top-level JSON object must have exactly this core structure:
+- "format": must be the exact string "StudyCardsDeck".
+- "version": use the number 1.
+- "deckId": a stable identifier for this deck. It should be short, descriptive, and remain unchanged if you later revise/update the same deck. Prefer only letters, numbers, underscores, hyphens, periods, and colons. Do not use spaces. Example: "german:unit_5_verbs".
+- "name": the human-readable deck title that should appear in the app.
+- "cards": an array of card objects.
+
+Each card object must contain:
+- "id": a stable identifier unique inside this deck. It should describe the logical card, not its array position. Keep the same id if the same logical card is retained in a future updated version of the deck. Prefer only letters, numbers, underscores, hyphens, periods, and colons. Never use the | character. Do not use generic positional IDs like "card_1" if a meaningful stable ID can be made from the content.
+- "front": a non-empty string containing exactly what should be shown on the front/prompt side.
+- "back": a non-empty string containing exactly what should be shown on the back/answer side.
+
+The app treats Front → Back and Back → Front as two separately learned directional facts, so choose front/back orientation intentionally. Each card should normally represent one atomic retrieval relationship rather than several unrelated facts crammed together. Avoid duplicate IDs and avoid duplicate front/back pairs. If the material includes the same idea twice, consolidate it unless the context genuinely requires separate cards.
+
+If I later ask you to UPDATE an existing deck, preserve the existing deckId and preserve every existing card id for cards that represent the same logical fact. New logical facts get new IDs. This is essential because mastery/progress is saved by deckId and card id; changing IDs unnecessarily would make previously learned cards look new.
+
+Do not put study progress, mastery, probability, deadlines, statistics, timestamps, answer history, or scheduler data in a deck file. A deck file contains content and stable identities only. The Study Cards app stores progress separately after import.
+
+When converting notes or source material into cards, prioritize faithful retrieval practice. Preserve wording exactly when exact wording matters. Otherwise make prompts concise and answers unambiguous. Do not invent outside facts unless I explicitly ask you to supplement the source. If something in the source is uncertain or illegible, flag that to me before silently guessing.
+
+Here is a VALID five-card example. The values are intentionally generic placeholders so you can see the exact file shape:
+
+{
+  "format": "StudyCardsDeck",
+  "version": 1,
+  "deckId": "example:five_term_deck",
+  "name": "Example Five-Term Deck",
+  "cards": [
+    {
+      "id": "term_1",
+      "front": "term 1 front",
+      "back": "term 1 back"
+    },
+    {
+      "id": "term_2",
+      "front": "term 2 front",
+      "back": "term 2 back"
+    },
+    {
+      "id": "term_3",
+      "front": "term 3 front",
+      "back": "term 3 back"
+    },
+    {
+      "id": "term_4",
+      "front": "term 4 front",
+      "back": "term 4 back"
+    },
+    {
+      "id": "term_5",
+      "front": "term 5 front",
+      "back": "term 5 back"
+    }
+  ]
+}
+
+Explanation of the example (these comments are explanatory text for you, NOT content that may appear in the actual JSON file):
+1. "format" tells the importer this is the app's native deck format and must remain "StudyCardsDeck".
+2. "version": 1 identifies the current deck-file schema.
+3. "deckId" is the persistent identity of the entire deck. Revisions of the same deck should reuse it.
+4. "name" is only the display title and can be more human-readable than deckId.
+5. "cards" is the complete set of active flashcards in the deck.
+6. Each card's "id" is its persistent identity for saved progress. It must be unique within the deck and should remain stable across updates.
+7. "front" and "back" are the only study content fields currently required by the app.
+8. The array order is not a memory identity. Do not rely on array position to identify a card.
+
+Before giving me a finished deck after I upload the topic, validate the file yourself: confirm the JSON is syntactically valid, every active card has a unique non-empty id/front/back, there are no duplicate front/back pairs, the deckId is stable and sensible, and the file can be saved directly as a .studydeck.json file with no cleanup required. If your environment can create files, give me the actual downloadable .studydeck.json artifact rather than only pasting its contents into chat.
+
+Do not create the topic cards yet because I have not supplied the topic/material.
+
+I will upload the topic soon, confirm your understanding`;
+
+    async function copyTextRobustly(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      textarea.style.top = "0";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+
+      const copied = document.execCommand("copy");
+      textarea.remove();
+      if (!copied) {
+        throw new Error("Clipboard copy was blocked by the browser.");
+      }
+    }
+
+    async function copyAiDeckCreationPrompt() {
+      const originalText = copyAiDeckPromptBtn.textContent;
+
+      try {
+        await copyTextRobustly(AI_DECK_CREATION_PROMPT);
+        copyAiDeckPromptBtn.textContent = "Copied AI deck prompt ✓";
+      } catch (error) {
+        copyAiDeckPromptBtn.textContent = "Copy failed";
+        alert("The browser blocked clipboard access. Try opening the file in Chrome and click the button again.");
+      }
+
+      window.setTimeout(() => {
+        copyAiDeckPromptBtn.textContent = originalText;
+      }, 1800);
+    }
+
+    // ==========================================================
+    // DECK IMPORT / EXPORT / MANAGEMENT
+    // ==========================================================
+    function exportDeck(deck) {
+      const payload = {
+        format: "StudyCardsDeck",
+        version: 1,
+        deckId: deck.id,
+        name: deck.name,
+        exportedAt: new Date().toISOString(),
+        cards: deck.cards.map(card => ({
+          id: card.id,
+          front: card.front,
+          back: card.back
+        }))
+      };
+
+      downloadJson(
+        `${slugify(deck.name)}.studydeck.json`,
+        payload
+      );
+    }
+
+    function exportBackup() {
+      persistState();
+
+      const payload = {
+        format: "StudyCardsMultiDeckBackup",
+        appVersion: APP_VERSION,
+        exportedAt: new Date().toISOString(),
+        userName: appState.userName,
+        state: appState
+      };
+
+      const safeName =
+        slugify(appState.userName || "user");
+      const stamp =
+        localDateKey().replaceAll("-", "");
+
+      downloadJson(
+        `study-cards-backup-${safeName}-${stamp}.json`,
+        payload
+      );
+    }
+
+    function downloadJson(filename, payload) {
+      const blob = new Blob(
+        [JSON.stringify(payload, null, 2)],
+        { type: "application/json" }
+      );
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function parseDelimited(text, delimiter) {
+      const rows = [];
+      let row = [];
+      let field = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+
+        if (inQuotes) {
+          if (ch === '"') {
+            if (text[i + 1] === '"') {
+              field += '"';
+              i++;
+            } else {
+              inQuotes = false;
+            }
+          } else {
+            field += ch;
+          }
+        } else {
+          if (ch === '"') {
+            inQuotes = true;
+          } else if (ch === delimiter) {
+            row.push(field);
+            field = "";
+          } else if (ch === "\n") {
+            row.push(field);
+            rows.push(row);
+            row = [];
+            field = "";
+          } else if (ch !== "\r") {
+            field += ch;
+          }
+        }
+      }
+
+      row.push(field);
+      if (
+        row.length > 1 ||
+        row.some(value => value.trim())
+      ) {
+        rows.push(row);
+      }
+
+      return rows;
+    }
+
+    function parseDeckFile(text, file) {
+      const filename = file?.name || "Imported Deck";
+      const ext =
+        filename.toLowerCase().split(".").pop();
+
+      let rawCards = [];
+      let deckName =
+        filename.replace(/\.[^.]+$/, "") ||
+        "Imported Deck";
+      let deckId = "";
+      let sourceFormat = ext || "unknown";
+
+      if (ext === "json") {
+        const parsed = JSON.parse(text);
+
+        if (Array.isArray(parsed)) {
+          rawCards = parsed;
+        } else if (
+          parsed &&
+          typeof parsed === "object" &&
+          Array.isArray(parsed.cards)
+        ) {
+          rawCards = parsed.cards;
+          deckName =
+            String(parsed.name || deckName);
+          deckId =
+            parsed.deckId
+              ? normalizeDeckId(parsed.deckId)
+              : "";
+          sourceFormat =
+            parsed.format || "json";
+        } else {
+          throw new Error(
+            "JSON must be a StudyCardsDeck object or an array of cards."
+          );
+        }
+      } else if (
+        ext === "csv" ||
+        ext === "tsv"
+      ) {
+        const delimiter = ext === "tsv" ? "\t" : ",";
+        const rows = parseDelimited(text, delimiter);
+        if (!rows.length) {
+          throw new Error("The file is empty.");
+        }
+
+        const header = rows[0].map(value =>
+          normalizeAnswer(value)
+        );
+
+        const frontNames = [
+          "front",
+          "term",
+          "question",
+          "prompt",
+          "german",
+          "deutsch"
+        ];
+        const backNames = [
+          "back",
+          "definition",
+          "answer",
+          "response",
+          "past participle",
+          "past particle"
+        ];
+
+        let frontIndex =
+          header.findIndex(value =>
+            frontNames.includes(value)
+          );
+        let backIndex =
+          header.findIndex(value =>
+            backNames.includes(value)
+          );
+
+        let startRow = 0;
+
+        if (
+          frontIndex >= 0 &&
+          backIndex >= 0
+        ) {
+          startRow = 1;
+        } else {
+          frontIndex = 0;
+          backIndex = 1;
+        }
+
+        rawCards = rows.slice(startRow).map(
+          row => ({
+            front: row[frontIndex] ?? "",
+            back: row[backIndex] ?? ""
+          })
+        );
+
+        // Same filename -> same default deck identity, which makes
+        // updating a simple CSV possible.
+        deckId =
+          normalizeDeckId(
+            `imported:${slugify(deckName)}`
+          );
+      } else {
+        throw new Error(
+          "Supported deck files are .studydeck.json/.json, .csv, and .tsv."
+        );
+      }
+
+      if (!deckId) {
+        deckId = normalizeDeckId(
+          `imported:${slugify(deckName)}`
+        );
+      }
+
+      return normalizeImportedDeck({
+        deckId,
+        name: deckName,
+        rawCards,
+        sourceFormat,
+        filename
+      });
+    }
+
+    function normalizeImportedDeck({
+      deckId,
+      name,
+      rawCards,
+      sourceFormat,
+      filename
+    }) {
+      const cards = [];
+      const usedIds = new Set();
+      const seenPairs = new Set();
+      let invalid = 0;
+      let duplicates = 0;
+
+      for (const raw of rawCards) {
+        if (!raw || typeof raw !== "object") {
+          invalid++;
+          continue;
+        }
+
+        const front =
+          String(raw.front ?? raw.term ?? raw.question ?? "")
+            .trim();
+        const back =
+          String(raw.back ?? raw.definition ?? raw.answer ?? "")
+            .trim();
+
+        if (!front || !back) {
+          invalid++;
+          continue;
+        }
+
+        const pairKey =
+          `${normalizeAnswer(front)}\u241f${normalizeAnswer(back)}`;
+
+        let id = sanitizeCardId(
+          raw.id || generatedCardId(front, back)
+        );
+
+        if (!id) id = generatedCardId(front, back);
+
+        if (
+          usedIds.has(id) ||
+          seenPairs.has(pairKey)
+        ) {
+          duplicates++;
+          continue;
+        }
+
+        usedIds.add(id);
+        seenPairs.add(pairKey);
+        cards.push({ id, front, back });
+      }
+
+      if (!cards.length) {
+        throw new Error(
+          "No valid front/back card pairs were found."
+        );
+      }
+
+      return {
+        id: normalizeDeckId(deckId),
+        name: String(name || "Imported Deck").trim() || "Imported Deck",
+        cards,
+        invalid,
+        duplicates,
+        sourceFormat,
+        filename
+      };
+    }
+
+    function showImportPreview(parsed) {
+      pendingImport = parsed;
+      const existing =
+        appState.decks[parsed.id] || null;
+
+      importPreviewTitle.textContent =
+        `Import ${parsed.name}`;
+      importPreviewSubtitle.textContent =
+        `${parsed.filename || parsed.sourceFormat} · deck ID ${parsed.id}`;
+
+      importValidCount.textContent =
+        parsed.cards.length;
+      importInvalidCount.textContent =
+        parsed.invalid;
+      importDuplicateCount.textContent =
+        parsed.duplicates;
+
+      importPreviewList.innerHTML = "";
+      for (const card of parsed.cards.slice(0, 30)) {
+        const row =
+          document.createElement("div");
+        row.className = "import-preview-row";
+        row.innerHTML =
+          `<span>${escapeHtml(card.front)}</span>` +
+          `<span class="import-preview-arrow">→</span>` +
+          `<span>${escapeHtml(card.back)}</span>`;
+        importPreviewList.appendChild(row);
+      }
+
+      if (parsed.cards.length > 30) {
+        const more =
+          document.createElement("div");
+        more.className = "import-note";
+        more.style.padding = "8px";
+        more.textContent =
+          `…and ${parsed.cards.length - 30} more cards`;
+        importPreviewList.appendChild(more);
+      }
+
+      confirmImportBtn.classList.toggle(
+        "hidden",
+        Boolean(existing)
+      );
+      updateExistingBtn.classList.toggle(
+        "hidden",
+        !existing || Boolean(existing?.builtin)
+      );
+      importAsCopyBtn.classList.toggle(
+        "hidden",
+        !existing
+      );
+
+      if (existing) {
+        importExistingNote.textContent =
+          existing.builtin
+            ? `A deck with this ID already exists as the built-in deck. It cannot be overwritten; import this file as a copy instead.`
+            : `A deck with this ID already exists: "${existing.name}". Updating it preserves progress for card IDs that are still present. Removed cards stop appearing but their old memory remains stored in case they return later.`;
+      } else {
+        importExistingNote.textContent =
+          `This will create a new independent scheduler pool. Its mastery, weights, deadline, and statistics will not mix with other decks.`;
+      }
+
+      importPreviewOverlay.classList.add("show");
+    }
+
+    function importNewDeck(parsed, asCopy = false) {
+      let id = parsed.id;
+
+      if (
+        asCopy ||
+        appState.decks[id]
+      ) {
+        id = uniqueDeckId(
+          `copy:${slugify(parsed.name)}`
+        );
+      }
+
+      const deck = createDeckRecord({
+        id,
+        name: parsed.name,
+        cards: parsed.cards,
+        builtin: false
+      });
+
+      appState.decks[id] = deck;
+      persistState();
+      importPreviewOverlay.classList.remove("show");
+      deckManagerOverlay.classList.remove("show");
+      pendingImport = null;
+
+      updateDeckSelector();
+      switchDeck(id);
+    }
+
+    function updateExistingDeck(parsed) {
+      const existing =
+        appState.decks[parsed.id];
+
+      if (!existing || existing.builtin) return;
+
+      // Preserve user-renamed display name and all old fact memory.
+      existing.cards =
+        normalizeStoredCards(parsed.cards);
+      existing.updatedAt =
+        new Date().toISOString();
+      existing.sessionState = null;
+      ensureDeckMemory(existing);
+
+      persistState();
+      importPreviewOverlay.classList.remove("show");
+      deckManagerOverlay.classList.remove("show");
+      pendingImport = null;
+
+      if (activeDeckId === existing.id) {
+        session = makeFreshSession(existing.settings.mode);
+        mode = existing.settings.mode;
+        currentFact = null;
+        displayedFactId = null;
+        startMode(mode);
+      } else {
+        switchDeck(existing.id);
+      }
+    }
+
+    function openDeckFilePicker() {
+      deckFileInput.value = "";
+      deckFileInput.click();
+    }
+
+    async function handleDeckFile(file) {
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const parsed =
+          parseDeckFile(text, file);
+        showImportPreview(parsed);
+      } catch (error) {
+        alert(
+          `Could not import that deck: ${error.message}`
+        );
+      }
+    }
+
+    function renderDeckManager() {
+      deckList.innerHTML = "";
+
+      const decks =
+        Object.values(appState.decks)
+          .sort((a, b) => {
+            if (a.builtin !== b.builtin) {
+              return a.builtin ? -1 : 1;
+            }
+            return a.name.localeCompare(b.name);
+          });
+
+      for (const deck of decks) {
+        const deckFacts = factsForDeck(deck);
+        const metrics =
+          knowledgeMetrics(deckFacts, deck);
+
+        const row =
+          document.createElement("div");
+        row.className = `deck-row${deck.id === activeDeckId ? " active-row" : ""}`;
+
+        const badge = deck.builtin
+          ? `<span class="deck-badge">BUILT-IN</span>`
+          : "";
+
+        const deadline =
+          deck.settings.deadline
+            ? ` · deadline ${escapeHtml(deck.settings.deadline)}`
+            : "";
+
+        row.innerHTML =
+          `<div class="deck-row-main">` +
+            `<div>` +
+              `<div class="deck-row-title">${escapeHtml(deck.name)}${badge}</div>` +
+              `<div class="deck-row-meta">` +
+                `${deck.cards.length} cards · ${deckFacts.length} directional facts · knowledge ${metrics.knowledge.toFixed(0)}%${deadline}` +
+              `</div>` +
+            `</div>` +
+            `<div>${deck.id === activeDeckId ? '<span class="deck-badge">ACTIVE</span>' : ''}</div>` +
+          `</div>` +
+          `<div class="deck-actions"></div>`;
+
+        const actions =
+          row.querySelector(".deck-actions");
+
+        const study =
+          document.createElement("button");
+        study.className =
+          "deck-action primary";
+        study.textContent =
+          deck.id === activeDeckId
+            ? "Studying"
+            : "Study →";
+        study.disabled =
+          deck.id === activeDeckId;
+        study.addEventListener("click", () =>
+          switchDeck(
+            deck.id,
+            { fromManager: true }
+          )
+        );
+        actions.appendChild(study);
+
+        const rename =
+          document.createElement("button");
+        rename.className = "deck-action";
+        rename.textContent = "Rename";
+        rename.addEventListener("click", () => {
+          const proposed = prompt(
+            "Deck name:",
+            deck.name
+          );
+          if (proposed === null) return;
+
+          const cleaned = proposed.trim();
+          if (!cleaned) return;
+
+          deck.name = cleaned;
+          deck.updatedAt =
+            new Date().toISOString();
+          persistState();
+          renderDeckManager();
+          updateDeckSelector();
+          updateControls();
+          updateStats();
+        });
+        actions.appendChild(rename);
+
+        const exportBtn =
+          document.createElement("button");
+        exportBtn.className = "deck-action";
+        exportBtn.textContent = "Export Deck";
+        exportBtn.addEventListener(
+          "click",
+          () => exportDeck(deck)
+        );
+        actions.appendChild(exportBtn);
+
+        if (!deck.builtin) {
+          const del =
+            document.createElement("button");
+          del.className =
+            "deck-action danger";
+          del.textContent = "Delete";
+          del.addEventListener("click", () => {
+            if (
+              !confirm(
+                `Delete "${deck.name}" and all saved progress for it? Make a backup first if you may want it later.`
+              )
+            ) {
+              return;
+            }
+
+            const wasActive =
+              deck.id === activeDeckId;
+            delete appState.decks[deck.id];
+
+            if (wasActive) {
+              activeDeckId = BUILTIN_DECK_ID;
+              appState.activeDeckId =
+                BUILTIN_DECK_ID;
+              mode =
+                activeDeck().settings.mode;
+              session =
+                makeFreshSession(mode);
+              displayedFactId = null;
+              startMode(mode);
+            }
+
+            persistState();
+            renderDeckManager();
+            updateDeckSelector();
+            updateStats();
+          });
+          actions.appendChild(del);
+        }
+
+        deckList.appendChild(row);
+      }
+    }
+
+    function restoreBackupFile(file) {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        try {
+          const parsed =
+            JSON.parse(String(reader.result || ""));
+
+          if (
+            parsed?.format ===
+              "StudyCardsMultiDeckBackup" &&
+            parsed.state &&
+            typeof parsed.state === "object"
+          ) {
+            appState =
+              mergeAppState(parsed.state);
+          } else if (
+            parsed?.format ===
+              "StudyCardsMemoryBackup" &&
+            parsed.state &&
+            typeof parsed.state === "object"
+          ) {
+            appState =
+              migrateOldSingleDeckState(parsed.state);
+          } else {
+            throw new Error(
+              "Not a recognized Study Cards memory backup."
+            );
+          }
+
+          activeDeckId =
+            appState.activeDeckId;
+          mode =
+            activeDeck().settings.mode || "cram";
+
+          persistState({ includeSession: false });
+          alert(
+            `Restored memory for ${appState.userName || "this user"} with ${Object.keys(appState.decks).length} deck(s).`
+          );
+          location.reload();
+        } catch (error) {
+          alert(
+            `Could not restore that backup: ${error.message}`
+          );
+        }
+      };
+
+      reader.readAsText(file);
+    }
+
+    // ==========================================================
+    // ONBOARDING
+    // ==========================================================
+    function showOnboardingIfNeeded() {
+      storageWarning.classList.toggle(
+        "show",
+        !storageAvailable
+      );
+
+      if (
+        !appState.userName ||
+        !appState.userName.trim()
+      ) {
+        onboardingOverlay.classList.add("show");
+        setTimeout(() => nameInput.focus(), 0);
+      } else {
+        onboardingOverlay.classList.remove("show");
+      }
+    }
+
+    function commitNameFromOnboarding() {
+      const name = nameInput.value.trim();
+      if (!name) {
+        nameInput.focus();
+        return;
+      }
+
+      appState.userName = name;
+      if (!appState.createdAt) {
+        appState.createdAt =
+          new Date().toISOString();
+      }
+
+      persistState();
+      onboardingOverlay.classList.remove("show");
+      updateMemoryChip();
+      updateStats();
+    }
+
+    // ==========================================================
+    // EVENTS
+    // ==========================================================
+    deckSelect.addEventListener("change", () => {
+      switchDeck(deckSelect.value);
+    });
+
+    copyAiDeckPromptBtn.addEventListener(
+      "click",
+      copyAiDeckCreationPrompt
+    );
+
+    importDeckBtn.addEventListener(
+      "click",
+      openDeckFilePicker
+    );
+
+    managerImportBtn.addEventListener(
+      "click",
+      openDeckFilePicker
+    );
+
+    manageDecksBtn.addEventListener("click", () => {
+      if (isTransitioning) return;
+      showDecksView();
+    });
+
+    closeDeckManagerBtn.addEventListener(
+      "click",
+      () => deckManagerOverlay.classList.remove("show")
+    );
+
+    deckFileInput.addEventListener("change", () => {
+      const file =
+        deckFileInput.files?.[0];
+      if (file) handleDeckFile(file);
+      deckFileInput.value = "";
+    });
+
+    closeImportPreviewBtn.addEventListener(
+      "click",
+      () => {
+        importPreviewOverlay.classList.remove("show");
+        pendingImport = null;
+      }
+    );
+
+    cancelImportBtn.addEventListener(
+      "click",
+      () => {
+        importPreviewOverlay.classList.remove("show");
+        pendingImport = null;
+      }
+    );
+
+    confirmImportBtn.addEventListener(
+      "click",
+      () => {
+        if (pendingImport) {
+          importNewDeck(pendingImport, false);
+        }
+      }
+    );
+
+    importAsCopyBtn.addEventListener(
+      "click",
+      () => {
+        if (pendingImport) {
+          importNewDeck(pendingImport, true);
+        }
+      }
+    );
+
+    updateExistingBtn.addEventListener(
+      "click",
+      () => {
+        if (pendingImport) {
+          updateExistingDeck(pendingImport);
+        }
+      }
+    );
+
+    cramTab.addEventListener(
+      "click",
+      () => changeMode("cram")
+    );
+    memoryTab.addEventListener(
+      "click",
+      () => changeMode("memory")
+    );
+    coldTab.addEventListener(
+      "click",
+      () => changeMode("cold")
+    );
+
+    studyPageBtn.addEventListener("click", () => {
+      if (isTransitioning) return;
+      showStudyView();
+    });
+
+    statsTab.addEventListener("click", () => {
+      if (isTransitioning) return;
+      showStatsView();
+    });
+
+    decksPageBtn.addEventListener("click", () => {
+      if (isTransitioning) return;
+      showDecksView();
+    });
+
+    dirFront.addEventListener(
+      "click",
+      () => changeDirection("front")
+    );
+    dirBack.addEventListener(
+      "click",
+      () => changeDirection("back")
+    );
+    dirBoth.addEventListener(
+      "click",
+      () => changeDirection("both")
+    );
+
+    answerSelf.addEventListener(
+      "click",
+      () => changeAnswerMode("self")
+    );
+    answerTyped.addEventListener(
+      "click",
+      () => changeAnswerMode("typed")
+    );
+
+    autocompleteBtn.addEventListener(
+      "click",
+      toggleAutocomplete
+    );
+    coldShuffleBtn.addEventListener(
+      "click",
+      toggleColdShuffle
+    );
+    deadlineInput.addEventListener(
+      "change",
+      changeDeadline
+    );
+
+    flashcard.addEventListener("click", () => {
+      if (
+        activeSettings().answerMode === "typed" &&
+        !session.typedSubmitted
+      ) {
+        answerInput.focus();
+        return;
+      }
+      flipCurrentCard();
+    });
+
+    wrongBtn.addEventListener(
+      "click",
+      () => gradeSelf(false)
+    );
+    rightBtn.addEventListener(
+      "click",
+      () => gradeSelf(true)
+    );
+
+    submitAnswerBtn.addEventListener(
+      "click",
+      () => submitTypedAnswer(false)
+    );
+
+    answerInput.addEventListener(
+      "input",
+      () => {
+        session.typedValue = answerInput.value;
+        updateSuggestions();
+      }
+    );
+
+    restartColdBtn.addEventListener(
+      "click",
+      () => {
+        clearSessionState();
+        startMode("cold");
+      }
+    );
+
+    startBtn.addEventListener(
+      "click",
+      commitNameFromOnboarding
+    );
+
+    nameInput.addEventListener(
+      "keydown",
+      event => {
+        if (event.key === "Enter") {
+          commitNameFromOnboarding();
+        }
+      }
+    );
+
+    backupBtn.addEventListener(
+      "click",
+      exportBackup
+    );
+
+    restoreBtn.addEventListener(
+      "click",
+      () => restoreFile.click()
+    );
+
+    restoreFile.addEventListener(
+      "change",
+      () => {
+        const file =
+          restoreFile.files?.[0];
+        if (file) restoreBackupFile(file);
+        restoreFile.value = "";
+      }
+    );
+
+    renameBtn.addEventListener("click", () => {
+      const proposed = prompt(
+        "Name for this memory profile:",
+        appState.userName || ""
+      );
+
+      if (proposed === null) return;
+      const cleaned = proposed.trim();
+      if (!cleaned) return;
+
+      appState.userName = cleaned;
+      persistState();
+      updateStats();
+      updateMemoryChip();
+    });
+
+    resetMemoryBtn.addEventListener("click", () => {
+      if (
+        !confirm(
+          "Reset ALL saved decks, mastery, statistics, deadlines, and test history?"
+        )
+      ) {
+        return;
+      }
+
+      if (
+        !confirm(
+          "This cannot be undone unless you made a backup. Really reset everything?"
+        )
+      ) {
+        return;
+      }
+
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (error) {}
+
+      appState = defaultAppState();
+      activeDeckId = BUILTIN_DECK_ID;
+      mode = "cram";
+      session = makeFreshSession(mode);
+      currentFact = null;
+      displayedFactId = null;
+
+      persistState({ includeSession: false });
+      showOnboardingIfNeeded();
+      startMode("cram");
+      updateStats();
+    });
+
+    // Save synchronously as the page is hidden/closed.
+    // Most changes are already saved immediately; this catches the exact
+    // current session position as an extra safeguard.
+    window.addEventListener("pagehide", () => {
+      persistState();
+    });
+
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+        if (document.visibilityState === "hidden") {
+          persistState();
+        }
+      }
+    );
+
+    document.addEventListener("keydown", event => {
+      const target = event.target;
+      const typingIntoField =
+        target === answerInput ||
+        target === nameInput ||
+        target === deadlineInput;
+
+      if (
+        onboardingOverlay.classList.contains("show") ||
+        deckManagerOverlay.classList.contains("show") ||
+        importPreviewOverlay.classList.contains("show")
+      ) {
+        return;
+      }
+
+      if (view !== "study") return;
+
+      if (isTransitioning) {
+        if (
+          event.code === "Space" ||
+          [
+            "ArrowUp",
+            "ArrowDown",
+            "ArrowLeft",
+            "ArrowRight",
+            "Enter"
+          ].includes(event.key)
+        ) {
+          event.preventDefault();
+        }
+        return;
+      }
+
+      if (typingIntoField) {
+        if (
+          target === answerInput &&
+          event.key === "Enter"
+        ) {
+          event.preventDefault();
+
+          if (session.typedSubmitted) {
+            continueAfterTyped();
+          } else if (
+            activeSettings().autocomplete &&
+            acceptFirstAutocompleteChoice()
+          ) {
+            // Enter accepts the first visible autocomplete choice.
+          } else {
+            submitTypedAnswer(false);
+          }
+        }
+        return;
+      }
+
+      if (event.code === "Space") {
+        event.preventDefault();
+
+        if (
+          summaryView.classList.contains("show")
+        ) {
+          restartColdBtn.click();
+        } else if (
+          activeSettings().answerMode === "typed"
+        ) {
+          if (session.typedSubmitted) {
+            continueAfterTyped();
+          } else {
+            answerInput.focus();
+          }
+        } else {
+          flipCurrentCard();
+        }
+        return;
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        restoreUndoPoint();
+        return;
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        skipCurrent();
+        return;
+      }
+
+      if (
+        activeSettings().answerMode === "typed" &&
+        session.typedSubmitted &&
+        event.key === "Enter"
+      ) {
+        event.preventDefault();
+        continueAfterTyped();
+        return;
+      }
+
+      if (activeSettings().answerMode === "self") {
+        if (
+          event.key === "x" ||
+          event.key === "X" ||
+          event.key === "ArrowLeft"
+        ) {
+          event.preventDefault();
+          gradeSelf(false);
+        } else if (
+          event.key === "Enter" ||
+          event.key === "ArrowRight"
+        ) {
+          event.preventDefault();
+          gradeSelf(true);
+        }
+      } else if (
+        activeSettings().answerMode === "typed" &&
+        !session.typedSubmitted &&
+        event.key.length === 1 &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey
+      ) {
+        answerInput.focus();
+      }
+    });
+
+    // ==========================================================
+    // STARTUP
+    // ==========================================================
+    ensureBuiltInDeck(appState);
+    for (const deck of Object.values(appState.decks)) {
+      ensureDeckMemory(deck);
+
+      if (!["cram", "memory", "cold"].includes(deck.settings.mode)) {
+        deck.settings.mode = "cram";
+      }
+      if (!["front", "back", "both"].includes(deck.settings.direction)) {
+        deck.settings.direction = "front";
+      }
+      if (!["self", "typed"].includes(deck.settings.answerMode)) {
+        deck.settings.answerMode = "self";
+      }
+    }
+
+    if (!appState.decks[activeDeckId]) {
+      activeDeckId = BUILTIN_DECK_ID;
+      appState.activeDeckId = BUILTIN_DECK_ID;
+    }
+
+    mode = activeDeck().settings.mode || "cram";
+
+    const resumed = restoreSessionForDeck(activeDeck());
+    if (!resumed) {
+      session = makeFreshSession(mode);
+
+      if (mode === "cold") {
+        buildColdOrder();
+        currentFact = session.cold.order[0]
+          ? getFactById(session.cold.order[0])
+          : null;
+      } else {
+        currentFact = weightedRandomFact(mode);
+      }
+
+      if (currentFact) recordServed(currentFact);
+    }
+
+    persistState();
+    updateControls();
+    renderCurrentFact({ forceImmediate: true });
+    showOnboardingIfNeeded();
+    updateStats();
+
+  </script>
+</body>
+</html>
