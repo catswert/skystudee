@@ -1,0 +1,51 @@
+name: Apply staged SkyStudee mobile build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.skystudee-update/mobile-*'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply build when all parts are present
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=$(find .skystudee-update -maxdepth 1 -type f -name 'mobile-*' | wc -l)
+          if [ "$count" -lt 6 ]; then
+            echo "Waiting for all 6 parts. Found $count."
+            exit 0
+          fi
+          cat .skystudee-update/mobile-01 \
+              .skystudee-update/mobile-02 \
+              .skystudee-update/mobile-03 \
+              .skystudee-update/mobile-04 \
+              .skystudee-update/mobile-05 \
+              .skystudee-update/mobile-06 \
+            | base64 -d | gzip -d > index.html
+          actual=$(git hash-object index.html)
+          expected=b2092ea7f9c053576c9ae6877027746fecab83d2
+          if [ "$actual" != "$expected" ]; then
+            echo "Hash mismatch: expected $expected, got $actual"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git rm .skystudee-update/mobile-01 \
+                 .skystudee-update/mobile-02 \
+                 .skystudee-update/mobile-03 \
+                 .skystudee-update/mobile-04 \
+                 .skystudee-update/mobile-05 \
+                 .skystudee-update/mobile-06
+          git commit -m "Add mobile-specific SkyStudee UI"
+          git push
