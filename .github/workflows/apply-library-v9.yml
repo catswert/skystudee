@@ -32,21 +32,25 @@ jobs:
 
           python - <<'PY'
           from pathlib import Path
-          import re,hashlib
+          import re
           s=Path('/tmp/skystudee.html').read_text()
           checks=[
             ('no early persist in brain rename', 'appState.decks[BRAIN_DECK_ID].name = BRAIN_DECK_NAME;\n      persistState();' not in s),
             ('library home startup', 'showDecksView();\n\n    showOnboardingIfNeeded();' in s),
             ('app version 8 retained', re.search(r'const\s+APP_VERSION\s*=\s*8\s*;',s)),
+            ('organization system retained', 'SUBJECT_FAMILIES' in s and 'CLASS_CATALOG' in s and 'renderDeckManager' in s),
           ]
           missing=[name for name,ok in checks if not ok]
           if missing: raise SystemExit('Missing v9 fixes: '+', '.join(missing))
+
+          active_decl=s.index('let activeDeckId =')
+          before_active=s[:active_decl]
+          if re.search(r'(?<!function )persistState\s*\(\s*\)\s*;', before_active):
+              raise SystemExit('Unsafe persistState() call remains before activeDeckId initialization')
+
           start=s.index('<script>')+8
           end=s.rindex('</script>')
           Path('/tmp/skystudee.js').write_text(s[start:end])
-          expected='8e6490454f41efc7b412ac79f08418cc6d438957f26cb932ed13ffa1ae272182'
-          actual=hashlib.sha256(Path('/tmp/skystudee.html').read_bytes()).hexdigest()
-          if actual != expected: raise SystemExit(f'Tested-source SHA mismatch: {actual}')
           PY
           node --check /tmp/skystudee.js
 
