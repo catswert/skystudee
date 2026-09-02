@@ -1,0 +1,110 @@
+name: Rename Biological Bases deck to Unit 1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.skystudee-update/run-rename-brain-unit1'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rename deck and rebuild deployed bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Update the source deck JSON kept in the repo.
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('decks/biological-bases-brain.studydeck.json')
+          d=json.loads(p.read_text())
+          assert d['deckId'] == 'ap_psych:biological_bases_brain'
+          old='AP Psychology — Biological Bases of Behavior: The Brain'
+          new='Unit 1 — AP Psychology — Biological Bases of Behavior: The Brain'
+          if d['name'] not in (old,new):
+              raise SystemExit(f'Unexpected deck name: {d["name"]}')
+          d['name']=new
+          p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+          PY
+
+          # Decode the currently deployed app bundle.
+          count=$(grep -o "Array.from({length:[0-9]*}" index.html | grep -o '[0-9]*' | head -1)
+          : "${count:?Could not determine build-part count}"
+          for i in $(seq -w 1 "$count"); do cat "assets/mobile-build-$i"; done | base64 -d | gzip -d > /tmp/skystudee.html
+
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('/tmp/skystudee.html').read_text()
+          old_name='AP Psychology — Biological Bases of Behavior: The Brain'
+          new_name='Unit 1 — AP Psychology — Biological Bases of Behavior: The Brain'
+
+          old_const=f'const BRAIN_DECK_NAME = "{old_name}";'
+          new_const=f'const BRAIN_DECK_NAME = "{new_name}";'
+          if old_const in s:
+              s=s.replace(old_const,new_const,1)
+          elif new_const not in s:
+              raise SystemExit('BRAIN_DECK_NAME constant not found')
+
+          marker='    seedBrainDeckOnce(appState);'
+          migration='''    seedBrainDeckOnce(appState);\n\n    // Keep the newly built-in Unit 1 deck name current while preserving its\n    // stable deck ID, mastery, history, and settings. Only migrate the old\n    // canonical name so a future user-defined name is not overwritten.\n    if (appState?.decks?.[BRAIN_DECK_ID]?.name === "AP Psychology — Biological Bases of Behavior: The Brain") {\n      appState.decks[BRAIN_DECK_ID].name = BRAIN_DECK_NAME;\n      persistState();\n    }'''
+          if 'Keep the newly built-in Unit 1 deck name current' not in s:
+              if marker not in s:
+                  raise SystemExit('Brain deck seed marker not found')
+              s=s.replace(marker,migration,1)
+
+          Path('/tmp/skystudee.html').write_text(s)
+          PY
+
+          # Syntax and content checks before deploying.
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('/tmp/skystudee.html').read_text()
+          assert 'const BRAIN_DECK_NAME = "Unit 1 — AP Psychology — Biological Bases of Behavior: The Brain";' in s
+          assert 'const PSYCH_DECK_NAME = "AP Psychology Unit 0 — Research Methods";' in s
+          assert 'appState.decks[BRAIN_DECK_ID].name = BRAIN_DECK_NAME;' in s
+          start=s.index('<script>')+8
+          end=s.rindex('</script>')
+          Path('/tmp/skystudee.js').write_text(s[start:end])
+          PY
+          node --check /tmp/skystudee.js
+
+          # Rebuild the split app bundle and cache-bump the loader.
+          python - <<'PY'
+          from pathlib import Path
+          import gzip, base64, re
+          html=Path('/tmp/skystudee.html').read_bytes()
+          encoded=base64.b64encode(gzip.compress(html,compresslevel=9,mtime=0)).decode()
+          parts=[encoded[i:i+9792] for i in range(0,len(encoded),9792)]
+          assets=Path('assets')
+          for old in assets.glob('mobile-build-*'):
+              old.unlink()
+          for i,part in enumerate(parts,1):
+              (assets/f'mobile-build-{i:02d}').write_text(part)
+          p=Path('index.html')
+          loader=p.read_text()
+          loader=re.sub(r"const version='[^']+';", "const version='brain-unit1-20260901';", loader)
+          loader=re.sub(r'Array\.from\(\{length:\d+\}', f'Array.from({{length:{len(parts)}}}', loader)
+          p.write_text(loader)
+          print(f'Wrote {len(parts)} build parts')
+          PY
+
+          # Clean one-time workflow/staging, including the abandoned inspector.
+          rm -f .skystudee-update/run-rename-brain-unit1
+          rm -f .skystudee-update/run-inspect-decks
+          rm -f .github/workflows/rename-brain-unit1.yml
+          rm -f .github/workflows/inspect-deck-names.yml
+          rm -f .skystudee-deck-names.txt
+          rmdir .skystudee-update 2>/dev/null || true
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Label Biological Bases deck as Unit 1"
+          git push
