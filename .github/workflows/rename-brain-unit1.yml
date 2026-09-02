@@ -42,20 +42,19 @@ jobs:
 
           python - <<'PY'
           from pathlib import Path
-          import re
+          import re,json
           s=Path('/tmp/skystudee.html').read_text()
           old_name='AP Psychology — Biological Bases of Behavior: The Brain'
           new_name='Unit 1 — AP Psychology — Biological Bases of Behavior: The Brain'
 
-          # Replace the BRAIN_DECK_NAME declaration regardless of whitespace or quote style.
           pat=r'const\s+BRAIN_DECK_NAME\s*=\s*(["\'])(.*?)\1\s*;'
           m=re.search(pat,s)
           if not m:
               raise SystemExit('BRAIN_DECK_NAME declaration not found')
-          current=m.group(2)
+          current=m.group(2).replace('\\u2014','—')
           if current not in (old_name,new_name):
               raise SystemExit(f'Unexpected BRAIN_DECK_NAME: {current}')
-          replacement='const BRAIN_DECK_NAME = '+repr(new_name)+';'
+          replacement='const BRAIN_DECK_NAME = '+json.dumps(new_name,ensure_ascii=True)+';'
           s=re.sub(pat,replacement,s,count=1)
 
           marker='seedBrainDeckOnce(appState);'
@@ -72,8 +71,14 @@ jobs:
           from pathlib import Path
           import re
           s=Path('/tmp/skystudee.html').read_text()
-          assert re.search(r'const\s+BRAIN_DECK_NAME\s*=\s*["\']Unit 1 — AP Psychology — Biological Bases of Behavior: The Brain["\']\s*;',s)
-          assert 'AP Psychology Unit 0 — Research Methods' in s
+
+          def js_name(var):
+              m=re.search(rf'const\s+{var}\s*=\s*(["\'])(.*?)\1\s*;',s)
+              assert m, var
+              return m.group(2).replace('\\u2014','—')
+
+          assert js_name('BRAIN_DECK_NAME') == 'Unit 1 — AP Psychology — Biological Bases of Behavior: The Brain'
+          assert js_name('PSYCH_DECK_NAME') == 'AP Psychology Unit 0 — Research Methods'
           assert 'appState.decks[BRAIN_DECK_ID].name = BRAIN_DECK_NAME;' in s
           start=s.index('<script>')+8
           end=s.rindex('</script>')
@@ -94,7 +99,7 @@ jobs:
               (assets/f'mobile-build-{i:02d}').write_text(part)
           p=Path('index.html')
           loader=p.read_text()
-          loader=re.sub(r"const version='[^']+';","const version='brain-unit1-20260901b';",loader)
+          loader=re.sub(r"const version='[^']+';","const version='brain-unit1-20260901c';",loader)
           loader=re.sub(r'Array\.from\(\{length:\d+\}',f'Array.from({{length:{len(parts)}}}',loader)
           p.write_text(loader)
           PY
