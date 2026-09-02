@@ -16,7 +16,7 @@ html,body{margin:0;min-height:100%;background:#090d13;color:#eef2f7;font-family:
 <script>
 (async()=>{
  try{
-  const version='later-undo-memory-20260822';
+  const version='brain-deck-20260901';
   const texts=await Promise.all(Array.from({length:7},async(_,i)=>{
    const part=String(i+1).padStart(2,'0');
    const r=await fetch(`assets/mobile-build-${part}?v=${version}`,{cache:'no-cache'});
