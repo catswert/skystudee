@@ -1,0 +1,66 @@
+name: Apply SkyStudee library v10
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.skystudee-update/run-library-v10'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply cleaner study controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=$(grep -o "Array.from({length:[0-9]*}" index.html | grep -o '[0-9]*' | head -1)
+          for n in $(seq 1 "$count"); do i=$(printf '%02d' "$n"); cat "assets/mobile-build-$i"; done | base64 -d | gzip -d > /tmp/skystudee-before.html
+          base64 -d .skystudee-update/library-v10.patch.gz.b64 | gzip -d > /tmp/library-v10.patch
+          cp /tmp/skystudee-before.html /tmp/skystudee.html
+          patch /tmp/skystudee.html < /tmp/library-v10.patch
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('/tmp/skystudee.html').read_text()
+          checks=[
+            ('secondary shortcut strip removed','class="nav-hints"' not in s),
+            ('space hint node removed','spaceHintText' not in s),
+            ('wrong hint arrow only','keyhint">←' in s and 'X / ←' not in s),
+            ('know hint arrow only','keyhint">→' in s and 'Enter / →' not in s),
+            ('x shortcut removed','event.key === "x"' not in s and 'event.key === "X"' not in s),
+            ('left/right grading retained','event.key === "ArrowLeft"' in s and 'event.key === "ArrowRight"' in s),
+          ]
+          missing=[name for name,ok in checks if not ok]
+          if missing: raise SystemExit('Missing v10 controls changes: '+', '.join(missing))
+          start=s.index('<script>')+8; end=s.rindex('</script>')
+          Path('/tmp/skystudee.js').write_text(s[start:end])
+          PY
+          node --check /tmp/skystudee.js
+          python - <<'PY'
+          from pathlib import Path
+          import gzip,base64,re
+          src=Path('/tmp/skystudee.html').read_bytes()
+          encoded=base64.b64encode(gzip.compress(src,compresslevel=9,mtime=0)).decode()
+          parts=[encoded[i:i+9792] for i in range(0,len(encoded),9792)]
+          assets=Path('assets')
+          for p in assets.glob('mobile-build-*'): p.unlink()
+          for i,part in enumerate(parts,1): (assets/f'mobile-build-{i:02d}').write_text(part)
+          rebuilt=''.join((assets/f'mobile-build-{i:02d}').read_text() for i in range(1,len(parts)+1))
+          assert gzip.decompress(base64.b64decode(rebuilt)) == src
+          p=Path('index.html'); loader=p.read_text()
+          loader=re.sub(r"const version='[^']+';","const version='library-v10-20260902';",loader)
+          loader=re.sub(r'Array\.from\(\{length:\d+\}',f'Array.from({{length:{len(parts)}}}',loader)
+          p.write_text(loader)
+          print(f'Built {len(parts)} parts')
+          PY
+          rm -f .skystudee-update/run-library-v10 .skystudee-update/library-v10.patch.gz.b64 .github/workflows/apply-library-v10.yml
+          rmdir .skystudee-update 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Clean up study controls and shortcuts"
+          git push
