@@ -55,7 +55,7 @@ jobs:
           if current not in (old_name,new_name):
               raise SystemExit(f'Unexpected BRAIN_DECK_NAME: {current}')
           replacement='const BRAIN_DECK_NAME = '+json.dumps(new_name,ensure_ascii=True)+';'
-          s=re.sub(pat,replacement,s,count=1)
+          s=re.sub(pat,lambda _m: replacement,s,count=1)
 
           marker='seedBrainDeckOnce(appState);'
           migration='''seedBrainDeckOnce(appState);\n\n    // Keep the Unit 1 deck label current while preserving its stable ID,\n    // mastery, history, and settings. Only migrate the old canonical name.\n    if (appState?.decks?.[BRAIN_DECK_ID]?.name === "AP Psychology — Biological Bases of Behavior: The Brain") {\n      appState.decks[BRAIN_DECK_ID].name = BRAIN_DECK_NAME;\n      persistState();\n    }'''
@@ -99,7 +99,7 @@ jobs:
               (assets/f'mobile-build-{i:02d}').write_text(part)
           p=Path('index.html')
           loader=p.read_text()
-          loader=re.sub(r"const version='[^']+';","const version='brain-unit1-20260901c';",loader)
+          loader=re.sub(r"const version='[^']+';","const version='brain-unit1-20260901d';",loader)
           loader=re.sub(r'Array\.from\(\{length:\d+\}',f'Array.from({{length:{len(parts)}}}',loader)
           p.write_text(loader)
           PY
