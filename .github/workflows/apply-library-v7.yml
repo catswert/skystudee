@@ -52,11 +52,11 @@ jobs:
           catalog_match=re.search(r'const\s+CLASS_CATALOG\s*=\s*\[(.*?)\];', s, re.S)
           if not catalog_match:
               raise SystemExit('Could not locate CLASS_CATALOG')
-          ap_count=len(re.findall(r'\bid\s*:\s*["\']ap_', catalog_match.group(1)))
+          ap_count=len(re.findall(r'["\']id["\']\s*:\s*["\']ap_', catalog_match.group(1)))
           if ap_count != 42:
               raise SystemExit(f'Expected 42 AP catalog classes, found {ap_count}')
 
-          if 'organizationUnitInput' not in s:
+          if 'importUnitInput' not in s:
               raise SystemExit('Import unit control missing')
 
           start=s.index('<script>')+8
