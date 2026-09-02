@@ -37,7 +37,10 @@ jobs:
           # Decode the currently deployed app bundle.
           count=$(grep -o "Array.from({length:[0-9]*}" index.html | grep -o '[0-9]*' | head -1)
           : "${count:?Could not determine build-part count}"
-          for i in $(seq -w 1 "$count"); do cat "assets/mobile-build-$i"; done | base64 -d | gzip -d > /tmp/skystudee.html
+          for n in $(seq 1 "$count"); do
+            i=$(printf '%02d' "$n")
+            cat "assets/mobile-build-$i"
+          done | base64 -d | gzip -d > /tmp/skystudee.html
 
           python - <<'PY'
           from pathlib import Path
