@@ -1,0 +1,131 @@
+name: Apply SkyStudee Firestore bootstrap v13
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.skystudee-update/run-firestore-bootstrap-v13'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply safe first cloud sync
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          count=$(grep -o "Array.from({length:[0-9]*}" index.html | grep -o '[0-9]*' | head -1)
+          : "${count:?Could not determine deployed build-part count}"
+
+          for n in $(seq 1 "$count"); do
+            i=$(printf '%02d' "$n")
+            cat "assets/mobile-build-$i"
+          done | base64 -d | gzip -d > /tmp/skystudee-before.html
+
+          base64 -d .skystudee-update/firebase-bootstrap-v13.patch.gz.b64 | gzip -d > /tmp/firebase-bootstrap-v13.patch
+          cp /tmp/skystudee-before.html /tmp/skystudee.html
+
+          patch --batch --fuzz=2 /tmp/skystudee.html < /tmp/firebase-bootstrap-v13.patch
+
+          if [ -f /tmp/skystudee.html.rej ]; then
+            echo "Unexpected rejected patch hunks:"
+            cat /tmp/skystudee.html.rej
+            exit 1
+          fi
+
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          s = Path('/tmp/skystudee.html').read_text()
+
+          checks = [
+              ('app schema remains v9', re.search(r'const\s+APP_VERSION\s*=\s*9\s*;', s)),
+              ('Firebase SDK version retained', 'const FIREBASE_SDK_VERSION = "12.18.0";' in s),
+              ('cloud schema marker', 'const CLOUD_SCHEMA_VERSION = 1;' in s),
+              ('Firestore module', 'firebase-firestore.js' in s),
+              ('cloud account UI', all(x in s for x in ['id="cloudPanel"', 'id="uploadCloudBtn"', 'id="loadCloudBtn"', 'id="retryCloudBtn"'])),
+              ('per-user root', 'firebaseFirestoreApi.doc(firebaseDb, "users", uid)' in s),
+              ('split core state', 'firebaseFirestoreApi.doc(firebaseDb, "users", uid, "state", "core")' in s),
+              ('split deck collection', 'firebaseFirestoreApi.collection(firebaseDb, "users", uid, "decks")' in s),
+              ('manual first upload', 'uploadCloudBtn.addEventListener("click", uploadLocalStateToCloud);' in s),
+              ('manual first load', 'loadCloudBtn.addEventListener("click", loadCloudStateOntoDevice);' in s),
+              ('recovery backup', 'PRE_CLOUD_RESTORE_KEY' in s and 'localStorage.setItem(PRE_CLOUD_RESTORE_KEY' in s),
+              ('deleted preload respected', 'localStorage.setItem(BRAIN_DECK_SEED_KEY, "1");' in s),
+              ('interrupted snapshot cleanup', 'await firebaseFirestoreApi.deleteDoc(docSnap.ref);' in s),
+              ('document size guard', 'cloudJsonBytes(deck) > 900000' in s),
+              ('completion marker', 'snapshotComplete: true' in s),
+              ('no realtime sync yet', 'onSnapshot(' not in s),
+          ]
+          missing = [name for name, ok in checks if not ok]
+          if missing:
+              raise SystemExit('Missing Firestore bootstrap requirements: ' + ', '.join(missing))
+
+          upload_start = s.index('    async function uploadLocalStateToCloud()')
+          load_start = s.index('    async function loadCloudStateOntoDevice()', upload_start)
+          upload = s[upload_start:load_start]
+          if upload.rfind('await firebaseFirestoreApi.setDoc(cloudUserRef(uid)') < upload.rfind('await firebaseFirestoreApi.setDoc(cloudCoreRef(uid)'):
+              raise SystemExit('Cloud completion marker must be written after core state')
+          if upload.rfind('await firebaseFirestoreApi.setDoc(cloudUserRef(uid)') < upload.rfind('await firebaseFirestoreApi.setDoc(ref'):
+              raise SystemExit('Cloud completion marker must be written after deck documents')
+
+          persist_start = s.index('    function persistState(')
+          persist_end = s.index('    // ==========================================================\n    // DECK / FACT HELPERS', persist_start)
+          persist_body = s[persist_start:persist_end]
+          if 'firebaseFirestoreApi' in persist_body or 'firebaseDb' in persist_body:
+              raise SystemExit('persistState must remain local-only during bootstrap step')
+
+          script_start = s.index('<script>') + len('<script>')
+          script_end = s.rindex('</script>')
+          Path('/tmp/skystudee.js').write_text(s[script_start:script_end])
+          print('Firestore bootstrap v13 assertions passed')
+          PY
+
+          node --check /tmp/skystudee.js
+
+          python - <<'PY'
+          from pathlib import Path
+          import gzip, base64, re
+
+          src = Path('/tmp/skystudee.html').read_bytes()
+          encoded = base64.b64encode(gzip.compress(src, compresslevel=9, mtime=0)).decode()
+          parts = [encoded[i:i+9792] for i in range(0, len(encoded), 9792)]
+
+          if len(parts) != 10:
+              raise SystemExit(f'Expected 10 build parts, got {len(parts)}')
+
+          assets = Path('assets')
+          for p in assets.glob('mobile-build-*'):
+              p.unlink()
+          for i, part in enumerate(parts, 1):
+              (assets / f'mobile-build-{i:02d}').write_text(part)
+
+          rebuilt = ''.join((assets / f'mobile-build-{i:02d}').read_text() for i in range(1, len(parts)+1))
+          if gzip.decompress(base64.b64decode(rebuilt)) != src:
+              raise SystemExit('Rebuilt bundle did not reconstruct exactly')
+
+          p = Path('index.html')
+          loader = p.read_text()
+          loader = re.sub(r"const version='[^']+';", "const version='firebase-bootstrap-v13-20260904';", loader)
+          loader = re.sub(r'Array\.from\(\{length:\d+\}', f'Array.from({{length:{len(parts)}}}', loader)
+          loader = loader.replace("{cache:'no-cache'}", "{cache:'no-store'}")
+          p.write_text(loader)
+          print(f'Firestore bootstrap bundle rebuilt as {len(parts)} parts')
+          PY
+
+          rm -f .skystudee-update/run-firestore-bootstrap-v13
+          rm -f .skystudee-update/firebase-bootstrap-v13.patch.gz.b64
+          rm -f .github/workflows/apply-firestore-bootstrap-v13.yml
+          rmdir .skystudee-update 2>/dev/null || true
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add safe Firestore first cloud sync"
+          git push
