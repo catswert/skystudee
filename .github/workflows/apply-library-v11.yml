@@ -48,10 +48,10 @@ jobs:
                   raise SystemExit('Unexpected patch rejection:\n'+r)
               addition='      target.studySet = normalizeStudySetState(target.studySet, target);'
               if addition not in s:
-                  pat=r'(seedPsychologyDeckForUpgrade\\(target, saved\\.version\\);\\s+ensureOrganizationState\\(target\\);)'
-                  s,n=re.subn(pat, lambda m: m.group(1)+'\\n'+addition, s, count=1)
-                  if n != 1:
+                  marker='      if (!target.decks[target.activeDeckId]) {'
+                  if marker not in s:
                       raise SystemExit('Could not place studySet merge normalization')
+                  s=s.replace(marker, addition+'\\n\\n'+marker, 1)
                   Path('/tmp/skystudee.html').write_text(s)
 
           s=Path('/tmp/skystudee.html').read_text()
