@@ -51,7 +51,7 @@ jobs:
                   marker='      if (!target.decks[target.activeDeckId]) {'
                   if marker not in s:
                       raise SystemExit('Could not place studySet merge normalization')
-                  s=s.replace(marker, addition+'\\n\\n'+marker, 1)
+                  s=s.replace(marker, addition+'\n\n'+marker, 1)
                   Path('/tmp/skystudee.html').write_text(s)
 
           s=Path('/tmp/skystudee.html').read_text()
