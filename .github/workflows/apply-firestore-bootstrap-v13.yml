@@ -25,7 +25,7 @@ jobs:
           import base64, gzip, re
 
           loader = Path('index.html').read_text()
-          match = re.search(r'Array\.from\(\{length:(\d+)\}', loader)
+          match = re.search(r'Array\\.from\\(\\{length:(\\d+)\\}', loader)
           if not match:
               raise SystemExit('Could not determine deployed build-part count')
           count = int(match.group(1))
@@ -33,34 +33,23 @@ jobs:
           texts = []
           for n in range(1, count + 1):
               path = Path('assets') / f'mobile-build-{n:02d}'
-              text = path.read_text().strip()
-              texts.append(text)
-              print(f'{path}: {len(text)} chars')
+              texts.append(path.read_text().strip())
 
-          joined = ''.join(texts)
-          print(f'joined base64: {len(joined)} chars')
-          raw = base64.b64decode(joined, validate=True)
-          print(f'gzip payload: {len(raw)} bytes; header={raw[:4].hex()} footer={raw[-8:].hex()}')
-          source = gzip.decompress(raw)
+          source = gzip.decompress(base64.b64decode(''.join(texts), validate=True))
           Path('/tmp/skystudee-before.html').write_bytes(source)
           print(f'deployed source: {len(source)} bytes')
-
-          patch_text = Path('.skystudee-update/firebase-bootstrap-v13-patch-01').read_text().strip()
-          patch_raw = base64.b64decode(patch_text, validate=True)
-          patch_source = gzip.decompress(patch_raw)
-          Path('/tmp/firebase-bootstrap-v13.patch').write_bytes(patch_source)
-          print(f'patch: {len(patch_source)} bytes')
           PY
 
           cp /tmp/skystudee-before.html /tmp/skystudee.html
-          patch --batch --fuzz=2 /tmp/skystudee.html < /tmp/firebase-bootstrap-v13.patch
-
-          if [ -f /tmp/skystudee.html.rej ]; then
-            echo "Unexpected rejected patch hunks:"
-            cat /tmp/skystudee.html.rej
+          set +e
+          git merge-file /tmp/skystudee.html .skystudee-update/base-v12.html .skystudee-update/target-v13.html
+          merge_status=$?
+          set -e
+          if [ "$merge_status" -ne 0 ]; then
+            echo "Three-way merge failed or produced conflicts:"
+            grep -n -C 3 '<<<<<<<\\|=======\\|>>>>>>>' /tmp/skystudee.html || true
             exit 1
           fi
-
           python - <<'PY'
           from pathlib import Path
           import re
@@ -146,6 +135,8 @@ jobs:
           rm -f .skystudee-update/firebase-bootstrap-v13.patch.gz.b64
           rm -f .skystudee-update/firebase-bootstrap-v13-patch-01
           rm -f .skystudee-update/firebase-bootstrap-v13-patch-02
+          rm -f .skystudee-update/base-v12.html
+          rm -f .skystudee-update/target-v13.html
           rm -f .github/workflows/apply-firestore-bootstrap-v13.yml
           rmdir .skystudee-update 2>/dev/null || true
 
