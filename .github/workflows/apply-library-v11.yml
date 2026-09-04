@@ -46,10 +46,7 @@ jobs:
               r=rej.read_text()
               if r.count('@@') != 1 or 'target.studySet = normalizeStudySetState(target.studySet, target);' not in r:
                   raise SystemExit('Unexpected patch rejection:\n'+r)
-              needle='''      ensureBuiltInDeck(target);
-      seedPsychologyDeckForUpgrade(target, saved.version);
-      ensureOrganizationState(target);
-'''
+              needle='      ensureBuiltInDeck(target);\\n      seedPsychologyDeckForUpgrade(target, saved.version);\\n      ensureOrganizationState(target);\\n'
               addition='      target.studySet = normalizeStudySetState(target.studySet, target);\n'
               if addition not in s:
                   if needle not in s:
