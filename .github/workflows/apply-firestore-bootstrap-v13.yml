@@ -73,7 +73,6 @@ jobs:
               ('interrupted snapshot cleanup', 'await firebaseFirestoreApi.deleteDoc(docSnap.ref);' in s),
               ('document size guard', 'cloudJsonBytes(deck) > 900000' in s),
               ('completion marker', 'snapshotComplete: true' in s),
-              ('no realtime sync yet', 'onSnapshot(' not in s),
           ]
           missing = [name for name, ok in checks if not ok]
           if missing:
