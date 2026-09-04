@@ -45,9 +45,14 @@ jobs:
           Path('/tmp/skystudee-before.html').write_bytes(source)
           print(f'deployed source: {len(source)} bytes')
 
-          patch_text = Path('.skystudee-update/firebase-bootstrap-v13.patch.gz.b64').read_text().strip()
+          patch_text = (Path('.skystudee-update/firebase-bootstrap-v13-patch-01').read_text().strip() + Path('.skystudee-update/firebase-bootstrap-v13-patch-02').read_text().strip())
+          import hashlib
+          if hashlib.sha256(patch_text.encode()).hexdigest() != '7bd231c77f4e4c3b56748a43d59cdd310f60cdb446aed69ea2f2ab8cdb8d6aa5':
+              raise SystemExit('Staged Firestore patch base64 checksum mismatch')
           patch_raw = base64.b64decode(patch_text, validate=True)
           patch_source = gzip.decompress(patch_raw)
+          if hashlib.sha256(patch_source).hexdigest() != '7f7daf75d8e4a74a2b94f0adb2fdbde5f41f81b37eb859e267eea1647818df3c':
+              raise SystemExit('Staged Firestore patch checksum mismatch')
           Path('/tmp/firebase-bootstrap-v13.patch').write_bytes(patch_source)
           print(f'patch: {len(patch_source)} bytes')
           PY
@@ -144,6 +149,8 @@ jobs:
 
           rm -f .skystudee-update/run-firestore-bootstrap-v13
           rm -f .skystudee-update/firebase-bootstrap-v13.patch.gz.b64
+          rm -f .skystudee-update/firebase-bootstrap-v13-patch-01
+          rm -f .skystudee-update/firebase-bootstrap-v13-patch-02
           rm -f .github/workflows/apply-firestore-bootstrap-v13.yml
           rmdir .skystudee-update 2>/dev/null || true
 
