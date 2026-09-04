@@ -1,0 +1,105 @@
+name: Apply SkyStudee Firebase auth v12
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.skystudee-update/run-firebase-auth-v12'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply Firebase Authentication step 1
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          count=$(grep -o "Array.from({length:[0-9]*}" index.html | grep -o '[0-9]*' | head -1)
+          : "${count:?Could not determine deployed build-part count}"
+          for n in $(seq 1 "$count"); do
+            i=$(printf '%02d' "$n")
+            cat "assets/mobile-build-$i"
+          done | base64 -d | gzip -d > /tmp/skystudee-before.html
+
+          base64 -d .skystudee-update/firebase-auth-v12.patch.gz.b64 | gzip -d > /tmp/firebase-auth-v12.patch
+          cp /tmp/skystudee-before.html /tmp/skystudee.html
+          patch --fuzz=0 /tmp/skystudee.html < /tmp/firebase-auth-v12.patch
+
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          s = Path('/tmp/skystudee.html').read_text()
+          checks = [
+              ('storage schema remains v9', re.search(r'const\s+APP_VERSION\s*=\s*9\s*;', s)),
+              ('Firebase app config', 'projectId: "skystudee"' in s and 'authDomain: "skystudee.firebaseapp.com"' in s),
+              ('Firebase 12.18.0', 'const FIREBASE_SDK_VERSION = "12.18.0";' in s),
+              ('Firebase app module', 'firebase-app.js' in s),
+              ('Firebase auth module', 'firebase-auth.js' in s),
+              ('Google popup sign in', 'signInWithPopup(firebaseAuth, provider)' in s),
+              ('persistent auth', 'browserLocalPersistence' in s),
+              ('auth state observer', 'onAuthStateChanged(firebaseAuth' in s),
+              ('account UI', 'id="accountBtn"' in s and 'id="accountOverlay"' in s),
+              ('mobile account UI', '.topbar-right .memory-chip { display: none; }' in s),
+              ('auth does not block startup', 'initFirebaseAuth();' in s),
+              ('no Firestore SDK in auth-only step', 'firebase-firestore.js' not in s),
+              ('no Firestore client calls', 'getFirestore(' not in s and 'setDoc(' not in s and 'getDoc(' not in s),
+          ]
+          missing = [name for name, ok in checks if not ok]
+          if missing:
+              raise SystemExit('Missing Firebase auth v12 requirements: ' + ', '.join(missing))
+
+          start = s.index('<script>') + len('<script>')
+          end = s.rindex('</script>')
+          Path('/tmp/skystudee.js').write_text(s[start:end])
+          print('Firebase auth v12 assertions passed')
+          PY
+
+          node --check /tmp/skystudee.js
+
+          python - <<'PY'
+          from pathlib import Path
+          import gzip, base64, re
+
+          src = Path('/tmp/skystudee.html').read_bytes()
+          encoded = base64.b64encode(gzip.compress(src, compresslevel=9, mtime=0)).decode()
+          parts = [encoded[i:i+9792] for i in range(0, len(encoded), 9792)]
+          if len(parts) != 10:
+              raise SystemExit(f'Expected 10 build parts after Firebase Auth, got {len(parts)}')
+
+          assets = Path('assets')
+          for p in assets.glob('mobile-build-*'):
+              p.unlink()
+          for i, part in enumerate(parts, 1):
+              (assets / f'mobile-build-{i:02d}').write_text(part)
+
+          rebuilt = ''.join((assets / f'mobile-build-{i:02d}').read_text() for i in range(1, len(parts)+1))
+          if gzip.decompress(base64.b64decode(rebuilt)) != src:
+              raise SystemExit('Bundle reconstruction mismatch')
+
+          p = Path('index.html')
+          loader = p.read_text()
+          loader = re.sub(r"const version='[^']+';", "const version='firebase-auth-v12-20260903';", loader)
+          loader = re.sub(r'Array\.from\(\{length:\d+\}', f'Array.from({{length:{len(parts)}}}', loader)
+          if "{cache:'no-store'}" not in loader:
+              loader = loader.replace("{cache:'no-cache'}", "{cache:'no-store'}")
+          p.write_text(loader)
+          print(f'Firebase auth bundle rebuilt as {len(parts)} parts')
+          PY
+
+          rm -f .skystudee-update/run-firebase-auth-v12
+          rm -f .skystudee-update/firebase-auth-v12.patch.gz.b64
+          rm -f .github/workflows/apply-firebase-auth-v12.yml
+          rmdir .skystudee-update 2>/dev/null || true
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add Firebase Google authentication"
+          git push
