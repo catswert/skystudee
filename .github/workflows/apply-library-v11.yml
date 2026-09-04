@@ -44,7 +44,7 @@ jobs:
           rej=Path('/tmp/skystudee.html.rej')
           if rej.exists():
               r=rej.read_text()
-              if r.count('@@') != 1 or 'target.studySet = normalizeStudySetState(target.studySet, target);' not in r:
+              if r.count('@@ -') != 1 or 'target.studySet = normalizeStudySetState(target.studySet, target);' not in r:
                   raise SystemExit('Unexpected patch rejection:\n'+r)
               needle='      ensureBuiltInDeck(target);\\n      seedPsychologyDeckForUpgrade(target, saved.version);\\n      ensureOrganizationState(target);\\n'
               addition='      target.studySet = normalizeStudySetState(target.studySet, target);\n'
