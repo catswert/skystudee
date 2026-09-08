@@ -1,0 +1,2 @@
+# Development browser tests only; the app does not depend on Python.
+playwright==1.55.0

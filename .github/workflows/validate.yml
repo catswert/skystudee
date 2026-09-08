@@ -1,0 +1,34 @@
+# Read-only validation. Build locally, commit source AND generated files together.
+# Browser tests block real Firebase calls and use synthetic data only.
+name: Validate SkyStudee source and build
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: python tools/build.py --check
+      - run: npm run check
+      - run: python -m unittest discover -s tests -p 'test_*.py'
+      - run: python -m pip install -r tests/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python tests/browser_smoke.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: synthetic-browser-test-results
+          path: test-results/
+          retention-days: 7
