@@ -1,0 +1,11 @@
+{
+  "name": "skystudee-maintenance",
+  "private": true,
+  "description": "Development checks only; production still uses a static single-document app.",
+  "scripts": {
+    "check": "node tests/source_contracts.cjs"
+  },
+  "devDependencies": {
+    "acorn": "8.15.0"
+  }
+}

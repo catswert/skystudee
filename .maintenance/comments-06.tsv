@@ -1,0 +1,23 @@
+cloudDeckDocId|Encode stable deck IDs as UTF-8 base64url document IDs with a d_ prefix. Colons/unicode in local IDs must not change the original deck.id inside the stored payload.
+cloudUserRef|Return the signed-in user's /users/{uid} snapshot manifest reference. Access must be authorized by deployed rules; path construction alone is not security.
+cloudCoreRef|Return /users/{uid}/state/core for non-deck profile, class/unit, and study-set state.
+cloudDecksRef|Return /users/{uid}/decks, one document per full real-deck snapshot. This is private account data, never a public catalog/Shop path.
+plainJson|Clone/strip to JSON-supported data for snapshot transport. Do not use for live runtime Sets or as a privacy scrubber: all serializable fields survive.
+cloudJsonBytes|Measure UTF-8 JSON length for the 900,000-byte preflight limit. It estimates payload size, not Firestore's exact serialized document accounting.
+cloudCoreFromLocalState|Copy current appState without its decks map for the core cloud document. Core still contains organization and study-set resume metadata and is private.
+cloudTimeLabel|Format either a Firestore Timestamp-like value or date string for account UI, returning empty text for invalid input.
+renderFirebaseCloudStatus|Map idle/checking/empty/ready/incomplete/error to explicit upload/load/retry controls. Ready means a completed SNAPSHOT exists, not continuous synchronization.
+renderFirebaseAccount|Render identity, auth/busy state and manual cloud controls without touching learning data. Signing out does not erase the local profile.
+friendlyFirebaseAuthError|Translate known popup/domain/network failures into user-facing diagnostics; leave other messages readable without exposing credentials.
+friendlyFirestoreError|Translate permission/network failures for the account panel. A permission-denied diagnosis must check deployed user-scoped rules, not relax database access globally.
+refreshFirebaseCloudStatus|Read only the user's root manifest and classify snapshot availability; discard stale responses after UID changes. No deck transfer occurs here, and it does not verify every deck/core document.
+uploadLocalStateToCloud|Explicit FIRST snapshot upload, allowed only for empty/incomplete status after confirmation and size checks. Deletes prior bootstrap deck docs, writes each deck then core, and writes snapshotComplete last. Sequential writes are NOT a transaction, concurrency-safe sync, or protection against every competing client.
+loadCloudStateOntoDevice|Explicitly replace this device from a ready cloud snapshot after structural checks. Save the old appState to PRE_CLOUD_RESTORE_KEY before replacing STORAGE_KEY, mark Brain seeding handled, then reload. Does not merge competing histories or automatically download on sign-in.
+initFirebaseAuth|Dynamically import the pinned Firebase SDK after local startup. Auth remains usable if Firestore import fails; local studying remains usable if both fail. Registers auth-state checks but no onSnapshot, auto-upload hook or persistent Firestore offline cache.
+signInWithGoogle|Use a user-triggered Google popup after SDK readiness, handle cancellation/blocking, and update account feedback. Never infer silent access to a browser's Google account or request unrelated Google scopes.
+signOutGoogle|Sign out Firebase identity unless auth/cloud work is busy, then close the account panel. Leaves local decks/evidence intact; account-isolated local caches are not implemented.
+openFirebaseAccount|Show the signed-in account dialog and update aria-hidden. This action only displays state; it does not transfer a snapshot.
+closeFirebaseAccount|Dismiss the account dialog only when cloud work is not busy, keeping aria-hidden consistent.
+handleFirebaseAccountButton|Open the account panel for an existing Firebase user; otherwise start explicit Google popup sign-in.
+showOnboardingIfNeeded|Request a local profile name only when missing. This is a local memory-presence signal, not Google authentication or proof of cloud synchronization.
+commitNameFromOnboarding|Validate/save the local userName, hide onboarding and refresh profile UI. Do not confuse this editable label with a Firebase UID or authorization identity.

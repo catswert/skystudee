@@ -1,0 +1,40 @@
+continueAfterTyped|Advance only after a typed answer was submitted and the short guard has ended. Do not record a second grade when Enter/Space continues.
+skipCurrent|Snapshot undo and defer without grading: move a Cold queue item to its end or temporarily skip an adaptive fact. Submitted typed answers cannot be skipped retroactively.
+answerVocabularyForFact|Get unique possible answers from the current fact's source deck and direction only. Combined sessions should not pollute suggestions with unrelated source decks.
+prepareSuggestionOrder|Shuffle the current source vocabulary once for this card. Filtering keystrokes must retain that order rather than reshuffling or ranking likely answers.
+autocompleteMatches|Return up to ten normalized prefix matches in the pre-shuffled order; return none when disabled, blank, or already submitted.
+acceptFirstAutocompleteChoice|Replace partial input with the first displayed match and submit with assistance metadata. Returns whether a match existed; Enter uses the same order as the visible list.
+updateSuggestions|Render matches with textContent and bind each choice to assisted submission. Never interpolate imported answer text as HTML.
+resetTypedCardState|Clear per-card submission/value/assistance flags and rebuild the randomized vocabulary order for the next fact.
+resetTypedUIForCurrentState|Render typed controls, feedback and suggestions from session, or restore self-grade controls. Schedules focus for unanswered typed recall; keep this separate from persistent grading.
+isPhoneUI|Use the existing viewport-and-screen width rule (both <=960) to choose phone behavior. This is not a reliable device/OS identity test; keep CSS breakpoints and resize behavior aligned.
+updateResponsiveCopy|Set touch vs desktop reveal wording. resetTypedUIForCurrentState can overwrite hints later, and mobile CSS also supplies the visible tap hint.
+updateDeckSelector|Rebuild real-deck choices and a synthetic SELECT option for an active study set. The option is a navigation marker, not a new deck record.
+updateTabs|Reflect view/mode into body data attributes and active navigation classes. Persisted mode codes and UI tab labels are separate concerns.
+updateControls|Render settings, goal visibility, deck selector, hints and current status from activeSettings. In sets hide single-deck goal/deadline editing; source deadlines still affect scheduling.
+updateCardMeta|Render counters and current fact owner's mastery/base priority, without confusing the anchor deck for the fact owner. Priority shown excludes temporary scheduling gates.
+updateGoalCard|Show the informational Memory goal only for a single-deck Study view. Hide it for study sets instead of calculating a misleading synthetic-deck goal.
+updateMemoryChip|Report local profile/storage save status and show the storage warning. This indicator is NOT cloud sync status and must not be used as proof of a Firestore upload.
+showStatsView|Close mobile options, switch view visibility, and render statistics. Session counters may cover a set while lifetime/knowledge panels are per anchor deck.
+showStudyView|Reveal the existing study context without rebuilding its history, render it, and focus unanswered typed input. Library-first startup calls this only on a later user navigation/selection.
+showDecksView|Close mobile options and render the Library hierarchy. Do not start or replace a study session just to browse organization.
+maybeConfirmLeavingCold|Ask before abandoning a started but incomplete Cold Test; return false when cancelled. Every new mode/deck/set transition should respect this guard.
+changeMode|Switch mode through the Cold-leave guard and start a new session in the current deck/set context. A same-mode Study click can be a no-op.
+switchDeck|Select a real deck, leave set context when necessary, and enter Memory rather than restoring old Cram/Cold mode. May resume an eligible Memory snapshot; selecting the active deck also respects this entry policy.
+changeDirection|Change eligible facts and restart session after confirming an in-progress Cold Test. Direction settings do not rename/migrate persistent front/back evidence records.
+changeAnswerMode|Switch self/typed controls and reset typing state, restarting Cold Test when needed. Preserve source deck mastery and the selected pool.
+toggleAutocomplete|Toggle assistance for typed recall and refresh state, with the existing Cold Test restart guard. Changing assistance can change future evidence weight.
+toggleColdShuffle|Toggle Cold order randomization, rebuild a Cold session when applicable, and persist. Does not reorder the user's Library/decks.
+changeDeadline|Save only a real deck's deadline and refresh its Memory goal/scheduler display. Study sets cannot overwrite every source deadline through this control.
+updateStats|Render knowledge/lifetime/daily/history panels for activeDeck and session counters for the current runtime. Uses per-deck eligible facts; it is not a global multi-deck analytics dashboard.
+copyTextRobustly|Use Clipboard API when available in a secure context, otherwise a textarea/execCommand fallback. A rejected Clipboard API write propagates without trying the fallback; no cloud operation is involved.
+copyAiDeckCreationPrompt|Copy the fixed deck-authoring prompt and temporarily change button feedback. Keep its exact import contract synchronized with parseDeckFile/normalizeImportedDeck.
+exportDeck|Export strict StudyCardsDeck version 1 educational content and organization labels, not private mastery/history. Stable deck/card IDs enable future updates; this export alone does not seed a built-in deck.
+exportBackup|Export a StudyCardsMultiDeckBackup envelope containing the entire local appState after saving. This is private user data, never a public Shop/catalog artifact.
+downloadJson|Serialize a JSON payload to a browser Blob and trigger a filename download, then release its object URL.
+parseDelimited|Parse quoted delimited records, including escaped quotes/newlines, without an external CSV library. Does not decide whether a row is a valid flashcard.
+parseDeckFile|Dispatch native/compatible JSON, CSV, or TSV into normalizeImportedDeck. Other extensions are rejected; JSON must provide an array of cards, not a memory-backup envelope. This parser is the actual accepted format contract.
+normalizeImportedDeck|Validate front/back pairs, preserve/sanitize IDs, and skip duplicate IDs or normalized pairs while counting rejections. This only produces a preview payload; class/unit resolution and persistence happen on confirmation.
+fillFamilySelect|Populate family choices for organization dialogs, optionally including an All entry. This complete catalog differs from the used-only Library filter.
+usedClassIds|Collect nonempty class pointers from actual decks. Empty class records can exist but are intentionally absent from the main Library groups/filters.
+classSort|Sort classes by stored numeric order, with name as tie-breaker. Renaming should not replace the stored order field.

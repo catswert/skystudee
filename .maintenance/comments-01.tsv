@@ -1,0 +1,40 @@
+seedBrainDeckOnce|Seed the Brain deck once per browser using BRAIN_DECK_SEED_KEY, preserving an existing deck. Mutates target and attempts direct localStorage writes; callable during early startup before session/DOM initialization. Cloud restore sets this flag so deliberately removed content stays removed.
+normalizeLibraryText|Normalize class/unit matching text by case, accents and punctuation. This is NOT typed-answer normalization; changing it can affect duplicate-unit detection and class suggestions.
+catalogMatchScore|Score catalog labels/aliases against normalized sample text; higher is a better heuristic match, not a calibrated probability. No state is changed.
+suggestCatalogClass|Suggest a catalog record from the deck name plus the first 28 front/back pairs. Returns null below the acceptance threshold; unit assignment must still come from the user.
+familyName|Look up the display label for a family ID, falling back to Other for an unknown ID.
+libraryId|Create a namespaced class/unit ID from a readable slug plus a short random suffix. It is an identity token, not an authorization credential; do not regenerate it on rename.
+makeClassRecord|Normalize a user's class record without replacing its stable ID. Valid explicit familyId overrides the catalog's default; preserve that user choice during migrations.
+makeUnitRecord|Normalize one unit with its owning classId and explicit order. Unit labels are user-defined strings, including Unit 0; they are not globally numbered.
+nextOrder|Return one greater than the maximum existing numeric order, or zero for an empty group. Callers must pass only the relevant peer group when appending.
+findClassByCatalog|Find the first user-owned class associated with a catalog ID, or null. The catalog definition and the user's class instance are different records.
+findOrCreateCatalogClass|Reuse a catalog-linked class or add a new class instance to target.classes. Returns null for an unknown catalog ID; does not persist by itself.
+findOrCreateUnit|Reuse a normalized same-name unit within this class or append a new stable unit record. Blank input is rejected; do not call with an inferred unit on new imports.
+ensureOrganizationState|Repair class/unit pointers and normalize ordering in place. seedBundled and suggestUnclassified are opt-in migration flags, NOT recurring rules: ordinary saves must not recreate classes or units a user deleted/moved.
+defaultFactMemory|Create fresh directional evidence: alpha=beta=2, direct/assisted counters zero, and no review timestamp. The resulting 50% prior is not evidence that an untested fact is known.
+defaultDeckSettings|Provide single-deck defaults. Stored/new defaults use Cram, whereas choosing a deck through switchDeck explicitly enters Memory; these are distinct behaviors.
+defaultStudySetState|Create selection/settings/resume metadata only. A study set must never own cards, fact mastery, or another persistent copy of a real deck.
+normalizeStudySetState|Deduplicate and validate referenced deck IDs and settings against a supplied state. Supply target during load/migration to avoid touching appState before its initialization; study-set deadline remains empty.
+createDeckRecord|Construct an independent real deck, its settings/statistics containers, and memory for both card directions. Callers own organization resolution and persistence; new deck IDs imply separate learning histories.
+defaultAppState|Create a fresh local profile with German and Research Methods, plus explicit initial organization. Brain seeding is separate; do not use this as a substitute for a recoverable user's saved state.
+normalizeStoredCards|Normalize stored card text/IDs, omit empty pairs and suffix duplicate IDs. This repair path differs from import deduplication, which skips duplicate IDs/pairs; identity changes affect learning-state lookup.
+normalizeDeckRecord|Normalize the known deck fields and fill missing defaults without discarding old fact evidence. Unknown fields are not copied, so new persisted features must be added here as well as to creation/export/restore paths.
+ensureBuiltInDeck|Keep German available as the fallback deck and refresh its card content from BUILTIN_CARDS. Retain stable IDs and old fact memory; the user can reorganize it but cannot overwrite/delete it through normal deck actions.
+seedPsychologyDeckForUpgrade|Add Research Methods only to pre-v6 saves that lack it. Later saves without that deck represent a user deletion and must not silently re-seed it.
+mergeAppState|Normalize a saved profile into the current schema and run version-gated migrations. Despite its name this is a ONE-snapshot normalizer, not a multi-device or additive evidence merge algorithm.
+migrateOldSingleDeckState|Map legacy v4 profile/settings/evidence to the German deck inside the multi-deck state. Preserve old evidence counters; leave the old storage key untouched as a recovery source.
+loadAppState|Probe localStorage and read/normalize the current key, otherwise migrate the older single-deck key. On read/parse/storage failure it returns defaults and marks storage unavailable; never recommend clearing site data as a first diagnostic.
+ensureDeckMemory|Fill missing per-direction records/default fields for every present card. Old facts for removed cards remain stored so re-importing stable IDs can recover their history.
+activeDeck|Return the selected real deck, with German as fallback. In a study set this is only an anchor/UI context, NOT necessarily the owner of currentFact.
+activeSettings|Return study-set settings while a set is active, otherwise the selected real deck's settings. Avoid writing global/set controls into every source deck.
+persistState|Save locally: optionally snapshot the session, normalize references, ensure memory, timestamp, and write STORAGE_KEY. Requires initialized runtime/DOM; never call from the early rename migration. Returns false on storage failure and performs NO Firestore synchronization.
+factsForDeck|Expand each real card into two directional fact views carrying deckId. Prompt/answer depend on direction; persistent fact.id stays cardId|front or cardId|back within its owning deck.
+factKey|Return deckId::factId for pooled sessions, queues, runtime weights and display identity. Persistent evidence is still indexed by fact.id inside that deck, not by this combined key.
+pairKey|Return deckId::cardId to apply cooldown/no-repeat across both directions of one real card without colliding with same-named cards from another deck.
+deckForFact|Resolve a fact's real owner from deckId, falling back to activeDeck for legacy/missing context. New grading paths must carry a valid deckId rather than relying on that fallback.
+studyDecks|Resolve the selected real deck pool, discarding missing set references and falling back to activeDeck if empty. Does not create or merge deck records.
+activeFacts|Flatten both-direction views from all real decks in the active study context. Use getEligibleFacts when the configured direction should filter that list.
+activeFactMap|Build a lookup of namespaced fact keys across the active pool. Recomputed from current state so import/move operations must invalidate stale session assumptions.
+getFactByKey|Look up a deck-qualified session fact in the active pool; return null for missing/stale keys.
+getFactById|Look up an unqualified directional fact ID inside an explicitly chosen real deck. Pass deckId for cross-deck use; otherwise this intentionally uses activeDeckId.
+getEligibleFactsForDeck|Filter one real deck's facts to a direction. Statistics and per-deck histories use this instead of accidentally including the whole study set.
