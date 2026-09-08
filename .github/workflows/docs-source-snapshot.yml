@@ -1,0 +1,34 @@
+# Documentation audit only: read the existing build; never touch user data or main.
+name: Documentation source snapshot
+on:
+  push:
+    branches: [docs/agent-maintenance-guide]
+    paths: [.github/workflows/docs-source-snapshot.yml]
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract the exact deployed HTML for review
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64, gzip, hashlib, re, shutil
+          out=Path('/tmp/skystudee-snapshot'); out.mkdir()
+          loader=Path('index.html').read_text()
+          count=int(re.search(r'length:(\d+)',loader).group(1))
+          data=''.join(Path(f'assets/mobile-build-{i:02d}').read_text().strip() for i in range(1,count+1))
+          source=gzip.decompress(base64.b64decode(data,validate=True))
+          (out/'skystudee.html').write_bytes(source)
+          (out/'index.html').write_text(loader)
+          shutil.copytree('decks',out/'decks')
+          shutil.copytree('assets',out/'assets')
+          print('SOURCE_SHA256',hashlib.sha256(source).hexdigest())
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: skystudee-source-snapshot
+          path: /tmp/skystudee-snapshot/
+          retention-days: 7
