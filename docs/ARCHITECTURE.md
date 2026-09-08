@@ -35,8 +35,10 @@ or runtime fetch of `decks/*.json` is currently involved.
 5. Final STARTUP ensures memory, restores a recent session or prepares one,
    persists locally, renders and shows **Library**, even for a single deck.
    Onboarding overlays it only when the local profile name is missing.
-6. `initFirebaseAuth()` starts after local initialization. Missing network or
-   SDK failure must not stop local study. It does not upload a profile on login.
+6. `initFirebaseAuth()` starts after local initialization. Auth verifies the saved
+   UID, opens that UID's isolated local profile, then starts root-revision
+   reconciliation for an enabled cloud profile. Missing network or SDK failure
+   must not stop local study.
 
 Library-first describes the visible home, not a lack of prepared study runtime.
 `showStudyView()` reveals that context. `switchDeck()` explicitly chooses Memory
@@ -54,10 +56,11 @@ state. Resume snapshots convert Sets to arrays and deliberately omit recursive
 undo history. Standard resume age is 8 hours; Cold Test resume age is 36 hours.
 A stored fact that is no longer in the current pool prevents a valid resume.
 
-**Cloud/account state** uses independent `firebase*` variables and explicit
-snapshot functions. Signing in does not change local `userName`; signing out does
-not erase local `appState`. See [Firebase](FIREBASE.md) before designing account
-switching or continuous synchronization.
+**Cloud/account state** uses independent `firebase*` variables, a UID-specific local
+profile key, dirty/revision metadata, and the last accepted durable merge base.
+Immutable generations are published before a transactional root-pointer advance.
+Signing out returns to the guest profile without deleting account data. See
+[Firebase](FIREBASE.md) before changing synchronization semantics.
 
 ## Fact ownership: the most important boundary
 
@@ -178,6 +181,20 @@ shrinks in bounded steps (minimum 12px). This is a best-effort fit, not a guaran
 for arbitrary paragraphs/accessibility zoom. Import/set scroll bodies keep footer
 actions outside the scroll region. Hidden compatibility DOM nodes still have
 references—do not remove them solely because they are currently invisible.
+
+## Account synchronization boundary
+
+`persistState` always saves locally first. For an active account, durable state is
+compared with the last accepted cloud base; changes mark the account dirty and a
+debounced reconciliation publishes or merges them. A realtime listener watches only
+the small `/users/{uid}` root revision, while immutable generation documents carry
+the complete synchronized snapshot. Open sessions, current card/page, undo history,
+and animation state remain device-local.
+
+Concurrent evidence/counter changes add independent deltas from the common base.
+Stable deck/card IDs remain the ownership boundary. Content, settings, and
+organization use three-way change detection; delete-versus-edit preserves the edit,
+and unresolved same-field content conflicts prefer the remote value.
 
 ## Function map for feature changes
 

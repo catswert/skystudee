@@ -1,131 +1,63 @@
-# Firebase: implemented bootstrap, not continuous sync
+# Firebase account isolation and live synchronization
 
-Verified against the source from main commit
-`93c20c86725d819f03c073213bf5b7a05f2cf64f`. Firebase was already in `main` at this
-inspection; no separate Firebase branch was present. This guide describes code,
-not the private Firebase Console's current configuration or deployed rules.
+SkyStudee remains static and local-first. Google sign-in selects an account-specific
+browser profile; after the user explicitly enables sync, Firestore automatically
+reconciles durable study data between devices. Firebase/network failure never stops
+local studying.
 
-## Present and absent
+## Local account boundary
 
-Implemented: Google popup sign-in, Auth persistence request, account dialog,
-cloud-status check, explicit **first** upload, and explicit load onto this device
-with a local recovery copy. All of these coexist with local/offline studying.
+- `study_cards_multideck_engine_v5`: signed-out guest profile.
+- `skystudee_account_state_v1:<uid>`: complete local profile for one Firebase UID.
+- `skystudee_sync_meta_v2:<uid>`: accepted revision/generation, dirty bit and merge base.
+- `skystudee_active_account_uid_v1`: startup account selector, later verified by Firebase Auth.
+- `skystudee_sync_device_id_v1`: browser writer label, not authentication.
+- `skystudee_pre_local_restore_v2:<uid-or-guest>`: one automatic recovery copy.
 
-Not implemented: realtime listeners (`onSnapshot`), background uploads from
-`persistState`, two-device conflict reconciliation, periodic snapshots, refresh
-of a completed cloud copy from later local reviews, UID-isolated local study
-caches, explicit persistent Firestore offline cache, account deletion, public
-Shop storage or publication. Do not label the current status “Synced.”
+Sign-out saves the account cache, clears only the active selector, and reloads the
+untouched guest profile. Account caches and Firestore data are not deleted.
 
-## SDK and identity boundary
+## What synchronizes
 
-`initFirebaseAuth()` runs after local startup, dynamically imports pinned
-Firebase `12.18.0` app/auth modules from `www.gstatic.com`, then Firestore. Firestore
-failure leaves Auth available; both failing leaves local study available. The
-code calls `setPersistence(...browserLocalPersistence)` with a fallback warning.
-`signInWithGoogle()` uses `GoogleAuthProvider` and `signInWithPopup` in response to
-a user action. `onAuthStateChanged` starts a status check, not a library download.
+Classes, units, decks/cards, deck settings, mastery/evidence, daily evidence/goals,
+lifetime totals, Cold Test history, and study-set membership/settings synchronize.
+The currently open page/deck/card, animation state, undo history, and resumable
+session snapshots stay device-local.
 
-The web configuration identifies project `skystudee` and is intentionally public.
-It is not an Admin credential. Never add service-account JSON, private keys,
-OAuth client secrets or unrelated paid API credentials. Firebase's own guidance
-separates public project identification from authorization via rules/IAM, and
-recommends appropriate API restrictions:
-[Firebase API keys](https://firebase.google.com/docs/projects/api-keys).
+## Cloud schema v2
 
-The intended client rule is authenticated ownership under `/users/{uid}`. The
-current client never needs permission to read another UID or list all users.
-Validate actual rules separately, preferably in the emulator; the fact that code
-constructs a UID path is not authorization. A repository read cannot verify Console
-settings. Do not “fix” permission errors with public read/write rules.
-[Rules conditions](https://firebase.google.com/docs/firestore/security/rules-conditions).
+`/users/{uid}` is a small transactional pointer with `activeGeneration` and integer
+`revision`. A writer first creates a complete immutable generation under
+`/users/{uid}/generations/{generationId}` with `state/core` and one document per
+real deck. Only then does a Firestore transaction compare the expected root revision
+and advance the pointer. Readers therefore see an old complete generation or a new
+complete generation, never a mixed partial upload.
 
-On GitHub Pages, authorized hostname is `catswert.github.io`, not the URL path.
-Popup cancellation, blockers, unauthorized-domain and network errors have specific
-UI messages. Tests here stub the SDK rather than prove a real login or rules.
-Changing to redirect sign-in requires new cross-browser testing and the official
-[redirect guidance](https://firebase.google.com/docs/auth/web/redirect-best-practices).
+Revision conflicts cause the client to fetch the newest generation, three-way merge
+against its last accepted base, and retry. Evidence/counter deltas add from the
+common base; Cold Test histories union; stable-ID card/organization/settings changes
+use three-way change detection. Concurrent delete-versus-edit keeps the edited
+record. Unresolved concurrent edits to the same card text prefer remote; this is not
+a collaborative deck editor.
 
-## Cloud format v1
+Completed cloud schema v1 snapshots are recognized as `legacy`. `Merge & upgrade`
+conservatively merges the old snapshot with the UID-local profile and publishes v2.
+With no common base, evidence uses maxima rather than addition to avoid counting the
+same old history twice.
 
-```text
-/users/{uid}
-  cloudSchemaVersion: 1
-  snapshotComplete: true
-  appVersion: <local schema>
-  deckCount
-  sourceLastSavedAt
-  updatedAt: serverTimestamp
+## Security rules
 
-/users/{uid}/state/core
-  cloudSchemaVersion: 1
-  state: <appState without decks>
-  updatedAt: serverTimestamp
+`firestore.rules` contains owner-only access for `/users/{uid}` and every nested
+subdocument. The repository cannot prove those rules are currently deployed. Publish
+and test them separately with Firebase tooling; never solve permission errors by
+making the database public. The web Firebase config in source is project identity,
+not an Admin secret.
 
-/users/{uid}/decks/{encodedDeckId}
-  cloudSchemaVersion: 1
-  deck: <complete realDeck JSON>
-```
+## Limits
 
-`cloudDeckDocId` is `d_` plus base64url of the UTF-8 deck ID (without padding).
-The payload's original `deck.id` remains unchanged. Class/unit/settings/selection
-metadata lives in core. Each full deck—including learning state, daily history
-and resume snapshot—lives in one deck document. The chosen 900,000-byte JSON
-preflight is conservative but is not the exact Firestore serialized size or a
-chunking scheme. Large decks are rejected, not silently split.
-
-## Status transitions and actions
-
-`refreshFirebaseCloudStatus` reads only the root manifest. No root -> `empty`;
-matching schema plus `snapshotComplete:true` -> `ready`; another root ->
-`incomplete`; read/SDK failure -> `error`. `idle`/`checking` are transient.
-The result is discarded if the signed-in UID changed during that read. Root
-status alone does not validate the core or all decks.
-
-`uploadLocalStateToCloud` is available only for **empty/incomplete**, never ready.
-After confirmation it saves locally, snapshots core/decks and performs all size
-checks before cloud changes. It then deletes any earlier bootstrap deck documents,
-writes real decks sequentially, writes core, and writes the completed root marker
-last. It updates UI status to ready. This does not keep later study changes synced.
-Errors surface in the account panel; checking/retrying can reveal the incomplete
-bootstrap again.
-
-`loadCloudStateOntoDevice` is available only for ready and requires confirmation
-and usable local storage. It saves current local data, reads root/core/decks,
-checks basic shape/completeness/nonempty decks, normalizes using `mergeAppState`,
-and writes a `{savedAt,state}` recovery snapshot to `PRE_CLOUD_RESTORE_KEY` before
-replacing `STORAGE_KEY`. It marks Brain seeding handled then reloads into Library.
-It replaces this browser, not merges devices. The recovery slot is a single prior
-copy, not a versioned recovery UI.
-
-`signOutGoogle` clears Auth identity but deliberately leaves local study data.
-Someone using the same browser profile can still see those local decks. Existing
-code should not be described as isolated per-account local storage.
-
-## Concurrency and reliability limits
-
-The first snapshot uses sequential documents, not a transaction, generation ID,
-lease or compare-and-swap. A marker written last reduces incomplete-first-upload
-risk, but does not make two simultaneous uploads/loads atomic. Two clients can
-both observe empty, interleave deletion/writes, and conflict. The load path does
-not assert every document's version/generation or exact deckCount agreement.
-UI busy flags are per tab, not database locks. Preserve this code during a
-comment-only task; fix it through a separately specified sync design and tests.
-
-True synchronization will need account-isolated caches, explicit first-connection
-choices, independent revisions/event IDs, conflict and deletion semantics,
-idempotent review writes/undo, batching/size limits, listener teardown, and
-migrations. Merely putting Firestore writes into `persistState()` would risk
-whole-profile overwrite, duplicate evidence and cross-account exposure. Stable
-local IDs help but are not themselves a conflict algorithm.
-
-## Safe test matrix
-
-Use synthetic profiles and mocked SDKs or a Firebase emulator, never live user
-records for routine automated tests. Cover SDK unavailable, Auth success with
-Firestore unavailable, popup cancellation, unauthenticated/other-UID denial,
-empty/ready/incomplete/error statuses, size rejection before writes, failed deck
-write without a new completion marker, root-last ordering, recovery-before-replace,
-no automatic cloud write after grading, and sign-out leaving local state as
-currently documented. Real authorized-domain/popup/mobile behavior and published
-Security Rules still require a separate intentional integration test.
+Each whole deck/core document must stay under the conservative 900,000-byte JSON
+preflight. Immutable generations are not garbage-collected yet, so a failed or
+revision-conflicted publication can leave harmless unreferenced documents. If
+browser quota prevents storing a full merge base, reconciliation falls back to the
+more conservative no-base behavior. Automated tests mock transactions/listeners and
+do not prove production Auth domains, quotas, or deployed Security Rules.

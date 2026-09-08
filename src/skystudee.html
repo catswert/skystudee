@@ -2085,9 +2085,9 @@
           <div id="accountEmail" class="account-email"></div>
         </div>
       </div>
-      <p id="accountNote" class="account-note">Google sign-in is connected. Cloud setup is checked separately so SkyStudee never replaces local study data automatically.</p>
+      <p id="accountNote" class="account-note">Google sign-in opens an isolated account profile. Once enabled, durable changes synchronize automatically across devices.</p>
       <div id="cloudPanel" class="cloud-panel hidden">
-        <div class="cloud-title">Cloud study data</div>
+        <div class="cloud-title">Account sync</div>
         <div id="cloudStatusText" class="cloud-status">Checking Firebase…</div>
         <div id="cloudMetaText" class="cloud-meta"></div>
         <div class="cloud-actions">
@@ -2713,23 +2713,17 @@
     const BRAIN_DECK_SEED_KEY = "skystudee_seed_biological_bases_brain_v1";
 
     /**
-     * Seed the Brain deck once per browser using BRAIN_DECK_SEED_KEY, preserving an existing deck.
-     * Mutates target and attempts direct localStorage writes; callable during early startup before
-     * session/DOM initialization. Cloud restore sets this flag so deliberately removed content stays
-     * removed.
+     * Seed the Brain deck once per guest/account profile. Persist profile before marker so a quota
+     * failure cannot record a seed that never reached durable storage.
      */
     function seedBrainDeckOnce(target) {
       if (!target || !target.decks) return false;
+      const seedKey = currentBrainSeedKey();
       let alreadySeeded = false;
-      try { alreadySeeded = localStorage.getItem(BRAIN_DECK_SEED_KEY) === "1"; } catch (error) {}
+      try { alreadySeeded = localStorage.getItem(seedKey) === "1"; } catch (error) {}
       if (alreadySeeded) return false;
       if (!target.decks[BRAIN_DECK_ID]) {
-        const deck = createDeckRecord({
-          id: BRAIN_DECK_ID,
-          name: BRAIN_DECK_NAME,
-          cards: BRAIN_CARDS,
-          builtin: false
-        });
+        const deck = createDeckRecord({ id: BRAIN_DECK_ID, name: BRAIN_DECK_NAME, cards: BRAIN_CARDS, builtin: false });
         deck.settings.mode = "memory";
         const psych = findOrCreateCatalogClass(target, "ap_psychology");
         if (psych) {
@@ -2739,12 +2733,14 @@
         target.decks[BRAIN_DECK_ID] = deck;
       }
       try {
-        localStorage.setItem(BRAIN_DECK_SEED_KEY, "1");
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(target));
-      } catch (error) {}
+        localStorage.setItem(currentStorageKey(), JSON.stringify(target));
+        localStorage.setItem(seedKey, "1");
+      } catch (error) {
+        try { localStorage.removeItem(seedKey); } catch (cleanupError) {}
+        return false;
+      }
       return true;
     }
-
 
     // CATALOG DATA: internal templates/aliases, not user instances. Unit names are intentionally absent from the global class catalog.
     const SUBJECT_FAMILIES = [{"id":"english","name":"English / Language Arts"},{"id":"history","name":"History / Social Science"},{"id":"math","name":"Mathematics"},{"id":"science","name":"Science"},{"id":"world_languages","name":"World Languages"},{"id":"cs_engineering","name":"Computer Science / Engineering"},{"id":"business","name":"Business / Finance"},{"id":"arts","name":"Visual & Performing Arts"},{"id":"health_pe","name":"Health / Physical Education"},{"id":"capstone","name":"Interdisciplinary / Capstone"},{"id":"cte","name":"Career Technical Education"},{"id":"other","name":"Other"}];
@@ -2935,7 +2931,7 @@
     }
 
     // VERSION BOUNDARIES: APP_VERSION is local schema, CLOUD_SCHEMA_VERSION is snapshot shape, and build-manifest.version is deployment identity. A comment-only release changes only the last.
-    const APP_VERSION = 9;
+    const APP_VERSION = 10;
     const FIREBASE_SDK_VERSION = "12.18.0";
     // PUBLIC WEB CONFIG only. Never add service-account/private/OAuth-secret credentials. Actual database access is enforced by Firebase Auth and externally published Security Rules.
     const FIREBASE_CONFIG = {
@@ -2946,17 +2942,24 @@
       messagingSenderId: "653437754339",
       appId: "1:653437754339:web:a965cf7cbab2ba88239ed6"
     };
-    const CLOUD_SCHEMA_VERSION = 1;
+    const CLOUD_SCHEMA_VERSION = 2;
     const STORAGE_KEY = "study_cards_multideck_engine_v5";
     const PRE_CLOUD_RESTORE_KEY = "skystudee_pre_cloud_restore_v1";
     const OLD_STORAGE_KEY = "study_cards_memory_engine_v4";
+    const ACCOUNT_STORAGE_PREFIX = "skystudee_account_state_v1:";
+    const ACTIVE_ACCOUNT_UID_KEY = "skystudee_active_account_uid_v1";
+    const SYNC_META_PREFIX = "skystudee_sync_meta_v2:";
+    const SYNC_DEVICE_ID_KEY = "skystudee_sync_device_id_v1";
+    const PRE_LOCAL_RESTORE_PREFIX = "skystudee_pre_local_restore_v2:";
+    const SYNC_DEBOUNCE_MS = 1200;
+    const SYNC_POLL_MS = 30000;
     const PRIOR_ALPHA = 2;
     const PRIOR_BETA = 2;
     const DAY_MS = 86400000;
     const SESSION_RESUME_HOURS = 8;
     const COLD_RESUME_HOURS = 36;
 
-    // RUNTIME STATE: local profile and Firebase identity are currently separate. Signing out does not clear local decks; continuous synchronization is not implemented.
+    // RUNTIME STATE: guest and Firebase UID profiles are locally isolated; durable account state can synchronize across devices.
     let storageAvailable = true;
     let lastSaveError = "";
     let firebaseApp = null;
@@ -2973,6 +2976,18 @@
     let firebaseCloudBusy = false;
     let firebaseCloudError = "";
     let firebaseCloudMeta = null;
+    let activeAccountUid = readActiveAccountUid();
+    const firebaseSyncDeviceId = getSyncDeviceId();
+    let firebaseSyncUnsubscribe = null;
+    let firebaseSyncTimer = null;
+    let firebaseSyncPollTimer = null;
+    let firebaseSyncInFlight = null;
+    let firebaseSyncApplying = false;
+    let firebaseSyncDirty = false;
+    let firebaseSyncRevision = 0;
+    let firebaseSyncGenerationId = "";
+    let firebaseSyncBaseState = null;
+    let firebaseIntentionalSignOut = false;
     // EARLY INITIALIZATION: called before activeDeckId, session and DOM refs exist. Do not call persistState here; the old Brain-name migration previously crashed legacy browsers that way.
     let appState = loadAppState();
     seedBrainDeckOnce(appState);
@@ -3538,41 +3553,24 @@
       return target;
     }
 
-    /**
-     * Probe localStorage and read/normalize the current key, otherwise migrate the older single-deck
-     * key. On read/parse/storage failure it returns defaults and marks storage unavailable; never
-     * recommend clearing site data as a first diagnostic.
-     */
+    /** Load/normalize the active guest/account profile, with legacy migration only for guest. */
     function loadAppState() {
-      let parsed = null;
-
       try {
         const testKey = "__study_cards_storage_test__";
-        localStorage.setItem(testKey, "1");
-        localStorage.removeItem(testKey);
-
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          parsed = JSON.parse(raw);
-          return mergeAppState(parsed);
-        }
-
-        // Automatic migration from the previous single-deck app if that
-        // memory is visible to this local-file origin.
-        const oldRaw = localStorage.getItem(OLD_STORAGE_KEY);
-        if (oldRaw) {
-          const oldState = JSON.parse(oldRaw);
-          const migrated = migrateOldSingleDeckState(oldState);
-          try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-          } catch (error) {}
-          return migrated;
+        localStorage.setItem(testKey, "1"); localStorage.removeItem(testKey);
+        const raw = localStorage.getItem(currentStorageKey());
+        if (raw) return mergeAppState(JSON.parse(raw));
+        if (!activeAccountUid) {
+          const oldRaw = localStorage.getItem(OLD_STORAGE_KEY);
+          if (oldRaw) {
+            const migrated = migrateOldSingleDeckState(JSON.parse(oldRaw));
+            try { localStorage.setItem(currentStorageKey(), JSON.stringify(migrated)); } catch (error) {}
+            return migrated;
+          }
         }
       } catch (error) {
-        storageAvailable = false;
-        lastSaveError = String(error?.message || error);
+        storageAvailable = false; lastSaveError = String(error?.message || error);
       }
-
       return defaultAppState();
     }
 
@@ -3609,39 +3607,28 @@
     }
 
     /**
-     * Save locally: optionally snapshot the session, normalize references, ensure memory, timestamp,
-     * and write STORAGE_KEY. Requires initialized runtime/DOM; never call from the early rename
-     * migration. Returns false on storage failure and performs NO Firestore synchronization.
+     * Save the current guest or UID-isolated profile locally. Device-local session snapshots are
+     * included normally; only durable account changes mark Firestore dirty.
      */
-    function persistState({ includeSession = true } = {}) {
+    function persistState({ includeSession = true, markSync = true, touchTimestamp = true } = {}) {
       if (includeSession) storeCurrentSession();
       appState.studySet = normalizeStudySetState(appState.studySet, appState);
       appState.studySet.active = Boolean(studySetActive && appState.studySet.deckIds.length);
       studySetActive = appState.studySet.active;
       ensureBuiltInDeck(appState);
       ensureOrganizationState(appState);
-      for (const deck of Object.values(appState.decks)) {
-        ensureDeckMemory(deck);
-      }
-
+      for (const deck of Object.values(appState.decks)) ensureDeckMemory(deck);
       appState.version = APP_VERSION;
       appState.activeDeckId = activeDeckId;
-      appState.lastSavedAt = new Date().toISOString();
-
-      if (!storageAvailable) {
-        updateMemoryChip();
-        return false;
-      }
-
+      if (touchTimestamp) appState.lastSavedAt = new Date().toISOString();
+      if (!storageAvailable) { updateMemoryChip(); return false; }
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-        lastSaveError = "";
-        updateMemoryChip();
+        localStorage.setItem(currentStorageKey(), JSON.stringify(appState));
+        lastSaveError = ""; updateMemoryChip();
+        if (markSync) markFirebaseSyncDirty();
         return true;
       } catch (error) {
-        lastSaveError = String(error?.message || error);
-        updateMemoryChip();
-        return false;
+        lastSaveError = String(error?.message || error); updateMemoryChip(); return false;
       }
     }
 
@@ -3855,8 +3842,8 @@
     }
 
     /**
-     * Use structuredClone to snapshot supported in-memory data. Sessions can contain Sets, so JSON
-     * serialization is not an interchangeable clone at every call site.
+     * Make a JSON-safe deep copy. Runtime Sets are copied separately; this helper does not
+     * preserve non-JSON values.
      */
     function deepClone(obj) {
       return JSON.parse(JSON.stringify(obj));
@@ -7290,6 +7277,9 @@ I will upload the topic soon, confirm your understanding`;
         new Date().toISOString();
       existing.sessionState = null;
       ensureDeckMemory(existing);
+      if (studySetActive && appState.studySet.deckIds.includes(existing.id)) {
+        reconcileActiveContextAfterMutation({ persist: false, render: false });
+      }
 
       persistState();
       importPreviewOverlay.classList.remove("show");
@@ -7877,6 +7867,56 @@ I will upload the topic soon, confirm your understanding`;
     }
 
     /**
+     * Revalidate active deck/set/current fact/Cold queue after a deck mutation. Never let a stale
+     * combined-session fact fall back into another deck's evidence record.
+     */
+    function reconcileActiveContextAfterMutation({ persist = true, render = true } = {}) {
+      appState.studySet = normalizeStudySetState(appState.studySet, appState);
+      studySetActive = Boolean(appState.studySet.active && appState.studySet.deckIds.length);
+      if (!appState.decks[activeDeckId]) {
+        activeDeckId = BUILTIN_DECK_ID;
+        appState.activeDeckId = activeDeckId;
+      }
+      if (studySetActive && !appState.studySet.deckIds.includes(activeDeckId)) {
+        activeDeckId = appState.studySet.deckIds[0] || BUILTIN_DECK_ID;
+        appState.activeDeckId = activeDeckId;
+      }
+      const eligible = activeFactMap();
+      const key = currentFact ? factKey(currentFact) : null;
+      const staleCurrent = Boolean(key && !eligible.has(key));
+      const staleCold = mode === "cold" && (!Array.isArray(session?.cold?.order) || session.cold.order.some(item => !eligible.has(item)));
+      const emptyCurrent = !currentFact && eligible.size > 0;
+      if (staleCurrent || staleCold || emptyCurrent) {
+        clearSessionState();
+        session = makeFreshSession(mode);
+        if (mode === "cold") {
+          buildColdOrder(); currentFact = session.cold.order[0] ? getFactByKey(session.cold.order[0]) : null;
+        } else currentFact = weightedRandomFact(mode);
+        if (currentFact) recordServed(currentFact);
+        displayedFactId = null;
+      } else if (key) currentFact = eligible.get(key) || null;
+      if (session) session.history = [];
+      if (persist) persistState();
+      if (render) {
+        updateControls();
+        if (currentFact) renderCurrentFact({ forceImmediate: displayedFactId === null });
+        updateStats();
+        if (view === "decks") renderDeckManager();
+      }
+    }
+
+    /** Delete one real non-built-in deck, then repair all active-session references before grading. */
+    function deleteRealDeck(deckId) {
+      const deck = appState.decks[deckId];
+      if (!deck || deck.builtin) return;
+      if (!confirm(`Delete "${deck.name}" and all saved progress for it? Make a backup first if you may want it later.`)) return;
+      delete appState.decks[deckId];
+      reconcileActiveContextAfterMutation({ persist: false, render: false });
+      persistState(); renderDeckManager(); updateDeckSelector(); updateControls(); updateStats();
+      if (view === "study" && currentFact) renderCurrentFact({ forceImmediate: displayedFactId === null });
+    }
+
+    /**
      * Render used class -> unit -> deck groups, filters, and bound management actions. It does not
      * show every catalog entry; empty groups and unassigned pointers have special behavior
      * documented in the data guide.
@@ -7962,12 +8002,9 @@ I will upload the topic soon, confirm your understanding`;
             actions.appendChild(button("Export", "deck-action", () => exportDeck(deck)));
             const up = button("↑", "deck-action order-btn", () => reorderDeck(deck.id, -1)); up.title = "Move deck up"; actions.appendChild(up);
             const down = button("↓", "deck-action order-btn", () => reorderDeck(deck.id, 1)); down.title = "Move deck down"; actions.appendChild(down);
-            if (!deck.builtin) actions.appendChild(button("Delete", "deck-action danger", () => {
-              if (!confirm(`Delete "${deck.name}" and all saved progress for it? Make a backup first if you may want it later.`)) return;
-              const wasActive=deck.id===activeDeckId; delete appState.decks[deck.id];
-              if (wasActive) { activeDeckId=BUILTIN_DECK_ID; appState.activeDeckId=BUILTIN_DECK_ID; mode=activeDeck().settings.mode; session=makeFreshSession(mode); displayedFactId=null; startMode(mode); }
-              persistState(); renderDeckManager(); updateDeckSelector(); updateStats();
-            }));
+            if (!deck.builtin) actions.appendChild(
+              button("Delete", "deck-action danger", () => deleteRealDeck(deck.id))
+            );
             wrap.appendChild(row);
           }
           group.appendChild(wrap);
@@ -7977,76 +8014,213 @@ I will upload the topic soon, confirm your understanding`;
     }
 
     /**
-     * Read/normalize a private backup, replace local appState after confirmation, save without the
-     * old session and reload. This is replacement, not a merge with cloud or other device evidence.
+     * Validate a private backup, confirm replacement, save an account-scoped automatic recovery
+     * copy, then reload. This is explicit replacement rather than cloud evidence reconciliation.
      */
     function restoreBackupFile(file) {
       const reader = new FileReader();
-
       reader.onload = () => {
         try {
-          const parsed =
-            JSON.parse(String(reader.result || ""));
+          const parsed = JSON.parse(String(reader.result || ""));
+          let restored;
+          if (parsed?.format === "StudyCardsMultiDeckBackup" && parsed.state && typeof parsed.state === "object") {
+            restored = mergeAppState(parsed.state);
+          } else if (parsed?.format === "StudyCardsMemoryBackup" && parsed.state && typeof parsed.state === "object") {
+            restored = migrateOldSingleDeckState(parsed.state);
+          } else throw new Error("Not a recognized Study Cards memory backup.");
 
-          if (
-            parsed?.format ===
-              "StudyCardsMultiDeckBackup" &&
-            parsed.state &&
-            typeof parsed.state === "object"
-          ) {
-            appState =
-              mergeAppState(parsed.state);
-          } else if (
-            parsed?.format ===
-              "StudyCardsMemoryBackup" &&
-            parsed.state &&
-            typeof parsed.state === "object"
-          ) {
-            appState =
-              migrateOldSingleDeckState(parsed.state);
-          } else {
-            throw new Error(
-              "Not a recognized Study Cards memory backup."
-            );
+          const label = activeAccountUid ? "the signed-in account profile on this device" : "the guest profile on this device";
+          if (!confirm(`Restore this backup and replace ${label}?\n\nSkyStudee will first save one automatic local recovery copy.`)) return;
+          if (!saveLocalRecoverySnapshot("backup-restore")) throw new Error("The automatic recovery copy could not be saved, so restore was cancelled.");
+
+          firebaseSyncApplying = true;
+          appState = restored;
+          activeDeckId = appState.activeDeckId;
+          studySetActive = Boolean(appState.studySet?.active && appState.studySet.deckIds?.length);
+          mode = activeSettings().mode || "cram";
+          persistState({ includeSession: false, markSync: false });
+          firebaseSyncApplying = false;
+          if (activeAccountUid) {
+            firebaseSyncDirty = true;
+            writeSyncMeta(activeAccountUid, { dirty: true });
           }
-
-          activeDeckId =
-            appState.activeDeckId;
-          mode =
-            activeDeck().settings.mode || "cram";
-
-          persistState({ includeSession: false });
-          alert(
-            `Restored memory for ${appState.userName || "this user"} with ${Object.keys(appState.decks).length} deck(s).`
-          );
+          alert(`Restored memory for ${appState.userName || "this user"} with ${Object.keys(appState.decks).length} deck(s).`);
           location.reload();
         } catch (error) {
-          alert(
-            `Could not restore that backup: ${error.message}`
-          );
+          firebaseSyncApplying = false;
+          alert(`Could not restore that backup: ${error.message}`);
         }
       };
-
       reader.readAsText(file);
     }
 
     // ==========================================================
-    // FIREBASE AUTH + SAFE FIRST CLOUD SNAPSHOT
+    // FIREBASE AUTH + REVISIONED MULTI-DEVICE SYNC
     // ==========================================================
-    /**
-     * Choose a short display name/email prefix for the account button. Google identity is separate
-     * from the local profile's userName.
-     */
+    // SYNC CONTRACT: Google UID selects an isolated local profile. Durable state syncs through
+    // immutable Firestore generations and a transactional root revision; open sessions stay local.
+
+    /** Encode a Firebase UID for browser-storage key suffixes. */
+    function encodedAccountUid(uid) {
+      const bytes = new TextEncoder().encode(String(uid || ""));
+      let binary = "";
+      for (const byte of bytes) binary += String.fromCharCode(byte);
+      return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    }
+
+    /** Return this Firebase account's isolated local profile key. */
+    function accountStorageKey(uid) {
+      return `${ACCOUNT_STORAGE_PREFIX}${encodedAccountUid(uid)}`;
+    }
+
+    /** Return this account's sync metadata key. */
+    function syncMetaStorageKey(uid) {
+      return `${SYNC_META_PREFIX}${encodedAccountUid(uid)}`;
+    }
+
+    /** Return the account/guest automatic recovery slot. */
+    function recoveryStorageKey(uid = activeAccountUid) {
+      return `${PRE_LOCAL_RESTORE_PREFIX}${uid ? encodedAccountUid(uid) : "guest"}`;
+    }
+
+    /** Scope the one-time Brain seed marker to the guest or current account. */
+    function currentBrainSeedKey(uid = activeAccountUid) {
+      return uid ? `${BRAIN_DECK_SEED_KEY}:${encodedAccountUid(uid)}` : BRAIN_DECK_SEED_KEY;
+    }
+
+    /** Read the account selected during the preceding authenticated session. */
+    function readActiveAccountUid() {
+      try {
+        return String(localStorage.getItem(ACTIVE_ACCOUNT_UID_KEY) || "").trim() || null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    /** Return the guest or UID-isolated profile key used by normal persistence. */
+    function currentStorageKey() {
+      return activeAccountUid ? accountStorageKey(activeAccountUid) : STORAGE_KEY;
+    }
+
+    /** Create/recover a stable browser writer ID used only for sync diagnostics. */
+    function getSyncDeviceId() {
+      try {
+        const current = String(localStorage.getItem(SYNC_DEVICE_ID_KEY) || "").trim();
+        if (current) return current;
+        const created = globalThis.crypto?.randomUUID?.() ||
+          `device_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
+        localStorage.setItem(SYNC_DEVICE_ID_KEY, created);
+        return created;
+      } catch (error) {
+        return `ephemeral_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
+      }
+    }
+
+    /** Read accepted cloud revision/base metadata, falling back conservatively if unavailable. */
+    function readSyncMeta(uid = activeAccountUid) {
+      if (!uid) return { revision: 0, generationId: "", dirty: false, baseState: null };
+      try {
+        const value = JSON.parse(localStorage.getItem(syncMetaStorageKey(uid)) || "null");
+        if (!value || typeof value !== "object") throw new Error("Invalid sync metadata");
+        return {
+          revision: Math.max(0, Number(value.revision) || 0),
+          generationId: String(value.generationId || ""),
+          dirty: Boolean(value.dirty),
+          baseState: value.baseState && typeof value.baseState === "object" ? value.baseState : null,
+          lastSyncedAt: value.lastSyncedAt || null
+        };
+      } catch (error) {
+        return { revision: 0, generationId: "", dirty: false, baseState: null };
+      }
+    }
+
+    /** Write sync metadata without turning metadata quota failure into a failed study save. */
+    function writeSyncMeta(uid, patch = {}) {
+      if (!uid) return false;
+      try {
+        localStorage.setItem(syncMetaStorageKey(uid), JSON.stringify({ ...readSyncMeta(uid), ...patch }));
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    /** Save one local recovery copy before a destructive local/cloud replacement. */
+    function saveLocalRecoverySnapshot(reason = "replace") {
+      if (!storageAvailable) return false;
+      try {
+        localStorage.setItem(recoveryStorageKey(), JSON.stringify({
+          savedAt: new Date().toISOString(),
+          reason,
+          state: plainJson(appState)
+        }));
+        return true;
+      } catch (error) {
+        lastSaveError = String(error?.message || error);
+        return false;
+      }
+    }
+
+    /** Stable JSON serialization for sync comparisons independent of object key insertion order. */
+    function syncStableStringify(value) {
+      if (value === undefined) return "__undefined__";
+      if (value === null || typeof value !== "object") return JSON.stringify(value);
+      if (Array.isArray(value)) return `[${value.map(syncStableStringify).join(",")}]`;
+      return `{${Object.keys(value).sort().map(key =>
+        `${JSON.stringify(key)}:${syncStableStringify(value[key])}`
+      ).join(",")}}`;
+    }
+
+    /** Compare JSON-supported values structurally. */
+    function syncJsonEqual(a, b) {
+      return syncStableStringify(a) === syncStableStringify(b);
+    }
+
+    /** Mark durable account state dirty and queue reconciliation; session-only saves stay clean. */
+    function markFirebaseSyncDirty() {
+      if (!activeAccountUid || firebaseSyncApplying) return;
+      const base = firebaseSyncBaseState || readSyncMeta(activeAccountUid).baseState;
+      if (base && syncJsonEqual(cloudSnapshotState(), base)) {
+        firebaseSyncDirty = false;
+        writeSyncMeta(activeAccountUid, { dirty: false });
+        return;
+      }
+      firebaseSyncDirty = true;
+      writeSyncMeta(activeAccountUid, { dirty: true });
+      scheduleFirebaseSync();
+    }
+
+    /** Debounce Firestore work while retaining the durable local dirty bit. */
+    function scheduleFirebaseSync(delay = SYNC_DEBOUNCE_MS) {
+      if (firebaseSyncTimer !== null) clearTimeout(firebaseSyncTimer);
+      firebaseSyncTimer = setTimeout(() => {
+        firebaseSyncTimer = null;
+        if (firebaseUser?.uid === activeAccountUid && firebaseCloudStatus === "ready") {
+          performFirebaseSync().catch(error => console.error("SkyStudee sync failed.", error));
+        }
+      }, Math.max(0, delay));
+    }
+
+    /** Stop root listeners and timers without deleting local/account data. */
+    function stopFirebaseSync() {
+      if (firebaseSyncUnsubscribe) {
+        try { firebaseSyncUnsubscribe(); } catch (error) {}
+        firebaseSyncUnsubscribe = null;
+      }
+      if (firebaseSyncTimer !== null) clearTimeout(firebaseSyncTimer);
+      if (firebaseSyncPollTimer !== null) clearInterval(firebaseSyncPollTimer);
+      firebaseSyncTimer = null;
+      firebaseSyncPollTimer = null;
+    }
+
+    /** Choose a compact account label; Google identity remains separate from profile userName. */
     function firebaseAccountLabel(user) {
       if (!user) return "Sign in";
       const first = String(user.displayName || "").trim().split(/\s+/)[0];
       return first || String(user.email || "Account").split("@")[0] || "Account";
     }
 
-    /**
-     * Produce an account avatar label from displayName/email without fetching a profile photo or
-     * other Google data.
-     */
+    /** Produce initials without requesting profile-photo data. */
     function firebaseInitials(user) {
       const name = String(user?.displayName || "").trim();
       if (name) {
@@ -8056,10 +8230,7 @@ I will upload the topic soon, confirm your understanding`;
       return String(user?.email || "?").slice(0, 1);
     }
 
-    /**
-     * Encode stable deck IDs as UTF-8 base64url document IDs with a d_ prefix. Colons/unicode in
-     * local IDs must not change the original deck.id inside the stored payload.
-     */
+    /** Encode a real deck ID into a Firestore-safe document ID while preserving deck.id in payload. */
     function cloudDeckDocId(deckId) {
       const bytes = new TextEncoder().encode(String(deckId || ""));
       let binary = "";
@@ -8067,166 +8238,593 @@ I will upload the topic soon, confirm your understanding`;
       return `d_${btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "")}`;
     }
 
-    /**
-     * Return the signed-in user's /users/{uid} snapshot manifest reference. Access must be
-     * authorized by deployed rules; path construction alone is not security.
-     */
+    /** Root pointer document. */
     function cloudUserRef(uid) {
       return firebaseFirestoreApi.doc(firebaseDb, "users", uid);
     }
 
-    /**
-     * Return /users/{uid}/state/core for non-deck profile, class/unit, and study-set state.
-     */
+    /** Legacy schema-v1 core document, read only for migration. */
     function cloudCoreRef(uid) {
       return firebaseFirestoreApi.doc(firebaseDb, "users", uid, "state", "core");
     }
 
-    /**
-     * Return /users/{uid}/decks, one document per full real-deck snapshot. This is private account
-     * data, never a public catalog/Shop path.
-     */
+    /** Legacy schema-v1 deck collection, read only for migration. */
     function cloudDecksRef(uid) {
       return firebaseFirestoreApi.collection(firebaseDb, "users", uid, "decks");
     }
 
-    /**
-     * Clone/strip to JSON-supported data for snapshot transport. Do not use for live runtime Sets or
-     * as a privacy scrubber: all serializable fields survive.
-     */
+    /** Immutable schema-v2 generation marker. */
+    function cloudGenerationRef(uid, generationId) {
+      return firebaseFirestoreApi.doc(firebaseDb, "users", uid, "generations", generationId);
+    }
+
+    /** Immutable schema-v2 generation core. */
+    function cloudGenerationCoreRef(uid, generationId) {
+      return firebaseFirestoreApi.doc(
+        firebaseDb, "users", uid, "generations", generationId, "state", "core"
+      );
+    }
+
+    /** Immutable schema-v2 generation deck collection. */
+    function cloudGenerationDecksRef(uid, generationId) {
+      return firebaseFirestoreApi.collection(
+        firebaseDb, "users", uid, "generations", generationId, "decks"
+      );
+    }
+
+    /** Clone JSON-supported data; this does not scrub private profile fields. */
     function plainJson(value) {
       return JSON.parse(JSON.stringify(value));
     }
 
-    /**
-     * Measure UTF-8 JSON length for the 900,000-byte preflight limit. It estimates payload size, not
-     * Firestore's exact serialized document accounting.
-     */
+    /** Conservative UTF-8 JSON size preflight, not exact Firestore serialization size. */
     function cloudJsonBytes(value) {
       return new TextEncoder().encode(JSON.stringify(value)).length;
     }
 
-    /**
-     * Copy current appState without its decks map for the core cloud document. Core still contains
-     * organization and study-set resume metadata and is private.
-     */
-    function cloudCoreFromLocalState() {
-      const snapshot = plainJson(appState);
+    /** Choose a three-way value: one-sided change wins; unresolved concurrent edits prefer remote. */
+    function chooseSyncedValue(base, local, remote, prefer = "remote") {
+      if (syncJsonEqual(local, remote)) return local === undefined ? undefined : plainJson(local);
+      if (base !== undefined) {
+        if (syncJsonEqual(local, base)) return remote === undefined ? undefined : plainJson(remote);
+        if (syncJsonEqual(remote, base)) return local === undefined ? undefined : plainJson(local);
+      }
+      if (local === undefined) return remote === undefined ? undefined : plainJson(remote);
+      if (remote === undefined) return plainJson(local);
+      return plainJson(prefer === "local" ? local : remote);
+    }
+
+    /** Merge a numeric counter from independent deltas against base; no-base migration uses max. */
+    function mergeSyncedNumber(base, local, remote, { floor = 0, integer = false } = {}) {
+      const b = Number(base), l = Number(local), r = Number(remote);
+      let value;
+      if (Number.isFinite(b)) {
+        value = b + (Number.isFinite(l) ? l - b : 0) + (Number.isFinite(r) ? r - b : 0);
+      } else {
+        value = Math.max(Number.isFinite(l) ? l : floor, Number.isFinite(r) ? r : floor);
+      }
+      value = Math.max(floor, value);
+      return integer ? Math.round(value) : value;
+    }
+
+    /** Return the latest valid ISO-ish timestamp. */
+    function latestSyncTime(...values) {
+      return values.filter(Boolean)
+        .map(value => ({ value, time: new Date(value).getTime() }))
+        .filter(item => Number.isFinite(item.time))
+        .sort((a, b) => b.time - a.time)[0]?.value || null;
+    }
+
+    /** Merge one directional evidence record, including undo-capable deltas. */
+    function mergeFactMemory(base, local, remote) {
+      const b = base && typeof base === "object" ? base : null;
+      const l = { ...defaultFactMemory(), ...(local || {}) };
+      const r = { ...defaultFactMemory(), ...(remote || {}) };
+      const result = {};
+      for (const key of ["alpha", "beta", "transferredEvidence"]) {
+        result[key] = mergeSyncedNumber(b?.[key], l[key], r[key], {
+          floor: key === "alpha" ? PRIOR_ALPHA : key === "beta" ? PRIOR_BETA : 0
+        });
+      }
+      for (const key of [
+        "directCorrect", "directWrong", "typedCorrect", "typedWrong",
+        "selfCorrect", "selfWrong", "autocompleteCorrect"
+      ]) {
+        result[key] = mergeSyncedNumber(b?.[key], l[key], r[key], { floor: 0, integer: true });
+      }
+      result.lastReviewedAt = latestSyncTime(l.lastReviewedAt, r.lastReviewedAt);
+      const lt = new Date(l.lastReviewedAt || 0).getTime();
+      const rt = new Date(r.lastReviewedAt || 0).getTime();
+      result.lastResult = result.lastReviewedAt ? (lt > rt ? l.lastResult : r.lastResult) : null;
+      return result;
+    }
+
+    /** Merge a flat object of integer counters. */
+    function mergeCounterObject(base, local, remote) {
+      const result = {};
+      const keys = new Set([...Object.keys(base || {}), ...Object.keys(local || {}), ...Object.keys(remote || {})]);
+      for (const key of keys) {
+        result[key] = mergeSyncedNumber(base?.[key], local?.[key], remote?.[key], {
+          floor: 0, integer: true
+        });
+      }
+      return result;
+    }
+
+    /** Merge per-local-day/per-fact evidence counters. */
+    function mergeDailyEvidence(base, local, remote) {
+      const result = {};
+      const days = new Set([...Object.keys(base || {}), ...Object.keys(local || {}), ...Object.keys(remote || {})]);
+      for (const day of days) {
+        const facts = new Set([
+          ...Object.keys(base?.[day] || {}), ...Object.keys(local?.[day] || {}), ...Object.keys(remote?.[day] || {})
+        ]);
+        const mergedDay = {};
+        for (const id of facts) {
+          mergedDay[id] = mergeCounterObject(base?.[day]?.[id], local?.[day]?.[id], remote?.[day]?.[id]);
+        }
+        if (Object.keys(mergedDay).length) result[day] = mergedDay;
+      }
+      return result;
+    }
+
+    /** Three-way map merge with deletion awareness; delete-versus-edit keeps the edited record. */
+    function mergeRecordMap(base, local, remote, mergeBoth = null) {
+      const result = {};
+      const ids = new Set([...Object.keys(base || {}), ...Object.keys(local || {}), ...Object.keys(remote || {})]);
+      for (const id of ids) {
+        const b = base?.[id], l = local?.[id], r = remote?.[id];
+        if (l === undefined && r === undefined) continue;
+        if (l !== undefined && r !== undefined) {
+          result[id] = mergeBoth ? mergeBoth(b, l, r) : chooseSyncedValue(b, l, r);
+        } else if (l !== undefined) {
+          if (b !== undefined && syncJsonEqual(l, b)) continue;
+          result[id] = plainJson(l);
+        } else {
+          if (b !== undefined && syncJsonEqual(r, b)) continue;
+          result[id] = plainJson(r);
+        }
+      }
+      return result;
+    }
+
+    /** Merge card content by stable card ID while preserving independent additions/deletions. */
+    function mergeCardArrays(baseCards, localCards, remoteCards) {
+      const toMap = cards => Object.fromEntries((cards || []).map(card => [card.id, card]));
+      const merged = mergeRecordMap(toMap(baseCards), toMap(localCards), toMap(remoteCards));
+      const seen = new Set();
+      return [...(remoteCards || []), ...(localCards || [])]
+        .filter(card => merged[card.id] && !seen.has(card.id) && seen.add(card.id))
+        .map(card => merged[card.id]);
+    }
+
+    /** Union Cold Test history idempotently and retain the latest 100. */
+    function mergeColdTests(local, remote) {
+      const result = [], seen = new Set();
+      for (const item of [...(remote || []), ...(local || [])]) {
+        const key = syncStableStringify(item);
+        if (seen.has(key)) continue;
+        seen.add(key); result.push(plainJson(item));
+      }
+      return result.sort((a,b) => new Date(a.completedAt || 0) - new Date(b.completedAt || 0)).slice(-100);
+    }
+
+    /** Merge one real deck; device-local resume session is deliberately excluded. */
+    function mergeSyncedDeck(base, local, remote) {
+      const b = base || {};
+      const l = normalizeDeckRecord(local, local?.id || remote?.id);
+      const r = normalizeDeckRecord(remote, remote?.id || local?.id);
+      const result = plainJson(r);
+      result.id = r.id || l.id;
+      for (const key of ["name", "classId", "unitId", "order"]) {
+        result[key] = chooseSyncedValue(b[key], l[key], r[key]);
+      }
+      result.builtin = Boolean(l.builtin || r.builtin);
+      result.preloaded = Boolean(l.preloaded || r.preloaded);
+      result.createdAt = [l.createdAt, r.createdAt].filter(Boolean).sort()[0] || new Date().toISOString();
+      result.updatedAt = latestSyncTime(l.updatedAt, r.updatedAt) || new Date().toISOString();
+      result.cards = mergeCardArrays(b.cards, l.cards, r.cards);
+      result.settings = {};
+      const settingKeys = new Set([
+        ...Object.keys(b.settings || {}), ...Object.keys(l.settings || {}), ...Object.keys(r.settings || {})
+      ]);
+      for (const key of settingKeys) {
+        result.settings[key] = chooseSyncedValue(b.settings?.[key], l.settings?.[key], r.settings?.[key]);
+      }
+      result.facts = mergeRecordMap(b.facts, l.facts, r.facts,
+        (bf, lf, rf) => mergeFactMemory(bf, lf, rf));
+      result.lifetime = mergeCounterObject(b.lifetime, l.lifetime, r.lifetime);
+      result.dailyEvidence = mergeDailyEvidence(b.dailyEvidence, l.dailyEvidence, r.dailyEvidence);
+      result.dailyGoals = mergeRecordMap(b.dailyGoals, l.dailyGoals, r.dailyGoals);
+      result.coldTests = mergeColdTests(l.coldTests, r.coldTests);
+      result.sessionState = null;
+      ensureDeckMemory(result);
+      return result;
+    }
+
+    /** Merge two durable account snapshots against the last accepted common base. */
+    function mergeSyncedStates(base, local, remote) {
+      const b = base ? mergeAppState(plainJson(base)) : null;
+      const l = mergeAppState(plainJson(local));
+      const r = mergeAppState(plainJson(remote));
+      const merged = plainJson(r);
+      merged.version = APP_VERSION;
+      merged.userName = chooseSyncedValue(b?.userName, l.userName, r.userName, r.userName ? "remote" : "local") || "";
+      merged.createdAt = [l.createdAt, r.createdAt].filter(Boolean).sort()[0] || null;
+      merged.lastSavedAt = null;
+      merged.classes = mergeRecordMap(b?.classes, l.classes, r.classes);
+      merged.units = mergeRecordMap(b?.units, l.units, r.units);
+      merged.decks = mergeRecordMap(b?.decks, l.decks, r.decks,
+        (bd, ld, rd) => mergeSyncedDeck(bd, ld, rd));
+
+      const bs = b?.studySet, ls = l.studySet || defaultStudySetState(), rs = r.studySet || defaultStudySetState();
+      merged.studySet = {
+        active: false,
+        deckIds: bs ? chooseSyncedValue(bs.deckIds, ls.deckIds, rs.deckIds) :
+          [...new Set([...(rs.deckIds || []), ...(ls.deckIds || [])])],
+        settings: {},
+        sessionState: null
+      };
+      const keys = new Set([
+        ...Object.keys(bs?.settings || {}), ...Object.keys(ls.settings || {}), ...Object.keys(rs.settings || {})
+      ]);
+      for (const key of keys) {
+        merged.studySet.settings[key] = chooseSyncedValue(bs?.settings?.[key], ls.settings?.[key], rs.settings?.[key]);
+      }
+      merged.activeDeckId = null;
+      ensureBuiltInDeck(merged);
+      ensureOrganizationState(merged);
+      merged.studySet = normalizeStudySetState(merged.studySet, merged);
+      return merged;
+    }
+
+    /** Strip device-local session/navigation state from a synchronized snapshot. */
+    function cloudSnapshotState(source = appState) {
+      const snapshot = plainJson(source);
+      snapshot.version = APP_VERSION;
+      snapshot.lastSavedAt = null;
+      snapshot.activeDeckId = null;
+      snapshot.studySet = { ...(snapshot.studySet || defaultStudySetState()), active: false, sessionState: null };
+      for (const deck of Object.values(snapshot.decks || {})) deck.sessionState = null;
+      return snapshot;
+    }
+
+    /** Extract non-deck state for one generation core document. */
+    function cloudCoreFromState(state) {
+      const snapshot = plainJson(state);
       const { decks, ...core } = snapshot;
       return core;
     }
 
-    /**
-     * Format either a Firestore Timestamp-like value or date string for account UI, returning empty
-     * text for invalid input.
-     */
+    /** Format Firestore Timestamp/date-like values for account UI. */
     function cloudTimeLabel(value) {
       if (!value) return "";
       const date = typeof value?.toDate === "function" ? value.toDate() : new Date(value);
-      if (Number.isNaN(date.getTime())) return "";
-      return date.toLocaleString();
+      return Number.isNaN(date.getTime()) ? "" : date.toLocaleString();
     }
 
-    /**
-     * Map idle/checking/empty/ready/incomplete/error to explicit upload/load/retry controls. Ready
-     * means a completed SNAPSHOT exists, not continuous synchronization.
-     */
+    /** Persist the accepted cloud base/revision and clear dirty state. */
+    function acceptFirebaseSyncState(state, rootData) {
+      firebaseSyncBaseState = cloudSnapshotState(state);
+      firebaseSyncRevision = Math.max(0, Number(rootData?.revision) || 0);
+      firebaseSyncGenerationId = String(rootData?.activeGeneration || "");
+      firebaseSyncDirty = false;
+      writeSyncMeta(activeAccountUid, {
+        revision: firebaseSyncRevision,
+        generationId: firebaseSyncGenerationId,
+        dirty: false,
+        baseState: firebaseSyncBaseState,
+        lastSyncedAt: new Date().toISOString()
+      });
+    }
+
+    /** Apply merged durable state while retaining valid device-local sessions/current context. */
+    function applySyncedState(nextState, reason = "cloud-sync") {
+      saveLocalRecoverySnapshot(reason);
+      const oldDeckId = activeDeckId;
+      const oldSetActive = studySetActive;
+      const oldDeckSessions = Object.fromEntries(Object.values(appState.decks || {}).map(deck => [deck.id, deck.sessionState || null]));
+      const oldSetSession = appState.studySet?.sessionState || null;
+      const oldFactKey = currentFact ? factKey(currentFact) : null;
+      firebaseSyncApplying = true;
+      try {
+        const normalized = mergeAppState(plainJson(nextState));
+        for (const deck of Object.values(normalized.decks)) {
+          if (oldDeckSessions[deck.id]) deck.sessionState = oldDeckSessions[deck.id];
+        }
+        normalized.studySet.sessionState = oldSetSession;
+        normalized.activeDeckId = normalized.decks[oldDeckId] ? oldDeckId : BUILTIN_DECK_ID;
+        normalized.studySet.active = Boolean(oldSetActive && normalized.studySet.deckIds.length);
+        appState = normalized;
+        activeDeckId = normalized.activeDeckId;
+        studySetActive = normalized.studySet.active;
+        currentFact = oldFactKey ? getFactByKey(oldFactKey) : null;
+        reconcileActiveContextAfterMutation({ persist: false, render: false });
+        persistState({ markSync: false, touchTimestamp: false });
+        try { localStorage.setItem(currentBrainSeedKey(), "1"); } catch (error) {}
+        updateControls();
+        if (currentFact) renderCurrentFact({ forceImmediate: displayedFactId === null });
+        updateStats();
+        if (view === "decks") renderDeckManager();
+      } finally {
+        firebaseSyncApplying = false;
+      }
+    }
+
+    /** Read/validate the complete immutable generation selected by a schema-v2 root. */
+    async function readCloudGeneration(uid, rootData) {
+      const generationId = String(rootData?.activeGeneration || "");
+      if (!generationId) throw new Error("The cloud profile has no active generation.");
+      const [marker, core, decks] = await Promise.all([
+        firebaseFirestoreApi.getDoc(cloudGenerationRef(uid, generationId)),
+        firebaseFirestoreApi.getDoc(cloudGenerationCoreRef(uid, generationId)),
+        firebaseFirestoreApi.getDocs(cloudGenerationDecksRef(uid, generationId))
+      ]);
+      if (!marker.exists() || marker.data()?.snapshotComplete !== true ||
+          Number(marker.data()?.cloudSchemaVersion) !== CLOUD_SCHEMA_VERSION) {
+        throw new Error("The selected cloud generation is incomplete.");
+      }
+      if (!core.exists() || Number(core.data()?.cloudSchemaVersion) !== CLOUD_SCHEMA_VERSION) {
+        throw new Error("The selected cloud generation is missing valid core state.");
+      }
+      const coreState = core.data()?.state;
+      if (!coreState || typeof coreState !== "object") throw new Error("The cloud core state is invalid.");
+      const state = plainJson(coreState);
+      state.decks = {};
+      decks.forEach(docSnap => {
+        const payload = docSnap.data() || {}, deck = payload.deck;
+        if (Number(payload.cloudSchemaVersion) === CLOUD_SCHEMA_VERSION && deck?.id) {
+          state.decks[deck.id] = deck;
+        }
+      });
+      const expected = Number(rootData.deckCount);
+      if (!Object.keys(state.decks).length || !Number.isFinite(expected) ||
+          Object.keys(state.decks).length !== expected) {
+        throw new Error("The cloud generation deck count does not match its manifest.");
+      }
+      return cloudSnapshotState(mergeAppState(state));
+    }
+
+    /** Read completed schema-v1 snapshot for one-time migration. */
+    async function readLegacyCloudState(uid) {
+      const [core, decks] = await Promise.all([
+        firebaseFirestoreApi.getDoc(cloudCoreRef(uid)),
+        firebaseFirestoreApi.getDocs(cloudDecksRef(uid))
+      ]);
+      if (!core.exists() || !core.data()?.state) throw new Error("The older cloud profile is missing valid core data.");
+      const state = plainJson(core.data().state);
+      state.decks = {};
+      decks.forEach(docSnap => { const deck = docSnap.data()?.deck; if (deck?.id) state.decks[deck.id] = deck; });
+      if (!Object.keys(state.decks).length) throw new Error("The older cloud profile has no decks.");
+      return cloudSnapshotState(mergeAppState(state));
+    }
+
+    /** Write complete immutable generation, then CAS the root pointer/revision in a transaction. */
+    async function publishCloudGeneration(uid, state, expectedRevision) {
+      const snapshot = cloudSnapshotState(state);
+      const decks = Object.values(snapshot.decks || {}).map(plainJson);
+      const core = cloudCoreFromState(snapshot);
+      const oversized = decks.find(deck => cloudJsonBytes(deck) > 900000);
+      if (oversized) throw new Error(`The deck “${oversized.name || oversized.id}” is too large for cloud sync.`);
+      if (cloudJsonBytes(core) > 900000) throw new Error("This profile's organization/settings are too large for cloud sync.");
+
+      const generationId = `g_${Date.now().toString(36)}_${firebaseSyncDeviceId.replace(/[^A-Za-z0-9_-]/g, "").slice(0,20)}_${Math.random().toString(36).slice(2,8)}`;
+      for (const deck of decks) {
+        await firebaseFirestoreApi.setDoc(
+          firebaseFirestoreApi.doc(cloudGenerationDecksRef(uid, generationId), cloudDeckDocId(deck.id)),
+          { cloudSchemaVersion: CLOUD_SCHEMA_VERSION, deck }
+        );
+      }
+      await firebaseFirestoreApi.setDoc(cloudGenerationCoreRef(uid, generationId), {
+        cloudSchemaVersion: CLOUD_SCHEMA_VERSION, state: core,
+        updatedAt: firebaseFirestoreApi.serverTimestamp()
+      });
+      await firebaseFirestoreApi.setDoc(cloudGenerationRef(uid, generationId), {
+        cloudSchemaVersion: CLOUD_SCHEMA_VERSION, snapshotComplete: true,
+        deckCount: decks.length, writerId: firebaseSyncDeviceId,
+        createdAt: firebaseFirestoreApi.serverTimestamp()
+      });
+
+      const revision = await firebaseFirestoreApi.runTransaction(firebaseDb, async transaction => {
+        const rootRef = cloudUserRef(uid);
+        const rootSnap = await transaction.get(rootRef);
+        const root = rootSnap.exists() ? rootSnap.data() || {} : {};
+        const currentRevision = Number(root.cloudSchemaVersion) === CLOUD_SCHEMA_VERSION
+          ? Math.max(0, Number(root.revision) || 0) : 0;
+        if (currentRevision !== expectedRevision) {
+          const conflict = new Error("Cloud changed during publication.");
+          conflict.code = "sync/revision-conflict";
+          throw conflict;
+        }
+        const nextRevision = currentRevision + 1;
+        transaction.set(rootRef, {
+          cloudSchemaVersion: CLOUD_SCHEMA_VERSION,
+          snapshotComplete: true,
+          activeGeneration: generationId,
+          revision: nextRevision,
+          appVersion: APP_VERSION,
+          deckCount: decks.length,
+          writerId: firebaseSyncDeviceId,
+          sourceLastSavedAt: appState.lastSavedAt || null,
+          updatedAt: firebaseFirestoreApi.serverTimestamp()
+        });
+        return nextRevision;
+      });
+      return {
+        cloudSchemaVersion: CLOUD_SCHEMA_VERSION, snapshotComplete: true,
+        activeGeneration: generationId, revision, appVersion: APP_VERSION,
+        deckCount: decks.length, writerId: firebaseSyncDeviceId,
+        sourceLastSavedAt: appState.lastSavedAt || null,
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    /** Reconcile local/remote durable changes and retry CAS conflicts against newest generation. */
+    async function performFirebaseSync({ force = false } = {}) {
+      if (!firebaseUser || firebaseUser.uid !== activeAccountUid || !firebaseDb || !firebaseFirestoreApi) return false;
+      if (firebaseSyncInFlight) return firebaseSyncInFlight;
+      if (!force && firebaseCloudStatus !== "ready") return false;
+
+      firebaseSyncInFlight = (async () => {
+        firebaseCloudBusy = true;
+        firebaseCloudStatus = "syncing";
+        firebaseCloudError = "";
+        renderFirebaseAccount();
+        persistState({ markSync: false, touchTimestamp: false });
+        let local = cloudSnapshotState();
+        let base = firebaseSyncBaseState || readSyncMeta(activeAccountUid).baseState;
+        try {
+          for (let attempt = 0; attempt < 3; attempt++) {
+            const rootSnap = await firebaseFirestoreApi.getDoc(cloudUserRef(activeAccountUid));
+            if (!rootSnap.exists()) {
+              if (!force) { firebaseCloudStatus = "empty"; renderFirebaseAccount(); return false; }
+              const published = await publishCloudGeneration(activeAccountUid, local, 0);
+              acceptFirebaseSyncState(local, published);
+              firebaseCloudMeta = published; firebaseCloudStatus = "ready";
+              return true;
+            }
+
+            const root = rootSnap.data() || {};
+            let remote, remoteRevision;
+            if (Number(root.cloudSchemaVersion) === CLOUD_SCHEMA_VERSION && root.snapshotComplete === true) {
+              remoteRevision = Math.max(0, Number(root.revision) || 0);
+              remote = await readCloudGeneration(activeAccountUid, root);
+            } else if (Number(root.cloudSchemaVersion) === 1 && root.snapshotComplete === true) {
+              remoteRevision = 0;
+              remote = await readLegacyCloudState(activeAccountUid);
+            } else {
+              throw new Error("The cloud profile is incomplete or uses an unsupported schema.");
+            }
+
+            const remoteAdvanced = !base || remoteRevision !== firebaseSyncRevision ||
+              String(root.activeGeneration || "") !== firebaseSyncGenerationId;
+            const merged = remoteAdvanced ? mergeSyncedStates(base, local, remote) : local;
+            if (!syncJsonEqual(merged, local)) applySyncedState(merged, "cloud-merge");
+            local = cloudSnapshotState();
+            const needsPublish = Number(root.cloudSchemaVersion) !== CLOUD_SCHEMA_VERSION ||
+              !syncJsonEqual(local, remote) || firebaseSyncDirty;
+            if (!needsPublish) {
+              acceptFirebaseSyncState(remote, root);
+              firebaseCloudMeta = root; firebaseCloudStatus = "ready";
+              return true;
+            }
+            try {
+              const published = await publishCloudGeneration(activeAccountUid, local, remoteRevision);
+              acceptFirebaseSyncState(local, published);
+              firebaseCloudMeta = published; firebaseCloudStatus = "ready";
+              return true;
+            } catch (error) {
+              if (String(error?.code || "") !== "sync/revision-conflict") throw error;
+              base = firebaseSyncBaseState || base;
+            }
+          }
+          throw new Error("Cloud kept changing during sync. SkyStudee will retry.");
+        } catch (error) {
+          firebaseCloudStatus = "error";
+          firebaseCloudError = friendlyFirestoreError(error);
+          return false;
+        } finally {
+          firebaseCloudBusy = false;
+          firebaseSyncInFlight = null;
+          renderFirebaseAccount();
+        }
+      })();
+      return firebaseSyncInFlight;
+    }
+
+    /** Watch the root revision in realtime and poll when visible as a fallback. */
+    function startFirebaseSyncListener(uid) {
+      stopFirebaseSync();
+      if (firebaseFirestoreApi?.onSnapshot) {
+        firebaseSyncUnsubscribe = firebaseFirestoreApi.onSnapshot(cloudUserRef(uid), snap => {
+          if (firebaseUser?.uid !== uid || activeAccountUid !== uid || !snap.exists()) return;
+          const root = snap.data() || {}, revision = Math.max(0, Number(root.revision) || 0);
+          if (Number(root.cloudSchemaVersion) === CLOUD_SCHEMA_VERSION &&
+              (revision > firebaseSyncRevision || String(root.activeGeneration || "") !== firebaseSyncGenerationId)) {
+            firebaseCloudMeta = root; firebaseCloudStatus = "ready"; scheduleFirebaseSync(40);
+          }
+        }, error => {
+          firebaseCloudStatus = "error"; firebaseCloudError = friendlyFirestoreError(error); renderFirebaseAccount();
+        });
+      }
+      firebaseSyncPollTimer = setInterval(() => {
+        if (document.visibilityState === "visible" && firebaseUser?.uid === uid && activeAccountUid === uid) {
+          refreshFirebaseCloudStatus(firebaseUser).catch(() => {});
+        }
+      }, SYNC_POLL_MS);
+    }
+
+    /** Render automatic sync state and explicit first-enable/upgrade/manual-check actions. */
     function renderFirebaseCloudStatus() {
       const signedIn = Boolean(firebaseUser);
       cloudPanel.classList.toggle("hidden", !signedIn);
-      uploadCloudBtn.classList.add("hidden");
-      loadCloudBtn.classList.add("hidden");
-      retryCloudBtn.classList.add("hidden");
+      uploadCloudBtn.classList.add("hidden"); loadCloudBtn.classList.add("hidden"); retryCloudBtn.classList.add("hidden");
       cloudMetaText.textContent = "";
-
       if (!signedIn) return;
-
-      if (firebaseCloudBusy) {
-        cloudStatusText.textContent = "Working with Firebase…";
-        return;
+      if (firebaseCloudBusy || firebaseCloudStatus === "syncing") {
+        cloudStatusText.textContent = "Syncing SkyStudee data…";
+        cloudMetaText.textContent = "Local study remains available while Firestore updates."; return;
       }
-
-      if (firebaseCloudStatus === "checking") {
-        cloudStatusText.textContent = "Checking for SkyStudee cloud data…";
-        return;
-      }
-
+      if (firebaseCloudStatus === "checking") { cloudStatusText.textContent = "Checking account sync…"; return; }
       if (firebaseCloudStatus === "empty") {
-        cloudStatusText.textContent = "No cloud profile exists for this Google account yet.";
-        cloudMetaText.textContent = "Upload this browser's current SkyStudee library to create the first cloud copy. Nothing will be removed from this device.";
-        uploadCloudBtn.classList.remove("hidden");
-        return;
+        cloudStatusText.textContent = "Sync is not enabled for this account yet.";
+        cloudMetaText.textContent = "Enable sync to create a cloud copy and keep later durable changes synchronized across devices.";
+        uploadCloudBtn.textContent = "Enable sync"; uploadCloudBtn.classList.remove("hidden"); return;
       }
-
+      if (firebaseCloudStatus === "legacy") {
+        cloudStatusText.textContent = "An older one-time cloud snapshot was found.";
+        cloudMetaText.textContent = "Merge it with this account's local library and upgrade to live multi-device sync.";
+        uploadCloudBtn.textContent = "Merge & upgrade"; uploadCloudBtn.classList.remove("hidden");
+        loadCloudBtn.textContent = "Check cloud now"; loadCloudBtn.classList.remove("hidden"); return;
+      }
       if (firebaseCloudStatus === "ready") {
-        const deckCount = Number(firebaseCloudMeta?.deckCount || 0);
+        const revision = Math.max(0, Number(firebaseCloudMeta?.revision) || firebaseSyncRevision);
         const saved = cloudTimeLabel(firebaseCloudMeta?.updatedAt || firebaseCloudMeta?.sourceLastSavedAt);
-        cloudStatusText.textContent = "Cloud data found for this account.";
-        cloudMetaText.textContent = `${deckCount} deck${deckCount === 1 ? "" : "s"}${saved ? ` · updated ${saved}` : ""}. Automatic background sync is not enabled yet.`;
-        loadCloudBtn.classList.remove("hidden");
-        return;
+        cloudStatusText.textContent = firebaseSyncDirty ? "Local changes are waiting to sync." : "Synced across devices.";
+        cloudMetaText.textContent = `Revision ${revision}${saved ? ` · updated ${saved}` : ""}. Durable study data syncs automatically; open-card/session position stays on this device.`;
+        if (firebaseSyncDirty) { uploadCloudBtn.textContent = "Sync now"; uploadCloudBtn.classList.remove("hidden"); }
+        loadCloudBtn.textContent = "Check now"; loadCloudBtn.classList.remove("hidden"); return;
       }
-
       if (firebaseCloudStatus === "incomplete") {
-        cloudStatusText.textContent = "An incomplete cloud setup was found.";
-        cloudMetaText.textContent = "You can safely retry uploading this device. The completed-profile marker is written only after the deck and state documents succeed.";
-        uploadCloudBtn.classList.remove("hidden");
-        retryCloudBtn.classList.remove("hidden");
-        return;
+        cloudStatusText.textContent = "The cloud profile is incomplete.";
+        cloudMetaText.textContent = "No incomplete generation will replace this device.";
+        retryCloudBtn.classList.remove("hidden"); return;
       }
-
       if (firebaseCloudStatus === "error") {
-        cloudStatusText.textContent = "Cloud status could not be checked.";
-        cloudMetaText.textContent = firebaseCloudError || "Firebase Firestore is unavailable right now.";
+        cloudStatusText.textContent = "Account sync needs attention.";
+        cloudMetaText.textContent = firebaseCloudError || "Firestore is unavailable right now.";
         retryCloudBtn.classList.remove("hidden");
+        if (firebaseSyncDirty) { uploadCloudBtn.textContent = "Retry sync"; uploadCloudBtn.classList.remove("hidden"); }
         return;
       }
-
-      cloudStatusText.textContent = "Preparing Firebase cloud access…";
+      cloudStatusText.textContent = "Preparing account sync…";
     }
 
-    /**
-     * Render identity, auth/busy state and manual cloud controls without touching learning data.
-     * Signing out does not erase the local profile.
-     */
+    /** Render Google identity and synchronization state; it never mixes UID-local browser profiles. */
     function renderFirebaseAccount() {
       const signedIn = Boolean(firebaseUser);
       accountBtn.classList.toggle("signed-in", signedIn);
       accountBtn.disabled = firebaseAuthBusy || (!firebaseAuthReady && !firebaseAuthError);
-      accountBtn.textContent = firebaseAuthBusy
-        ? "Working…"
-        : signedIn
-          ? firebaseAccountLabel(firebaseUser)
-          : firebaseAuthError
-            ? "Retry sign in"
-            : firebaseAuthReady
-              ? "Sign in"
-              : "Account…";
+      accountBtn.textContent = firebaseAuthBusy ? "Working…" : signedIn ? firebaseAccountLabel(firebaseUser) :
+        firebaseAuthError ? "Retry sign in" : firebaseAuthReady ? "Sign in" : "Account…";
       accountBtn.title = firebaseAuthError || (signedIn ? String(firebaseUser.email || "Google account") : "Sign in with Google");
-
       if (signedIn) {
         accountAvatar.textContent = firebaseInitials(firebaseUser).toUpperCase();
         accountName.textContent = firebaseUser.displayName || "Google account";
         accountEmail.textContent = firebaseUser.email || "";
-        accountNote.textContent = "Google sign-in is connected. First cloud setup stays manual so SkyStudee never silently replaces this browser's decks or mastery.";
+        accountNote.textContent = "This Google account has its own local SkyStudee profile. Once enabled, durable changes synchronize automatically between signed-in devices.";
         signOutBtn.classList.remove("hidden");
       } else {
-        accountAvatar.textContent = "?";
-        accountName.textContent = "Signed out";
-        accountEmail.textContent = "";
-        accountNote.textContent = firebaseAuthError
-          ? `Firebase Authentication could not start: ${firebaseAuthError}`
-          : "Sign in with Google to connect SkyStudee to your account.";
+        accountAvatar.textContent = "?"; accountName.textContent = "Signed out"; accountEmail.textContent = "";
+        accountNote.textContent = firebaseAuthError ? `Firebase Authentication could not start: ${firebaseAuthError}` :
+          "Sign in with Google to open an isolated account profile and synchronize it between devices.";
         signOutBtn.classList.add("hidden");
       }
       signOutBtn.disabled = firebaseCloudBusy;
       renderFirebaseCloudStatus();
     }
 
-    /**
-     * Translate known popup/domain/network failures into user-facing diagnostics; leave other
-     * messages readable without exposing credentials.
-     */
+    /** Convert common Auth errors into useful account-panel messages. */
     function friendlyFirebaseAuthError(error) {
       const code = String(error?.code || "");
       if (code === "auth/popup-closed-by-user") return "Google sign-in was closed before it finished.";
@@ -8236,360 +8834,185 @@ I will upload the topic soon, confirm your understanding`;
       return String(error?.message || error || "Firebase Authentication failed.").replace(/^Firebase:\s*/i, "");
     }
 
-    /**
-     * Translate permission/network failures for the account panel. A permission-denied diagnosis
-     * must check deployed user-scoped rules, not relax database access globally.
-     */
+    /** Convert common Firestore/sync failures into useful messages without weakening security. */
     function friendlyFirestoreError(error) {
       const code = String(error?.code || "");
-      if (code === "permission-denied" || code === "firestore/permission-denied") {
-        return "Firestore denied access. Check that the SkyStudee security rules are published for this signed-in user.";
-      }
-      if (code === "unavailable" || code === "firestore/unavailable") {
-        return "Firestore is temporarily unavailable. Check your connection and try again.";
-      }
+      if (code === "sync/revision-conflict") return "Another device changed the profile simultaneously; SkyStudee will merge and retry.";
+      if (code === "permission-denied" || code === "firestore/permission-denied") return "Firestore denied this account. Publish owner-only rules for /users/{uid} and nested generation documents.";
+      if (code === "unavailable" || code === "firestore/unavailable") return "Firestore is temporarily unavailable. Local changes are safe and will retry.";
       return String(error?.message || error || "Firebase Firestore failed.").replace(/^Firebase:\s*/i, "");
     }
 
-    /**
-     * Read only the user's root manifest and classify snapshot availability; discard stale responses
-     * after UID changes. No deck transfer occurs here, and it does not verify every deck/core
-     * document.
-     */
+    /** Inspect only the root manifest and classify empty/legacy/ready/incomplete/error. */
     async function refreshFirebaseCloudStatus(user = firebaseUser) {
-      if (!user) {
-        firebaseCloudStatus = "idle";
-        firebaseCloudError = "";
-        firebaseCloudMeta = null;
-        renderFirebaseAccount();
-        return;
-      }
-
+      if (!user) { firebaseCloudStatus = "idle"; firebaseCloudError = ""; firebaseCloudMeta = null; renderFirebaseAccount(); return; }
       const uid = user.uid;
       if (!firebaseDb || !firebaseFirestoreApi) {
-        firebaseCloudStatus = "error";
-        firebaseCloudError = "Firestore did not initialize. Google sign-in still works, but cloud study data is unavailable.";
-        renderFirebaseAccount();
-        return;
+        firebaseCloudStatus = "error"; firebaseCloudError = "Firestore did not initialize. Google sign-in still works, but account sync is unavailable."; renderFirebaseAccount(); return;
       }
-
-      firebaseCloudStatus = "checking";
-      firebaseCloudError = "";
-      firebaseCloudMeta = null;
-      renderFirebaseAccount();
-
+      firebaseCloudStatus = "checking"; firebaseCloudError = ""; renderFirebaseAccount();
       try {
         const snap = await firebaseFirestoreApi.getDoc(cloudUserRef(uid));
         if (firebaseUser?.uid !== uid) return;
-        if (!snap.exists()) {
-          firebaseCloudStatus = "empty";
-          firebaseCloudMeta = null;
-        } else {
-          const data = snap.data() || {};
-          firebaseCloudMeta = data;
-          firebaseCloudStatus = data.snapshotComplete === true && Number(data.cloudSchemaVersion) === CLOUD_SCHEMA_VERSION
-            ? "ready"
-            : "incomplete";
+        if (!snap.exists()) { firebaseCloudStatus = "empty"; firebaseCloudMeta = null; }
+        else {
+          const data = snap.data() || {}; firebaseCloudMeta = data;
+          if (Number(data.cloudSchemaVersion) === CLOUD_SCHEMA_VERSION && data.snapshotComplete === true && data.activeGeneration) {
+            firebaseCloudStatus = "ready";
+            if (Math.max(0, Number(data.revision) || 0) > firebaseSyncRevision || firebaseSyncDirty) scheduleFirebaseSync(20);
+          } else if (Number(data.cloudSchemaVersion) === 1 && data.snapshotComplete === true) firebaseCloudStatus = "legacy";
+          else firebaseCloudStatus = "incomplete";
         }
       } catch (error) {
         if (firebaseUser?.uid !== uid) return;
-        firebaseCloudStatus = "error";
-        firebaseCloudError = friendlyFirestoreError(error);
+        firebaseCloudStatus = "error"; firebaseCloudError = friendlyFirestoreError(error);
       }
       renderFirebaseAccount();
     }
 
-    /**
-     * Explicit FIRST snapshot upload, allowed only for empty/incomplete status after confirmation
-     * and size checks. Deletes prior bootstrap deck docs, writes each deck then core, and writes
-     * snapshotComplete last. Sequential writes are NOT a transaction, concurrency-safe sync, or
-     * protection against every competing client.
-     */
-    async function uploadLocalStateToCloud() {
-      if (!firebaseUser || !firebaseDb || !firebaseFirestoreApi || firebaseCloudBusy) return;
-      if (!["empty", "incomplete"].includes(firebaseCloudStatus)) return;
-
-      const ok = confirm(
-        "Create your SkyStudee cloud profile from THIS device?\n\n" +
-        "This uploads this browser's classes, units, decks, mastery, statistics, settings, and current study-set state. Nothing on this device will be deleted."
-      );
-      if (!ok) return;
-
-      firebaseCloudBusy = true;
-      firebaseCloudError = "";
-      renderFirebaseAccount();
-
+    /** Open/create a UID-local browser profile; never copy one signed-in account into another. */
+    async function activateFirebaseAccount(user) {
+      const uid = String(user?.uid || "");
+      if (!uid || activeAccountUid === uid) return false;
       try {
-        persistState();
-        const uid = firebaseUser.uid;
-        const core = cloudCoreFromLocalState();
-        const decks = Object.values(appState.decks).map(deck => plainJson(deck));
-        const oversizedDeck = decks.find(deck => cloudJsonBytes(deck) > 900000);
-        if (oversizedDeck) {
-          throw new Error(`The deck “${oversizedDeck.name || oversizedDeck.id}” is too large for the current cloud snapshot format. Nothing was uploaded.`);
+        persistState({ markSync: false });
+        const key = accountStorageKey(uid);
+        if (!localStorage.getItem(key)) {
+          const seed = activeAccountUid ? defaultAppState() : plainJson(appState);
+          if (!seed.userName) seed.userName = firebaseAccountLabel(user);
+          localStorage.setItem(key, JSON.stringify(seed));
+          writeSyncMeta(uid, { revision: 0, generationId: "", dirty: true, baseState: null });
         }
-        if (cloudJsonBytes(core) > 900000) {
-          throw new Error("This SkyStudee profile's organization/settings data is too large for the current cloud snapshot format. Nothing was uploaded.");
-        }
-
-        // First-profile uploads are snapshots, not merges. Clear any deck
-        // documents left by an interrupted earlier bootstrap so deleted decks
-        // cannot come back on another device.
-        const existingDecks = await firebaseFirestoreApi.getDocs(cloudDecksRef(uid));
-        for (const docSnap of existingDecks.docs) {
-          await firebaseFirestoreApi.deleteDoc(docSnap.ref);
-        }
-
-        for (const deck of decks) {
-          const ref = firebaseFirestoreApi.doc(cloudDecksRef(uid), cloudDeckDocId(deck.id));
-          await firebaseFirestoreApi.setDoc(ref, {
-            cloudSchemaVersion: CLOUD_SCHEMA_VERSION,
-            deck
-          });
-        }
-
-        await firebaseFirestoreApi.setDoc(cloudCoreRef(uid), {
-          cloudSchemaVersion: CLOUD_SCHEMA_VERSION,
-          state: core,
-          updatedAt: firebaseFirestoreApi.serverTimestamp()
-        });
-
-        await firebaseFirestoreApi.setDoc(cloudUserRef(uid), {
-          cloudSchemaVersion: CLOUD_SCHEMA_VERSION,
-          snapshotComplete: true,
-          appVersion: APP_VERSION,
-          deckCount: decks.length,
-          sourceLastSavedAt: appState.lastSavedAt || null,
-          updatedAt: firebaseFirestoreApi.serverTimestamp()
-        });
-
-        firebaseCloudStatus = "ready";
-        firebaseCloudMeta = {
-          cloudSchemaVersion: CLOUD_SCHEMA_VERSION,
-          snapshotComplete: true,
-          appVersion: APP_VERSION,
-          deckCount: decks.length,
-          sourceLastSavedAt: appState.lastSavedAt || null,
-          updatedAt: new Date().toISOString()
-        };
-      } catch (error) {
-        firebaseCloudStatus = "error";
-        firebaseCloudError = friendlyFirestoreError(error);
-      } finally {
-        firebaseCloudBusy = false;
-        renderFirebaseAccount();
-      }
-    }
-
-    /**
-     * Explicitly replace this device from a ready cloud snapshot after structural checks. Save the
-     * old appState to PRE_CLOUD_RESTORE_KEY before replacing STORAGE_KEY, mark Brain seeding
-     * handled, then reload. Does not merge competing histories or automatically download on sign-in.
-     */
-    async function loadCloudStateOntoDevice() {
-      if (!firebaseUser || !firebaseDb || !firebaseFirestoreApi || firebaseCloudBusy) return;
-      if (firebaseCloudStatus !== "ready") return;
-
-      const ok = confirm(
-        "Load the cloud SkyStudee data onto THIS device?\n\n" +
-        "This will replace this browser's current local SkyStudee state after saving an automatic local recovery copy."
-      );
-      if (!ok) return;
-
-      firebaseCloudBusy = true;
-      firebaseCloudError = "";
-      renderFirebaseAccount();
-
-      try {
-        if (!storageAvailable) throw new Error("Local browser storage is unavailable, so SkyStudee cannot safely replace this device's state.");
-        persistState();
-        const uid = firebaseUser.uid;
-        const [rootSnap, coreSnap, deckSnaps] = await Promise.all([
-          firebaseFirestoreApi.getDoc(cloudUserRef(uid)),
-          firebaseFirestoreApi.getDoc(cloudCoreRef(uid)),
-          firebaseFirestoreApi.getDocs(cloudDecksRef(uid))
-        ]);
-
-        if (!rootSnap.exists() || rootSnap.data()?.snapshotComplete !== true) {
-          throw new Error("The cloud profile is no longer marked complete. Retry the cloud-status check before loading.");
-        }
-        if (!coreSnap.exists()) throw new Error("The cloud profile is missing its core state document.");
-
-        const corePayload = coreSnap.data()?.state;
-        if (!corePayload || typeof corePayload !== "object") throw new Error("The cloud core state is invalid.");
-
-        const cloudState = plainJson(corePayload);
-        cloudState.decks = {};
-        deckSnaps.forEach(docSnap => {
-          const deck = docSnap.data()?.deck;
-          if (deck && typeof deck === "object" && deck.id) cloudState.decks[deck.id] = deck;
-        });
-        if (!Object.keys(cloudState.decks).length) throw new Error("The cloud profile does not contain any decks.");
-
-        const normalized = mergeAppState(cloudState);
-        localStorage.setItem(PRE_CLOUD_RESTORE_KEY, JSON.stringify({
-          savedAt: new Date().toISOString(),
-          state: plainJson(appState)
-        }));
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-        // The Biological Bases deck is a one-time preload. Mark the seed as
-        // already handled on this device so a deck intentionally deleted on
-        // the source device stays deleted after a cloud restore.
-        localStorage.setItem(BRAIN_DECK_SEED_KEY, "1");
+        localStorage.setItem(ACTIVE_ACCOUNT_UID_KEY, uid);
+        activeAccountUid = uid;
         location.reload();
+        return true;
       } catch (error) {
-        firebaseCloudStatus = "error";
-        firebaseCloudError = friendlyFirestoreError(error);
-        firebaseCloudBusy = false;
-        renderFirebaseAccount();
+        firebaseAuthError = `Could not open this account's local profile: ${String(error?.message || error)}`;
+        renderFirebaseAccount(); return false;
       }
     }
 
-    /**
-     * Dynamically import the pinned Firebase SDK after local startup. Auth remains usable if
-     * Firestore import fails; local studying remains usable if both fail. Registers auth-state
-     * checks but no onSnapshot, auto-upload hook or persistent Firestore offline cache.
-     */
+    /** Load sync metadata, attach root listener, and immediately reconcile an enabled cloud profile. */
+    async function startFirebaseSync(user) {
+      if (!user || user.uid !== activeAccountUid) return;
+      const meta = readSyncMeta(user.uid);
+      firebaseSyncRevision = meta.revision; firebaseSyncGenerationId = meta.generationId;
+      firebaseSyncBaseState = meta.baseState; firebaseSyncDirty = meta.dirty;
+      startFirebaseSyncListener(user.uid);
+      await refreshFirebaseCloudStatus(user);
+      if (firebaseCloudStatus === "ready") await performFirebaseSync({ force: true });
+    }
+
+    /** Enable sync, upgrade schema v1, or force a pending schema-v2 synchronization. */
+    async function uploadLocalStateToCloud() {
+      if (!firebaseUser || firebaseCloudBusy) return;
+      if (firebaseCloudStatus === "empty" && !confirm(
+        "Enable automatic SkyStudee sync for this Google account?\n\nDurable decks, mastery, statistics, settings, and organization will synchronize. Open-card/session position stays local to each device."
+      )) return;
+      if (firebaseCloudStatus === "legacy" && !confirm(
+        "Merge this device with the older cloud snapshot and upgrade it to live sync?\n\nSkyStudee keeps local-only decks and conservatively combines learning evidence."
+      )) return;
+      await performFirebaseSync({ force: true });
+    }
+
+    /** Manually fetch/reconcile newest cloud generation; listeners normally do this automatically. */
+    async function loadCloudStateOntoDevice() {
+      if (!firebaseUser || firebaseCloudBusy) return;
+      await refreshFirebaseCloudStatus(firebaseUser);
+      if (["ready", "legacy"].includes(firebaseCloudStatus)) await performFirebaseSync({ force: true });
+    }
+
+    /** Initialize pinned Firebase Auth/Firestore after local UI; failures never block local study. */
     async function initFirebaseAuth({ retry = false } = {}) {
       if (firebaseAuthReady) return true;
       if (firebaseAuthInitPromise && !retry) return firebaseAuthInitPromise;
-
-      firebaseAuthError = "";
-      renderFirebaseAccount();
+      firebaseAuthError = ""; renderFirebaseAccount();
       firebaseAuthInitPromise = (async () => {
         try {
           const [appApi, authApi] = await Promise.all([
             import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-app.js`),
             import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-auth.js`)
           ]);
-
-          firebaseApp = appApi.getApps().length
-            ? appApi.getApp()
-            : appApi.initializeApp(FIREBASE_CONFIG);
-          firebaseAuthApi = authApi;
-          firebaseAuth = authApi.getAuth(firebaseApp);
-          firebaseAuth.useDeviceLanguage();
-
+          firebaseApp = appApi.getApps().length ? appApi.getApp() : appApi.initializeApp(FIREBASE_CONFIG);
+          firebaseAuthApi = authApi; firebaseAuth = authApi.getAuth(firebaseApp); firebaseAuth.useDeviceLanguage();
           try {
             const firestoreApi = await import(`https://www.gstatic.com/firebasejs/${FIREBASE_SDK_VERSION}/firebase-firestore.js`);
-            firebaseFirestoreApi = firestoreApi;
-            firebaseDb = firestoreApi.getFirestore(firebaseApp);
+            firebaseFirestoreApi = firestoreApi; firebaseDb = firestoreApi.getFirestore(firebaseApp);
           } catch (error) {
             console.error("SkyStudee Firestore failed to initialize.", error);
-            firebaseFirestoreApi = null;
-            firebaseDb = null;
-            firebaseCloudStatus = "error";
-            firebaseCloudError = friendlyFirestoreError(error);
+            firebaseFirestoreApi = null; firebaseDb = null; firebaseCloudStatus = "error"; firebaseCloudError = friendlyFirestoreError(error);
           }
+          try { await authApi.setPersistence(firebaseAuth, authApi.browserLocalPersistence); }
+          catch (error) { console.warn("SkyStudee Firebase auth persistence unavailable.", error); }
 
-          try {
-            await authApi.setPersistence(firebaseAuth, authApi.browserLocalPersistence);
-          } catch (error) {
-            console.warn("SkyStudee Firebase auth persistence unavailable; continuing with Firebase defaults.", error);
-          }
-
-          authApi.onAuthStateChanged(firebaseAuth, user => {
-            firebaseUser = user || null;
-            firebaseAuthError = "";
-            firebaseAuthReady = true;
+          authApi.onAuthStateChanged(firebaseAuth, async user => {
+            firebaseUser = user || null; firebaseAuthError = ""; firebaseAuthReady = true;
             if (firebaseUser) {
-              refreshFirebaseCloudStatus(firebaseUser);
+              const reloading = await activateFirebaseAccount(firebaseUser);
+              if (!reloading && firebaseUser?.uid === activeAccountUid) await startFirebaseSync(firebaseUser);
             } else {
-              firebaseCloudStatus = "idle";
-              firebaseCloudError = "";
-              firebaseCloudMeta = null;
+              stopFirebaseSync(); firebaseCloudStatus = "idle"; firebaseCloudMeta = null;
+              if (activeAccountUid && !firebaseIntentionalSignOut) {
+                persistState({ markSync: false });
+                try { localStorage.removeItem(ACTIVE_ACCOUNT_UID_KEY); } catch (error) {}
+                activeAccountUid = null; location.reload(); return;
+              }
               renderFirebaseAccount();
             }
           });
-
-          firebaseAuthReady = true;
-          renderFirebaseAccount();
-          return true;
+          firebaseAuthReady = true; renderFirebaseAccount(); return true;
         } catch (error) {
           console.error("SkyStudee Firebase Authentication failed to initialize.", error);
-          firebaseAuthReady = false;
-          firebaseAuthError = friendlyFirebaseAuthError(error);
-          renderFirebaseAccount();
-          return false;
-        } finally {
-          firebaseAuthInitPromise = null;
-        }
+          firebaseAuthReady = false; firebaseAuthError = friendlyFirebaseAuthError(error); renderFirebaseAccount(); return false;
+        } finally { firebaseAuthInitPromise = null; }
       })();
-
       return firebaseAuthInitPromise;
     }
 
-    /**
-     * Use a user-triggered Google popup after SDK readiness, handle cancellation/blocking, and
-     * update account feedback. Never infer silent access to a browser's Google account or request
-     * unrelated Google scopes.
-     */
+    /** Start explicit Google popup sign-in; no unrelated Google scopes are requested. */
     async function signInWithGoogle() {
       if (firebaseAuthBusy) return;
-      firebaseAuthBusy = true;
-      renderFirebaseAccount();
+      firebaseAuthBusy = true; renderFirebaseAccount();
       try {
         const ready = firebaseAuthReady || await initFirebaseAuth({ retry: Boolean(firebaseAuthError) });
         if (!ready || !firebaseAuth || !firebaseAuthApi) throw new Error(firebaseAuthError || "Firebase Authentication is unavailable.");
-        const provider = new firebaseAuthApi.GoogleAuthProvider();
-        await firebaseAuthApi.signInWithPopup(firebaseAuth, provider);
+        await firebaseAuthApi.signInWithPopup(firebaseAuth, new firebaseAuthApi.GoogleAuthProvider());
       } catch (error) {
         const message = friendlyFirebaseAuthError(error);
         if (String(error?.code || "") !== "auth/popup-closed-by-user") alert(message);
         firebaseAuthError = String(error?.code || "") === "auth/popup-closed-by-user" ? "" : message;
-      } finally {
-        firebaseAuthBusy = false;
-        renderFirebaseAccount();
-      }
+      } finally { firebaseAuthBusy = false; renderFirebaseAccount(); }
     }
 
-    /**
-     * Sign out Firebase identity unless auth/cloud work is busy, then close the account panel.
-     * Leaves local decks/evidence intact; account-isolated local caches are not implemented.
-     */
+    /** Save account profile, sign out, clear active selector, and reload the untouched guest profile. */
     async function signOutGoogle() {
       if (!firebaseAuth || !firebaseAuthApi || firebaseAuthBusy || firebaseCloudBusy) return;
-      firebaseAuthBusy = true;
-      renderFirebaseAccount();
+      firebaseAuthBusy = true; firebaseIntentionalSignOut = true;
+      persistState({ markSync: false }); stopFirebaseSync(); renderFirebaseAccount();
       try {
         await firebaseAuthApi.signOut(firebaseAuth);
-        accountOverlay.classList.remove("show");
-        accountOverlay.setAttribute("aria-hidden", "true");
+        try { localStorage.removeItem(ACTIVE_ACCOUNT_UID_KEY); } catch (error) {}
+        activeAccountUid = null; location.reload();
       } catch (error) {
-        alert(friendlyFirebaseAuthError(error));
-      } finally {
-        firebaseAuthBusy = false;
-        renderFirebaseAccount();
-      }
+        firebaseIntentionalSignOut = false; alert(friendlyFirebaseAuthError(error));
+      } finally { firebaseAuthBusy = false; renderFirebaseAccount(); }
     }
 
-    /**
-     * Show the signed-in account dialog and update aria-hidden. This action only displays state; it
-     * does not transfer a snapshot.
-     */
+    /** Show signed-in account/sync dialog. */
     function openFirebaseAccount() {
-      accountOverlay.classList.add("show");
-      accountOverlay.setAttribute("aria-hidden", "false");
+      accountOverlay.classList.add("show"); accountOverlay.setAttribute("aria-hidden", "false");
     }
 
-    /**
-     * Dismiss the account dialog only when cloud work is not busy, keeping aria-hidden consistent.
-     */
+    /** Close account dialog unless a cloud operation is active. */
     function closeFirebaseAccount() {
       if (firebaseCloudBusy) return;
-      accountOverlay.classList.remove("show");
-      accountOverlay.setAttribute("aria-hidden", "true");
+      accountOverlay.classList.remove("show"); accountOverlay.setAttribute("aria-hidden", "true");
     }
 
-    /**
-     * Open the account panel for an existing Firebase user; otherwise start explicit Google popup
-     * sign-in.
-     */
+    /** Open account dialog or begin sign-in. */
     async function handleFirebaseAccountButton() {
-      if (firebaseUser) {
-        openFirebaseAccount();
-        return;
-      }
+      if (firebaseUser) { openFirebaseAccount(); return; }
       await signInWithGoogle();
     }
 
@@ -8953,7 +9376,7 @@ I will upload the topic soon, confirm your understanding`;
       }
 
       try {
-        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(currentStorageKey());
       } catch (error) {}
 
       appState = defaultAppState();
@@ -8995,7 +9418,10 @@ I will upload the topic soon, confirm your understanding`;
       if (
         onboardingOverlay.classList.contains("show") ||
         deckManagerOverlay.classList.contains("show") ||
-        importPreviewOverlay.classList.contains("show")
+        importPreviewOverlay.classList.contains("show") ||
+        studySetOverlay.classList.contains("show") ||
+        organizationOverlay.classList.contains("show") ||
+        accountOverlay.classList.contains("show")
       ) {
         return;
       }
@@ -9164,9 +9590,8 @@ I will upload the topic soon, confirm your understanding`;
     showOnboardingIfNeeded();
     updateStats();
 
-    // Firebase loads only after the local app is usable. Firestore may check
-    // whether a cloud profile exists, but study data is never uploaded or
-    // replaced until the user presses the explicit account-panel action.
+    // Firebase loads only after the local app is usable. Enabled account profiles
+    // reconcile durable changes automatically; first enable/legacy upgrade remain explicit.
     // ASYNC NETWORK BOUNDARY: this runs after local UI startup; auth/cloud failures must not disable local study or trigger automatic upload/overwrite.
     initFirebaseAuth();
 

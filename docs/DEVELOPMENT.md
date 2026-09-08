@@ -86,8 +86,10 @@ Set `SKYSTUDEE_CHROMIUM` to a locally installed Chromium executable when needed.
 Screenshots/test results go to `test-results/` (ignored by Git). Tests use synthetic
 profiles and a stubbed Firebase module API, not real sign-in or live user data.
 They exercise Library startup, old Brain rename, multi-deck ownership/undo,
-organization, import-unit gating, and cloud bootstrap ordering/failure guards.
-Mocks establish client control flow, not the Firebase service's actual auth/rules.
+active-set deletion repair, modal shortcut blocking, organization/import gates,
+UID-isolated storage, immutable generation publication, transactional revisions,
+additive evidence merging, and failed-write dirty retention. Mocks establish client
+control flow, not production Firebase Auth, quotas, or deployed Security Rules.
 
 For a release changing UI or runtime, add focused checks beyond this smoke suite:
 short/large phones, landscape, 1440x900, ultrawide/5K2K; real taps versus keyboard;

@@ -5,11 +5,12 @@ A local-first flashcard study app, statically hosted on
 Cram modes, finite Cold Tests, typed recall/autocomplete, class/unit organization,
 combined-deck study sets, local backups, and a phone-specific interface.
 
-**Cloud status:** Google sign-in and explicit first cloud snapshot upload/load are
-implemented. **Automatic background synchronization is not.** Signing into another
-browser does not automatically make all later reviews travel between devices.
-See [Firebase behavior and limits](docs/FIREBASE.md). A curated Deck Shop has been
-discussed but has no current tab, catalog, install, or publishing implementation.
+**Cloud status:** Google sign-in selects a UID-isolated local profile. After the user
+enables sync, revisioned immutable Firestore generations automatically reconcile durable
+decks, organization, settings, and learning evidence between devices. Open-card/session
+position remains device-local. See [Firebase behavior and limits](docs/FIREBASE.md).
+A curated Deck Shop has been discussed but has no current tab, catalog, install, or
+publishing implementation.
 
 ## Start here
 
@@ -59,6 +60,6 @@ The source was recovered from `main` commit
 `93c20c86725d819f03c073213bf5b7a05f2cf64f`, whose loader was
 `firebase-bootstrap-v13-20260904`. At inspection the repository had no separate
 Firebase branch. The documentation release preserves executable app logic,
-styles, content, local schema `9`, and cloud schema `1`; only comments and
+styles, content, local schema `10`, and cloud schema `2`; only comments and
 maintenance/build/test files are new. Future implementation changes should update
 these guides, not treat this snapshot statement as an eternal guarantee.

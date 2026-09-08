@@ -44,17 +44,17 @@ underlying `firebase-bootstrap-v13-20260904`.
 7. **Keep Library as home**, even with one deck. Choosing a normal deck enters
    Memory. Preserve the separate phone layout and desktop layout, 104 ms input
    guard/520 ms flip, and old-answer/new-prompt handoff.
-8. **No surprise cloud overwrite/publication.** Current Firebase is Google
-   sign-in plus explicit first snapshot upload/load, not continuous sync. Local
-   `persistState()` never uploads. Sign-out leaves local data in this build.
-   Read [Firebase](docs/FIREBASE.md) before changing any of these semantics.
+8. **Preserve account isolation and revisioned sync.** Signed-out data stays at the guest key;
+   every Google UID has a separate local key. Sync publishes complete immutable generations before
+   a transaction advances the root revision. Durable evidence merges from the last accepted base;
+   sessions/undo remain local. Never replace this with blind whole-profile writes.
 9. **Never commit private data/credentials.** Web Firebase config is intentional;
    service-account keys, OAuth client secrets, user backups, tokens, emails and
    private learning histories are not. Tests use synthetic profiles and mocked
    SDK calls. Do not inspect live user data just to test a code change.
-10. **Document what exists, not what was proposed.** Shop, continuous synchronization,
-    conflict merging and account-isolated local caches are not implemented.
-    Keep proposed designs labeled as such.
+10. **Document what exists, not what was proposed.** Account isolation, automatic revisioned
+    synchronization, and conservative three-way merging are implemented. Shop/user publishing and
+    collaborative same-card editing are not.
 
 ## Required development loop
 
