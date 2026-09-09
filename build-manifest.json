@@ -1,11 +1,11 @@
 {
   "format": "SkyStudeeStaticBuild",
   "formatVersion": 1,
-  "version": "sensation-unit1-v16-20260909",
-  "sourceSha256": "f19ef9ec390513b9ca2caf33eb2136f2042c6e04d6f755f22525ed2eb0f375b3",
-  "sourceBytes": 419370,
+  "version": "consciousness-unit1-v17-20260909",
+  "sourceSha256": "47006789bb95adf77a4fb653a3883eac2ea03c4ec7e46771465156360875000e",
+  "sourceBytes": 425248,
   "loaderTemplateSha256": "b1a85b07a8b3534c39a952aa7e0e51cb0dff1c0467434f667cb391ca6bdb1ae2",
-  "loaderSha256": "486dd30dbc35d7342acc132da97f5942383e6ad8b7b6233af8909e5d772e02be",
+  "loaderSha256": "036f2f546e25d92ded7a98983e6e1ad13c4b1ff001f490cbc1b0a893b8ea9e12",
   "chunkChars": 9792,
   "parts": [
     {
@@ -26,57 +26,57 @@
     {
       "path": "assets/mobile-build-04",
       "bytes": 9792,
-      "sha256": "8c26cced6a0889389177d5494bdae10c2d15edd936ffefec1f0e6376245da3b7"
+      "sha256": "0e225dd793e10da0c2f936c6508b77ee6f77af32801700d34b3465f5c7c148a3"
     },
     {
       "path": "assets/mobile-build-05",
       "bytes": 9792,
-      "sha256": "2ed196f9d4322e61ad6b44680f314a2e02f502aa446cc1c455fe4d41ea374b27"
+      "sha256": "2fe983458ada53ba2898313a4ff58d75474a9685c1fa76dc6eba1531459aaf3a"
     },
     {
       "path": "assets/mobile-build-06",
       "bytes": 9792,
-      "sha256": "4a11c4960e574f5e110f3770492af4d2ecbb64e13fcc05fe9992646b216b4473"
+      "sha256": "997b04a0685e480778713fdfd40c33692d4bef7d69647ab078e5ca235d4ee395"
     },
     {
       "path": "assets/mobile-build-07",
       "bytes": 9792,
-      "sha256": "4752d200b6ea9ce8683c7472620426840a5cca885b07780ab2f0b8708e80d99d"
+      "sha256": "6ed2abd0a39f97565765ff69969150e40fa1d264735a251a7d44b124fca65f34"
     },
     {
       "path": "assets/mobile-build-08",
       "bytes": 9792,
-      "sha256": "4bf0334c11182a1ff5f18a31ae59f72f0ffee928407629534ac3e7d222de24bc"
+      "sha256": "968feedce793a5efff955035369e7c3da393fa78364d50edfa5c53b6195834aa"
     },
     {
       "path": "assets/mobile-build-09",
       "bytes": 9792,
-      "sha256": "aa8e64fd1a7201456d35ecb6f09d60f8f631566ff8d39618dd3fad276be2806a"
+      "sha256": "27094068b0ee919d9167eda7c82446692fe7d626ecbee340e21f8491a24a7e0e"
     },
     {
       "path": "assets/mobile-build-10",
       "bytes": 9792,
-      "sha256": "70f1e6fec8b2c4bf3ca38f9c78b33f05febde75c7e20b9a7f31a0ba8d928d6ee"
+      "sha256": "7a8563fc02a6191b8616700a9537b37e57d4ed132fc55cf21ead3b8dfb5f3469"
     },
     {
       "path": "assets/mobile-build-11",
       "bytes": 9792,
-      "sha256": "8dce1850c7562489649a0d2c345e654b923634abae5c372fd52d129aa958defa"
+      "sha256": "5097a33811f039eea46b450c12739678f5b184cdd295d2dad1bc77413c3d5331"
     },
     {
       "path": "assets/mobile-build-12",
       "bytes": 9792,
-      "sha256": "661a474ae7923719cab0ee32e36c2b5169f211f8d72250fc88de31a333b50af7"
+      "sha256": "e7eb765d7cdceda83a7b67be68bcad044926b0350593e125b133e7a51134f8a0"
     },
     {
       "path": "assets/mobile-build-13",
       "bytes": 9792,
-      "sha256": "ef36dc4a5a9494d29970d4432f6ffa77f0d09fcab2a37989371d95d0c3951c8c"
+      "sha256": "cde7f2fd157926f1d3f6c2e73b29989c093361ec572dfa9db5f7871ac19bc0e8"
     },
     {
       "path": "assets/mobile-build-14",
-      "bytes": 5688,
-      "sha256": "6ac165413129d09cb1aa942661a55d22323c40ea12fe4a2beffc167c33ebf80e"
+      "bytes": 8008,
+      "sha256": "90dedc8e4605b04257c0e16925e68c35e3fe35e54f055990fef55f0c06d79641"
     }
   ]
 }

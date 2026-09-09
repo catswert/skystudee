@@ -136,11 +136,11 @@ def run(source: str, baseline: str | None) -> dict:
         page, errors = new_page()
         check('fresh Library home',page.locator('#decksView').is_visible())
         check('local studying available with SDK blocked',page.evaluate('!firebaseAuthReady && Object.keys(appState.decks).length===4'))
-        check('Sensation is bundled in AP Psychology Unit 1',page.evaluate("""() => {
+        check('combined Unit 1 deck is bundled in AP Psychology Unit 1',page.evaluate("""() => {
           const deck=appState.decks[SENSATION_DECK_ID];
           const cls=appState.classes[deck?.classId];
           const unit=appState.units[deck?.unitId];
-          return deck?.preloaded===true && deck.cards.length===70 &&
+          return deck?.preloaded===true && deck.cards.length===105 &&
             cls?.catalogId==='ap_psychology' && unit?.name==='Unit 1';
         }"""))
         saved = page.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
@@ -153,14 +153,32 @@ def run(source: str, baseline: str | None) -> dict:
         pre_sensation['version'] = 10
         pre_sensation['decks'].pop('ap_psych:unit_1_sensation', None)
         upgraded, upgraded_errors = new_page(saved=pre_sensation)
-        check('pre-v11 profile receives Sensation once',not upgraded_errors and upgraded.evaluate("""() => {
+        check('pre-v11 profile receives complete Unit 1 deck once',not upgraded_errors and upgraded.evaluate("""() => {
           const deck=appState.decks[SENSATION_DECK_ID];
-          return deck?.cards.length===70 && appState.units[deck.unitId]?.name==='Unit 1';
+          return deck?.cards.length===105 && appState.units[deck.unitId]?.name==='Unit 1';
         }"""))
+
+        pre_consciousness = page.evaluate('plainJson(appState)')
+        pre_consciousness['version'] = 11
+        state_ids = set(page.evaluate('CONSCIOUSNESS_CARDS.map(card => card.id)'))
+        state_deck = pre_consciousness['decks']['ap_psych:unit_1_sensation']
+        state_deck['cards'] = [card for card in state_deck['cards'] if card['id'] not in state_ids]
+        state_deck['name'] = 'Unit 1 — AP Psychology — Biological Bases of Behavior: Sensation'
+        state_deck['facts']['sensation|front']['alpha'] = 9
+        expanded, expanded_errors = new_page(saved=pre_consciousness)
+        check('v11 deck gains consciousness cards without losing progress',not expanded_errors and expanded.evaluate("""() => {
+          const deck=appState.decks[SENSATION_DECK_ID];
+          return deck.cards.length===105 &&
+            deck.name===SENSATION_DECK_NAME &&
+            deck.cards.some(card=>card.id==='circadian_rhythm') &&
+            deck.cards.some(card=>card.id==='psychoactive_drugs') &&
+            deck.facts['sensation|front'].alpha===9;
+        }"""))
+
         upgraded.evaluate("delete appState.decks[SENSATION_DECK_ID];persistState({includeSession:false})")
         deleted_sensation = upgraded.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
         after_delete, after_delete_errors = new_page(saved=deleted_sensation)
-        check('deleted Sensation preload stays deleted after v11',not after_delete_errors and after_delete.evaluate('!appState.decks[SENSATION_DECK_ID]'))
+        check('deleted Unit 1 preload stays deleted after migration',not after_delete_errors and after_delete.evaluate('!appState.decks[SENSATION_DECK_ID]'))
 
         # Synthetic colliding card IDs in separate real decks must not merge evidence.
         page.evaluate(r"""() => {

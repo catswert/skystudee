@@ -25,8 +25,8 @@ or runtime fetch of `decks/*.json` is currently involved.
 ## Startup: preserve the order
 
 1. Constants, embedded data and hoisted helpers become available.
-2. `loadAppState()` probes/loads/normalizes local data, or runs the old single-deck
-   migration. Version 11 adds the removable Sensation preload to older profiles;
+2. `loadAppState()` probes/loads/normalizes local data, runs version-gated bundled-deck
+   migrations, or runs the old single-deck migration. Version 11 adds the removable Sensation preload to older profiles;
    fresh profiles include it directly. `seedBrainDeckOnce()` can perform narrowly
    scoped direct storage writes; `ensureOrganizationState()` repairs organization.
 3. The old canonical Brain display name is corrected **in memory only**. Runtime

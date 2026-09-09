@@ -11,7 +11,7 @@ decks, organization, settings, and learning evidence between devices. Open-card/
 position remains device-local. See [Firebase behavior and limits](docs/FIREBASE.md).
 A curated Deck Shop has been discussed but has no current tab, catalog, install, or
 publishing implementation. Bundled study material now includes AP Psychology Unit 1
-Brain and Sensation decks alongside Research Methods and the protected German fallback.
+Brain and a combined Sensation/States of Consciousness deck alongside Research Methods and the protected German fallback.
 
 ## Start here
 
@@ -60,5 +60,5 @@ study does not. Export a private backup before experiments on real study data.
 The source was originally recovered from `main` commit
 `93c20c86725d819f03c073213bf5b7a05f2cf64f`, whose loader was
 `firebase-bootstrap-v13-20260904`. The current implementation uses local schema
-`11` and cloud schema `2`. Future changes should update these guides rather than
+`12` and cloud schema `2`. Future changes should update these guides rather than
 treating the original recovery snapshot as an eternal description.
