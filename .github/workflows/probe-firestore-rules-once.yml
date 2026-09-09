@@ -1,0 +1,132 @@
+name: Probe deployed SkyStudee Firestore rules
+
+on:
+  push:
+    branches: [ops/deploy-firestore-rules]
+    paths:
+      - '.github/workflows/probe-firestore-rules-once.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify deployed rules without admin credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +x
+
+          API_KEY=$(python - <<'PY'
+          import re
+          from pathlib import Path
+          text = Path('src/skystudee.html').read_text(encoding='utf-8')
+          match = re.search(r'apiKey:\s*"([^"]+)"', text)
+          if not match:
+              raise SystemExit('Firebase web API key not found')
+          print(match.group(1))
+          PY
+          )
+          PROJECT_ID=skystudee
+          BASE="https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents"
+          AUTH_BASE="https://identitytoolkit.googleapis.com/v1"
+          PROBE_ID="rules-probe-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+
+          public_code=$(curl -sS -o "$RUNNER_TEMP/public.json" -w '%{http_code}' \
+            "$BASE/users/${PROBE_ID}")
+          if [[ "$public_code" != 401 && "$public_code" != 403 ]]; then
+            echo "::error::Unauthenticated Firestore access was not denied (HTTP $public_code)."
+            cat "$RUNNER_TEMP/public.json"
+            exit 1
+          fi
+          echo "Unauthenticated user-document access is denied (HTTP $public_code)."
+
+          signup_code=$(curl -sS -o "$RUNNER_TEMP/signup.json" -w '%{http_code}' \
+            -X POST -H 'Content-Type: application/json' \
+            -d '{"returnSecureToken":true}' \
+            "$AUTH_BASE/accounts:signUp?key=$API_KEY")
+
+          if [[ "$signup_code" != 200 ]]; then
+            reason=$(jq -r '.error.message // "unknown"' "$RUNNER_TEMP/signup.json" 2>/dev/null || true)
+            echo "Anonymous disposable-user probe unavailable (HTTP $signup_code: $reason)."
+            echo "Public denial was verified, but owner-access behavior still requires a Google-authenticated test or rules deployment credentials."
+            exit 0
+          fi
+
+          TOKEN=$(jq -r '.idToken' "$RUNNER_TEMP/signup.json")
+          UID=$(jq -r '.localId' "$RUNNER_TEMP/signup.json")
+          if [[ -z "$TOKEN" || "$TOKEN" == null || -z "$UID" || "$UID" == null ]]; then
+            echo '::error::Anonymous sign-up returned no ID token/UID.'
+            exit 1
+          fi
+
+          cleanup() {
+            set +e
+            curl -sS -o /dev/null -X DELETE -H "Authorization: Bearer $TOKEN" \
+              "$BASE/users/$UID/generations/$PROBE_ID/state/core"
+            curl -sS -o /dev/null -X DELETE -H "Authorization: Bearer $TOKEN" \
+              "$BASE/users/$UID"
+            curl -sS -o /dev/null -X POST -H 'Content-Type: application/json' \
+              -d "{\"idToken\":\"$TOKEN\"}" \
+              "$AUTH_BASE/accounts:delete?key=$API_KEY"
+          }
+          trap cleanup EXIT
+
+          root_code=$(curl -sS -o "$RUNNER_TEMP/root-write.json" -w '%{http_code}' \
+            -X PATCH -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer $TOKEN" \
+            -d "{\"fields\":{\"probe\":{\"stringValue\":\"$PROBE_ID\"}}}" \
+            "$BASE/users/$UID?updateMask.fieldPaths=probe")
+          if [[ "$root_code" != 200 ]]; then
+            echo "::error::Authenticated owner root write failed (HTTP $root_code)."
+            cat "$RUNNER_TEMP/root-write.json"
+            exit 1
+          fi
+
+          nested_code=$(curl -sS -o "$RUNNER_TEMP/nested-write.json" -w '%{http_code}' \
+            -X PATCH -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer $TOKEN" \
+            -d "{\"fields\":{\"probe\":{\"stringValue\":\"$PROBE_ID\"}}}" \
+            "$BASE/users/$UID/generations/$PROBE_ID/state/core?updateMask.fieldPaths=probe")
+          if [[ "$nested_code" != 200 ]]; then
+            echo "::error::Authenticated owner nested-generation write failed (HTTP $nested_code)."
+            cat "$RUNNER_TEMP/nested-write.json"
+            exit 1
+          fi
+
+          read_code=$(curl -sS -o "$RUNNER_TEMP/nested-read.json" -w '%{http_code}' \
+            -H "Authorization: Bearer $TOKEN" \
+            "$BASE/users/$UID/generations/$PROBE_ID/state/core")
+          if [[ "$read_code" != 200 ]]; then
+            echo "::error::Authenticated owner nested-generation read failed (HTTP $read_code)."
+            cat "$RUNNER_TEMP/nested-read.json"
+            exit 1
+          fi
+
+          list_code=$(curl -sS -o "$RUNNER_TEMP/list.json" -w '%{http_code}' \
+            -H "Authorization: Bearer $TOKEN" \
+            "$BASE/users/$UID/generations/$PROBE_ID/state?pageSize=10")
+          if [[ "$list_code" != 200 ]]; then
+            echo "::error::Authenticated owner nested collection list failed (HTTP $list_code)."
+            cat "$RUNNER_TEMP/list.json"
+            exit 1
+          fi
+
+          other_uid="other-${UID}"
+          cross_code=$(curl -sS -o "$RUNNER_TEMP/cross.json" -w '%{http_code}' \
+            -X PATCH -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer $TOKEN" \
+            -d "{\"fields\":{\"probe\":{\"stringValue\":\"blocked\"}}}" \
+            "$BASE/users/$other_uid/generations/$PROBE_ID/state/core?updateMask.fieldPaths=probe")
+          if [[ "$cross_code" != 401 && "$cross_code" != 403 ]]; then
+            echo "::error::Cross-user write was not denied (HTTP $cross_code)."
+            cat "$RUNNER_TEMP/cross.json"
+            exit 1
+          fi
+
+          echo 'DEPLOYED_RULES_PROBE=PASS'
+          echo 'Owner root/nested writes, reads, and collection listing succeeded; cross-user and public access were denied.'
