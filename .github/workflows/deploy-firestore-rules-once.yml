@@ -1,0 +1,111 @@
+name: Deploy SkyStudee Firestore rules once
+
+on:
+  push:
+    branches: [ops/deploy-firestore-rules]
+    paths:
+      - '.github/workflows/deploy-firestore-rules-once.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Select an available Firebase deployment identity
+        id: auth-mode
+        shell: bash
+        env:
+          SA_PROJECT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SKYSTUDEE }}
+          SA_GENERIC: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          SA_GCP: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          SA_GOOGLE: ${{ secrets.GOOGLE_CREDENTIALS }}
+          SA_ADC_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          SA_KEYFILE_JSON: ${{ secrets.GOOGLE_CLOUD_KEYFILE_JSON }}
+          TOKEN_FIREBASE: ${{ secrets.FIREBASE_TOKEN }}
+          TOKEN_FIREBASE_CLI: ${{ secrets.FIREBASE_CLI_TOKEN }}
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          set +x
+
+          write_service_account() {
+            local raw="$1"
+            local target="$RUNNER_TEMP/skystudee-firebase-service-account.json"
+            if printf '%s' "$raw" | jq -e . >/dev/null 2>&1; then
+              printf '%s' "$raw" > "$target"
+            else
+              printf '%s' "$raw" | base64 --decode > "$target"
+              jq -e . "$target" >/dev/null
+            fi
+            chmod 600 "$target"
+            echo "GOOGLE_APPLICATION_CREDENTIALS=$target" >> "$GITHUB_ENV"
+            echo "mode=service-account" >> "$GITHUB_OUTPUT"
+          }
+
+          if [[ -n "$SA_PROJECT" ]]; then
+            write_service_account "$SA_PROJECT"
+          elif [[ -n "$SA_GENERIC" ]]; then
+            write_service_account "$SA_GENERIC"
+          elif [[ -n "$SA_GCP" ]]; then
+            write_service_account "$SA_GCP"
+          elif [[ -n "$SA_GOOGLE" ]]; then
+            write_service_account "$SA_GOOGLE"
+          elif [[ -n "$SA_ADC_JSON" ]]; then
+            write_service_account "$SA_ADC_JSON"
+          elif [[ -n "$SA_KEYFILE_JSON" ]]; then
+            write_service_account "$SA_KEYFILE_JSON"
+          elif [[ -n "$TOKEN_FIREBASE" ]]; then
+            echo "FIREBASE_DEPLOY_TOKEN=$TOKEN_FIREBASE" >> "$GITHUB_ENV"
+            echo "mode=token" >> "$GITHUB_OUTPUT"
+          elif [[ -n "$TOKEN_FIREBASE_CLI" ]]; then
+            echo "FIREBASE_DEPLOY_TOKEN=$TOKEN_FIREBASE_CLI" >> "$GITHUB_ENV"
+            echo "mode=token" >> "$GITHUB_OUTPUT"
+          elif [[ -n "$WIF_PROVIDER" && -n "$WIF_SERVICE_ACCOUNT" ]]; then
+            echo "mode=wif" >> "$GITHUB_OUTPUT"
+          else
+            echo '::error::No Firebase deployment credential or Google workload-identity configuration is available in this repository.'
+            exit 1
+          fi
+
+      - name: Authenticate through Google workload identity
+        if: steps.auth-mode.outputs.mode == 'wif'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+          export_environment_variables: true
+
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools
+
+      - name: Validate repository rules configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s firestore.rules
+          test -s firebase.json
+          grep -q 'request.auth.uid == userId' firestore.rules
+          node -e "const c=require('./firebase.json'); if(c.firestore?.rules!=='firestore.rules') process.exit(1)"
+
+      - name: Deploy owner-only Firestore rules
+        shell: bash
+        env:
+          AUTH_MODE: ${{ steps.auth-mode.outputs.mode }}
+        run: |
+          set -euo pipefail
+          if [[ "$AUTH_MODE" == 'token' ]]; then
+            firebase deploy --only firestore:rules --project skystudee --non-interactive --token "$FIREBASE_DEPLOY_TOKEN"
+          else
+            firebase deploy --only firestore:rules --project skystudee --non-interactive
+          fi
