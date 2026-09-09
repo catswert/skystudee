@@ -26,8 +26,9 @@ or runtime fetch of `decks/*.json` is currently involved.
 
 1. Constants, embedded data and hoisted helpers become available.
 2. `loadAppState()` probes/loads/normalizes local data, or runs the old single-deck
-   migration. `seedBrainDeckOnce()` can perform narrowly scoped direct storage
-   writes; `ensureOrganizationState()` repairs organization.
+   migration. Version 11 adds the removable Sensation preload to older profiles;
+   fresh profiles include it directly. `seedBrainDeckOnce()` can perform narrowly
+   scoped direct storage writes; `ensureOrganizationState()` repairs organization.
 3. The old canonical Brain display name is corrected **in memory only**. Runtime
    variables including `activeDeckId`, `studySetActive`, `mode`, `session`, and
    DOM references are not all initialized yet. Do not call the ordinary saver.

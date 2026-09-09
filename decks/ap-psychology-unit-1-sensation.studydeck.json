@@ -1,0 +1,361 @@
+{
+  "format": "StudyCardsDeck",
+  "version": 1,
+  "deckId": "ap_psych:unit_1_sensation",
+  "name": "Unit 1 — AP Psychology — Biological Bases of Behavior: Sensation",
+  "classCatalogId": "ap_psychology",
+  "className": "AP Psychology",
+  "unitName": "Unit 1",
+  "cards": [
+    {
+      "id": "sensation",
+      "front": "Sensation",
+      "back": "The process by which our sensory receptors and nervous system receive and represent stimulus energies from our environment."
+    },
+    {
+      "id": "perception",
+      "front": "Perception",
+      "back": "The process of organizing and interpreting sensory information to make sense of the world around us; it can be influenced by past experiences, expectations, and context."
+    },
+    {
+      "id": "transduction",
+      "front": "Transduction",
+      "back": "The conversion of sensory stimuli or physical energy into neural impulses that can be understood by the brain."
+    },
+    {
+      "id": "absolute_threshold",
+      "front": "Absolute Threshold",
+      "back": "The minimum amount of stimulation required for a stimulus to be detected by a sensory system at least 50% of the time."
+    },
+    {
+      "id": "just_noticeable_difference",
+      "front": "Just-Noticeable Difference (JND)",
+      "back": "The smallest change in a stimulus that an individual can detect."
+    },
+    {
+      "id": "webers_law",
+      "front": "Weber’s Law",
+      "back": "The perceived difference in a stimulus must be proportional to the original intensity; the larger the original stimulus, the larger the change needed to notice a difference."
+    },
+    {
+      "id": "signal_detection_theory",
+      "front": "Signal Detection Theory",
+      "back": "A model that predicts how and when a person will detect a faint stimulus; detection depends on experience, expectations, motivation, and fatigue rather than one fixed threshold."
+    },
+    {
+      "id": "sensory_adaptation",
+      "front": "Sensory Adaptation",
+      "back": "The process by which sensory receptors become less responsive to constant stimuli over time."
+    },
+    {
+      "id": "synesthesia",
+      "front": "Synesthesia",
+      "back": "A condition in which stimulation of one sensory pathway leads to automatic, involuntary experiences in another sensory pathway."
+    },
+    {
+      "id": "visual_transduction",
+      "front": "Visual Transduction",
+      "back": "In the retina, photoreceptor cells called rods and cones convert light into electrical signals that can be processed by the brain."
+    },
+    {
+      "id": "visible_light_spectrum",
+      "front": "Visible Light Spectrum",
+      "back": "The range of light humans can see, approximately 380 to 750 nanometers."
+    },
+    {
+      "id": "cornea",
+      "front": "Cornea",
+      "back": "The clear outer layer of the eye that bends light."
+    },
+    {
+      "id": "pupil",
+      "front": "Pupil",
+      "back": "The opening in the eye that lets light in."
+    },
+    {
+      "id": "iris",
+      "front": "Iris",
+      "back": "The colored part of the eye that controls pupil size."
+    },
+    {
+      "id": "lens",
+      "front": "Lens",
+      "back": "A transparent structure in the eye that focuses light onto the retina and adjusts its shape for clear vision at different distances."
+    },
+    {
+      "id": "retina",
+      "front": "Retina",
+      "back": "The light-sensitive inner surface of the eye containing photoreceptor cells that convert light into neural signals."
+    },
+    {
+      "id": "fovea",
+      "front": "Fovea",
+      "back": "The central area of the retina responsible for sharp central vision; it has a high concentration of cones and no rods."
+    },
+    {
+      "id": "optic_nerve",
+      "front": "Optic Nerve",
+      "back": "The nerve that carries visual information from the eye to the brain."
+    },
+    {
+      "id": "photoreceptors",
+      "front": "Photoreceptors",
+      "back": "Rods and cones in the retina that convert light energy into neural signals."
+    },
+    {
+      "id": "rods",
+      "front": "Rods",
+      "back": "Photoreceptor cells responsible for low-light, black-and-white vision and motion detection; they are highly sensitive to light."
+    },
+    {
+      "id": "cones",
+      "front": "Cones",
+      "back": "Photoreceptor cells responsible for color vision and fine detail in bright light."
+    },
+    {
+      "id": "blind_spot",
+      "front": "Blind Spot",
+      "back": "The area of the retina where the optic nerve exits the eye; it has no photoreceptor cells, so vision is absent there."
+    },
+    {
+      "id": "ganglion_cells",
+      "front": "Ganglion Cells",
+      "back": "Retinal neurons that receive information from bipolar cells and transmit it to the brain through the optic nerve."
+    },
+    {
+      "id": "accommodation",
+      "front": "Accommodation",
+      "back": "The process by which the eye’s lens changes shape to focus clearly on objects at different distances."
+    },
+    {
+      "id": "nearsightedness",
+      "front": "Nearsightedness",
+      "back": "A vision condition in which close objects are clear but distant objects are blurry because light focuses in front of the retina."
+    },
+    {
+      "id": "farsightedness",
+      "front": "Farsightedness",
+      "back": "A vision condition in which distant objects are clearer than close objects because light focuses behind the retina."
+    },
+    {
+      "id": "trichromatic_theory",
+      "front": "Trichromatic Theory",
+      "back": "The theory that color vision is based on three types of cone receptors sensitive to red, green, and blue wavelengths, whose signals combine to produce many colors."
+    },
+    {
+      "id": "opponent_process_theory",
+      "front": "Opponent-Process Theory",
+      "back": "The theory that color vision is organized into opposing pairs: red–green, blue–yellow, and black–white; activation of one inhibits the other."
+    },
+    {
+      "id": "afterimages",
+      "front": "Afterimages",
+      "back": "Visual sensations that persist after a stimulus is removed, often appearing as an inverted or complementary image after cone overstimulation."
+    },
+    {
+      "id": "dichromatism",
+      "front": "Dichromatism",
+      "back": "A color-vision deficiency in which a person has only two functioning types of cone cells instead of three."
+    },
+    {
+      "id": "monochromatism",
+      "front": "Monochromatism",
+      "back": "A rare form of color blindness in which a person has only one functioning type of cone cell, or none, and sees the world in shades of gray."
+    },
+    {
+      "id": "ishihara_color_test",
+      "front": "Ishihara Color Test",
+      "back": "A color-blindness test made of colored-dot patterns in which differently colored dots form numbers against a background."
+    },
+    {
+      "id": "blindsight",
+      "front": "Blindsight",
+      "back": "The ability to respond to visual stimuli without consciously perceiving them, often after damage to the visual cortex."
+    },
+    {
+      "id": "prosopagnosia",
+      "front": "Prosopagnosia",
+      "back": "A neurological condition in which a person cannot recognize familiar faces, including their own, despite otherwise intact vision and intellect."
+    },
+    {
+      "id": "auditory_transduction",
+      "front": "Auditory Transduction",
+      "back": "In the cochlea, hair cells convert sound vibrations into electrical signals that are sent to the brain."
+    },
+    {
+      "id": "cochlea",
+      "front": "Cochlea",
+      "back": "An inner-ear structure where hair cells convert sound vibrations into electrical signals sent to the brain."
+    },
+    {
+      "id": "wavelength",
+      "front": "Wavelength",
+      "back": "The distance between sound-wave peaks; shorter wavelengths correspond to higher-pitched sounds and longer wavelengths to lower-pitched sounds."
+    },
+    {
+      "id": "amplitude",
+      "front": "Amplitude",
+      "back": "The height of a sound wave, representing its intensity; greater amplitude corresponds to louder sounds and lower amplitude to softer sounds."
+    },
+    {
+      "id": "loudness",
+      "front": "Loudness",
+      "back": "The perceived intensity of a sound; greater amplitude is heard as louder and lower amplitude as softer."
+    },
+    {
+      "id": "pitch",
+      "front": "Pitch",
+      "back": "How high or low a sound is; higher frequencies produce higher pitches and lower frequencies produce lower pitches."
+    },
+    {
+      "id": "pitch_perception",
+      "front": "Pitch Perception",
+      "back": "The brain’s interpretation of sound-wave frequency as a high or low tone."
+    },
+    {
+      "id": "place_theory",
+      "front": "Place Theory",
+      "back": "The idea that different parts of the inner ear detect different sound frequencies; high pitches are sensed near the entrance and low pitches near the end."
+    },
+    {
+      "id": "frequency_theory",
+      "front": "Frequency Theory",
+      "back": "The theory that a sound wave’s frequency corresponds to the rate at which auditory nerve fibers fire, producing the perceived pitch."
+    },
+    {
+      "id": "volley_theory",
+      "front": "Volley Theory",
+      "back": "The theory that groups of auditory neurons fire in rapid succession to encode sound frequencies above 1,000 Hz."
+    },
+    {
+      "id": "sound_localization",
+      "front": "Sound Localization",
+      "back": "The brain’s ability to locate a sound source using differences in arrival time and intensity between the ears, along with spectral cues."
+    },
+    {
+      "id": "conduction_deafness",
+      "front": "Conduction Deafness",
+      "back": "Hearing impairment caused by problems in the outer or middle ear, such as damage to the ear canal, eardrum, or middle-ear bones; it can often be treated medically or surgically."
+    },
+    {
+      "id": "sensorineural_deafness",
+      "front": "Sensorineural Deafness",
+      "back": "Often-permanent hearing loss caused by damage to the inner ear or auditory nerve, commonly from aging, loud noise, or medical conditions."
+    },
+    {
+      "id": "sensory_interaction",
+      "front": "Sensory Interaction",
+      "back": "The principle that one sense can influence another, such as smell affecting taste, as the senses work together to create perception."
+    },
+    {
+      "id": "olfactory_system",
+      "front": "Olfactory System",
+      "back": "The system responsible for smell; receptors in the nose detect odors and send signals to the brain through the olfactory nerve."
+    },
+    {
+      "id": "odorant_binding_protein",
+      "front": "Odorant-Binding Protein (OBP)",
+      "back": "A protein released to attach to incoming odor molecules before they activate receptors in the olfactory epithelium."
+    },
+    {
+      "id": "olfactory_epithelium",
+      "front": "Olfactory Epithelium",
+      "back": "Tissue in the nasal cavity containing receptors that are activated by odor molecules."
+    },
+    {
+      "id": "olfactory_bulb",
+      "front": "Olfactory Bulb",
+      "back": "A brain structure that receives signals from olfactory receptors and processes smell information."
+    },
+    {
+      "id": "anosmia",
+      "front": "Anosmia",
+      "back": "Complete loss of the ability to smell."
+    },
+    {
+      "id": "gustation",
+      "front": "Gustation",
+      "back": "The sense of taste, involving receptors on the tongue that detect different flavors."
+    },
+    {
+      "id": "taste_receptors",
+      "front": "Taste Receptors",
+      "back": "Specialized cells on the tongue and in the mouth that detect different tastes."
+    },
+    {
+      "id": "sweet",
+      "front": "Sweet",
+      "back": "A taste associated with sugars and generally experienced as pleasurable."
+    },
+    {
+      "id": "sour",
+      "front": "Sour",
+      "back": "A taste caused by acidic substances, often associated with citrus fruits."
+    },
+    {
+      "id": "salty",
+      "front": "Salty",
+      "back": "A taste produced primarily by salt that enhances flavor."
+    },
+    {
+      "id": "bitter",
+      "front": "Bitter",
+      "back": "A taste often found in plant-based foods that can be unpleasant in high concentrations."
+    },
+    {
+      "id": "umami",
+      "front": "Umami",
+      "back": "A savory taste associated with amino acids and protein-rich foods such as meat and cheese."
+    },
+    {
+      "id": "supertasters",
+      "front": "Supertasters",
+      "back": "People who are highly sensitive to taste and experience flavors, especially bitterness, more intensely."
+    },
+    {
+      "id": "medium_tasters",
+      "front": "Medium Tasters",
+      "back": "People with average taste sensitivity who experience flavors moderately."
+    },
+    {
+      "id": "nontasters",
+      "front": "Nontasters",
+      "back": "People who are less sensitive to taste and experience flavors less intensely than others."
+    },
+    {
+      "id": "pheromones",
+      "front": "Pheromones",
+      "back": "Chemical substances released by animals and humans that trigger social or behavioral responses in others of the same species."
+    },
+    {
+      "id": "warm_cold_receptors",
+      "front": "Warm/Cold Receptors",
+      "back": "Specialized sensory neurons in the skin that detect temperature changes; warm receptors respond to increases and cold receptors to decreases."
+    },
+    {
+      "id": "pain",
+      "front": "Pain",
+      "back": "An emotional response to stimuli rather than a simple sensation; the same stimulus can be experienced differently by different people."
+    },
+    {
+      "id": "gate_control_theory",
+      "front": "Gate Control Theory",
+      "back": "The theory that a neural gate in the spinal cord can open to transmit pain signals to the brain or close to block them."
+    },
+    {
+      "id": "semicircular_canals",
+      "front": "Semicircular Canals",
+      "back": "Fluid-filled inner-ear structures that detect rotational head movements and support balance and coordination."
+    },
+    {
+      "id": "vestibular_sense",
+      "front": "Vestibular Sense",
+      "back": "The sense of body orientation and movement, including balance and spatial awareness, based on receptors in the inner ear."
+    },
+    {
+      "id": "kinesthesis",
+      "front": "Kinesthesis",
+      "back": "The sense of body movement and position, including awareness of muscle and joint sensations."
+    }
+  ]
+}
