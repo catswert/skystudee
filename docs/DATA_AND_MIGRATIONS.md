@@ -7,8 +7,8 @@ sections of [`src/skystudee.html`](../src/skystudee.html).
 
 | Value | Meaning |
 | --- | --- |
-| `APP_VERSION = 9` | Local profile schema/migration version |
-| `CLOUD_SCHEMA_VERSION = 1` | Manual cloud snapshot envelope |
+| `APP_VERSION = 10` | Local profile schema/migration version |
+| `CLOUD_SCHEMA_VERSION = 2` | Revisioned immutable-generation sync |
 | `StudyCardsDeck.version = 1` | Interchange content format |
 | `build-manifest.json.version` | Static deployment/cache identity |
 | `FIREBASE_SDK_VERSION = "12.18.0"` | Pinned runtime dependency |
@@ -18,15 +18,15 @@ schema just to make a release number look newer; migrations compare those values
 
 ## Storage keys
 
-- `study_cards_multideck_engine_v5`: current complete JSON `appState`. Keep it stable.
-- `study_cards_memory_engine_v4`: older single-deck migration source, left intact.
-- `skystudee_seed_biological_bases_brain_v1`: browser-local one-time Brain seed marker.
-- `skystudee_pre_cloud_restore_v1`: one local recovery slot,
-  `{savedAt, state}`, written before cloud data replaces the current profile.
-
-Firebase Auth manages its own persistence; it is not the local profile-name key.
-There is no UID namespace around the current local study key. Sign-out/account
-switch behavior must be designed explicitly before true shared-device sync.
+- `study_cards_multideck_engine_v5`: signed-out guest profile.
+- `skystudee_account_state_v1:<uid>`: complete local profile for one Firebase UID.
+- `skystudee_sync_meta_v2:<uid>`: accepted revision/generation, dirty bit and merge base.
+- `skystudee_active_account_uid_v1`: startup account selector verified against Firebase Auth.
+- `skystudee_sync_device_id_v1`: browser writer label, not authentication.
+- `skystudee_pre_local_restore_v2:<uid-or-guest>`: one automatic local recovery copy.
+- `study_cards_memory_engine_v4`: legacy guest migration source.
+- `skystudee_seed_biological_bases_brain_v1[:uid]`: guest/account Brain seed marker.
+- `skystudee_pre_cloud_restore_v1`: retained legacy schema-v1 recovery slot.
 
 ## Profile and record shapes
 

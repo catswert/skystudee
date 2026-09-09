@@ -4,24 +4,14 @@ These are implementation observations from the documentation audit, not changes
 made in this release. They help future agents avoid repeating stronger claims
 than the source supports. Treat the listed areas as regression-test targets.
 
-## Account/cloud boundaries (high priority for future sync work)
+## Account/cloud boundaries
 
-- Current cloud feature is a first snapshot, not continuous synchronization.
-  Completed-cloud state does not expose upload of later local changes.
-- Local study data is one browser profile, not isolated per Firebase UID.
-  Sign-out does not remove local decks, history or the recovery slot.
-- Upload uses sequential delete/write operations and a last completion marker,
-  not generation-isolated atomic publication or concurrent-client arbitration.
-  Two tabs/devices can observe the same empty profile and conflict.
-- Root `ready` checks only the manifest. Load performs limited shape checks, not
-  exact deck-count/generation/schema validation for every document.
-- One whole deck must fit under the JSON-size preflight. It has not been split
-  into per-card/review documents, and JSON bytes are only an estimate of storage
-  serialization overhead.
-- The pre-cloud recovery slot is overwritten on later restores and has no
-  purpose-built recovery UI. Local storage failure still needs careful recovery.
-- This repository does not prove what rules, authorized domains, API restrictions
-  or quotas are currently configured in the private Firebase Console.
+- The repository cannot prove deployed Firestore rules, authorized domains, API restrictions, or quotas.
+- Same-card text edits made concurrently are not collaborative editing; unresolved content conflicts prefer remote.
+- Immutable generations are not garbage-collected yet; failed/conflicted publication can leave harmless orphan documents.
+- Each whole deck/core document remains subject to the 900,000-byte JSON preflight.
+- If browser quota prevents retaining a full common merge base, reconciliation uses conservative no-base behavior.
+- The recovery slot is single-version per guest/account profile.
 
 ## Study/context boundaries
 
@@ -37,9 +27,7 @@ than the source supports. Treat the listed areas as regression-test targets.
 - Study-set start requests Memory, but resuming an unchanged set can restore its
   saved mode through the generic resume helper. Combined-session statistics also
   coexist with real-anchor-deck knowledge/lifetime statistics.
-- Deck deletion/update/import while a set or snapshot is active deserves stale
-  pool/queue tests. Normalizing membership does not alone prove all currentFact,
-  cooldown and undo references remain valid after arbitrary edits.
+- Active deck deletion/update revalidates set membership, current fact, Cold queue, and undo history. New mutation paths must call the same reconciliation helper.
 - Undo restores snapshots, not inverse review events. It cannot safely merge
   concurrently changed evidence without a separate future design.
 
@@ -59,9 +47,7 @@ than the source supports. Treat the listed areas as regression-test targets.
   accessibility zoom are not guaranteed to fit.
 - Card swaps are timer-based. Test slow-frame/rAF interruptions before claiming
   content can never be exposed during transition.
-- Global keyboard exclusions name only some overlays. Organization, study-set
-  and account dialogs are not all explicitly covered by the global shortcut
-  router; buttons and focused inputs can expose context conflicts.
+- The global keyboard router blocks every current modal. Any new overlay must be added to that guard.
 - The loader catches fetch/decode failures, but runtime failures in the injected
   script are separate. “Memory not loaded” plus inert buttons can mean an early
   exception, not erased storage. Never recommend clearing storage first.

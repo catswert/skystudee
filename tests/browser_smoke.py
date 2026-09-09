@@ -37,21 +37,65 @@ STORAGE = r"""(initial => {
 })"""
 
 CLOUD = r"""() => {
-  window.__cloud={docs:{},writes:[], failWrite:null};
+  window.__cloud={docs:{},writes:[],listeners:[],failWrite:null};
+  const pathOf=(...args)=>args.map(x=>typeof x==='string'?x:(x?.path||'')).filter(Boolean).join('/');
+  const ref=(...args)=>({path:pathOf(...args)});
+  const snap=r=>({
+    ref:r,id:r.path.split('/').pop(),
+    exists:()=>Object.prototype.hasOwnProperty.call(__cloud.docs,r.path),
+    data:()=>__cloud.docs[r.path]
+  });
+  const notify=path=>{
+    for(const listener of __cloud.listeners.slice()){
+      if(listener.path===path) queueMicrotask(()=>listener.next(snap({path})));
+    }
+  };
+  const directDocs=r=>Object.keys(__cloud.docs)
+    .filter(k=>k.startsWith(r.path+'/')&&k.slice(r.path.length+1).indexOf('/')<0)
+    .map(k=>snap({path:k}));
+  const write=(kind,r,data)=>{
+    if(__cloud.failWrite&&r.path.includes(__cloud.failWrite)){
+      const error=new Error('synthetic failure');error.code='unavailable';throw error;
+    }
+    __cloud.writes.push([kind,r.path]);
+    if(kind==='delete') delete __cloud.docs[r.path];
+    else __cloud.docs[r.path]=JSON.parse(JSON.stringify(data));
+    notify(r.path);
+  };
+
   firebaseUser={uid:'synthetic-uid',email:'test@example.invalid',displayName:'Synthetic'};
   firebaseApp={}; firebaseDb={}; firebaseAuth={}; firebaseAuthReady=true;
-  firebaseAuthError=''; firebaseCloudBusy=false;
-  const ref=(...args)=>({path:args.map(x=>typeof x==='string'?x:(x.path||'')).filter(Boolean).join('/')});
-  const snap=r=>({ref:r,id:r.path.split('/').pop(),exists:()=>r.path in __cloud.docs,data:()=>__cloud.docs[r.path]});
+  activeAccountUid=firebaseUser.uid;
+  localStorage.setItem(ACTIVE_ACCOUNT_UID_KEY,activeAccountUid);
+  localStorage.setItem(accountStorageKey(activeAccountUid),JSON.stringify(appState));
   firebaseFirestoreApi={
     doc:ref, collection:ref, serverTimestamp:()=>new Date().toISOString(),
     getDoc:async r=>snap(r),
-    getDocs:async r=>{const docs=Object.keys(__cloud.docs).filter(k=>k.startsWith(r.path+'/')&&k.slice(r.path.length+1).indexOf('/')<0).map(k=>snap({path:k}));return {docs,forEach:fn=>docs.forEach(fn)}},
-    setDoc:async(r,data)=>{if(__cloud.failWrite&&r.path.includes(__cloud.failWrite))throw new Error('synthetic failure');__cloud.writes.push(['set',r.path]);__cloud.docs[r.path]=JSON.parse(JSON.stringify(data));},
-    deleteDoc:async r=>{__cloud.writes.push(['delete',r.path]);delete __cloud.docs[r.path];}
+    getDocs:async r=>{const docs=directDocs(r);return {docs,forEach:fn=>docs.forEach(fn)}},
+    setDoc:async(r,data)=>write('set',r,data),
+    deleteDoc:async r=>write('delete',r),
+    onSnapshot:(r,next,error)=>{
+      const listener={path:r.path,next,error};__cloud.listeners.push(listener);
+      queueMicrotask(()=>next(snap(r)));
+      return ()=>{__cloud.listeners=__cloud.listeners.filter(item=>item!==listener)};
+    },
+    runTransaction:async(db,fn)=>{
+      const pending=[];
+      const transaction={
+        get:async r=>snap(r),
+        set:(r,data)=>pending.push(['set',r,data]),
+        delete:r=>pending.push(['delete',r,null])
+      };
+      const result=await fn(transaction);
+      for(const [kind,r,data] of pending) write(kind,r,data);
+      return result;
+    }
   };
   firebaseAuthApi={signOut:async()=>{firebaseUser=null;firebaseCloudStatus='idle';renderFirebaseAccount();}};
-  firebaseCloudStatus='empty'; renderFirebaseAccount();
+  firebaseCloudStatus='idle';
+  firebaseSyncRevision=0;firebaseSyncGenerationId='';firebaseSyncBaseState=null;firebaseSyncDirty=true;
+  writeSyncMeta(activeAccountUid,{revision:0,generationId:'',dirty:true,baseState:null});
+  renderFirebaseAccount();
 }"""
 
 
@@ -116,6 +160,24 @@ def run(source: str, baseline: str | None) -> dict:
         check('Later does not grade',page.evaluate("appState.decks['test:a'].lifetime.answers+appState.decks['test:b'].lifetime.answers===0"))
         page.keyboard.press('x');page.keyboard.press('Enter')
         check('X/Enter not global self-grade shortcuts',page.evaluate('session.answers===0'))
+        page.evaluate("""() => {
+          showStudyView(); accountOverlay.classList.add('show'); accountOverlay.setAttribute('aria-hidden','false');
+          window.__beforeModalAnswers=session.answers;
+        }""")
+        page.keyboard.press('ArrowRight')
+        check('account modal blocks study shortcuts',page.evaluate('session.answers===window.__beforeModalAnswers'))
+        page.evaluate("""() => {
+          accountOverlay.classList.remove('show'); accountOverlay.setAttribute('aria-hidden','true');
+          appState.studySet={...defaultStudySetState(),active:true,deckIds:['test:a','test:b']};
+          studySetActive=true;activeDeckId='test:a';appState.activeDeckId='test:a';
+          mode='memory';session=makeFreshSession(mode);
+          currentFact=getFactById('shared|front','test:b');recordServed(currentFact);
+          delete appState.decks['test:b'];
+          reconcileActiveContextAfterMutation({persist:false,render:false});
+        }""")
+        check('active set repairs deleted current owner',page.evaluate(
+          "!!currentFact && !!appState.decks[currentFact.deckId] && !!getFactByKey(factKey(currentFact))"
+        ))
 
         page.evaluate("showDecksView();openOrganization('editClass',findClassByCatalog(appState,'ap_psychology').id)")
         page.select_option('#orgFamilySelect','science');page.locator('#saveOrganizationBtn').click()
@@ -135,25 +197,64 @@ def run(source: str, baseline: str | None) -> dict:
 
         page.evaluate(CLOUD)
         page.evaluate('refreshFirebaseCloudStatus()')
-        check('missing cloud manifest => empty',page.evaluate("firebaseCloudStatus==='empty'"))
+        page.wait_for_function("firebaseCloudStatus === 'empty'")
+        check('missing cloud root => sync disabled',page.evaluate("firebaseCloudStatus==='empty'"))
+        check('account profile uses UID-isolated storage',page.evaluate(
+          "currentStorageKey()===accountStorageKey('synthetic-uid')"
+        ))
+
         page.evaluate('uploadLocalStateToCloud()')
-        check('completed marker written last',page.evaluate("__cloud.writes.at(-1)[1]==='users/synthetic-uid' && __cloud.docs['users/synthetic-uid'].snapshotComplete===true"))
-        prior = page.evaluate('__cloud.writes.length')
-        page.evaluate('persistState()')
-        check('local save does not auto-upload',page.evaluate('__cloud.writes.length')==prior)
-        page.evaluate('uploadLocalStateToCloud()')
-        check('ready cloud disallows another bootstrap upload',page.evaluate('__cloud.writes.length')==prior)
-        # Execute a function COPY with navigation replaced, not modified app source.
-        page.evaluate(r"""async () => {
-          const testLoad=eval('('+loadCloudStateOntoDevice.toString().replace('location.reload();','window.__reloaded=true;')+')');
-          await testLoad();
+        page.wait_for_function("firebaseCloudStatus === 'ready' && !firebaseCloudBusy")
+        check('first sync publishes schema-2 generation',page.evaluate(
+          "__cloud.docs['users/synthetic-uid'].cloudSchemaVersion===2 && "
+          "__cloud.docs['users/synthetic-uid'].revision===1 && "
+          "!!__cloud.docs['users/synthetic-uid'].activeGeneration"
+        ))
+        check('completed generation selected atomically',page.evaluate("""() => {
+          const root=__cloud.docs['users/synthetic-uid'];
+          const marker=__cloud.docs[`users/synthetic-uid/generations/${root.activeGeneration}`];
+          return marker?.snapshotComplete===true && marker.deckCount===root.deckCount;
+        }"""))
+
+        prior_revision = page.evaluate("__cloud.docs['users/synthetic-uid'].revision")
+        page.evaluate("""() => { appState.userName='Synthetic Updated'; persistState(); }""")
+        check('local durable save marks account dirty',page.evaluate('firebaseSyncDirty===true'))
+        page.evaluate('performFirebaseSync({force:true})')
+        page.wait_for_function("firebaseCloudStatus === 'ready' && !firebaseCloudBusy && firebaseSyncDirty === false")
+        check('dirty account publishes next revision',page.evaluate(
+          "__cloud.docs['users/synthetic-uid'].revision"
+        )==prior_revision+1)
+
+        merge_result = page.evaluate("""() => {
+          const base=cloudSnapshotState();
+          const local=plainJson(base);const remote=plainJson(base);
+          const id='psychology|front';
+          local.decks[PSYCH_DECK_ID].facts[id].alpha+=1;
+          local.decks[PSYCH_DECK_ID].facts[id].directCorrect+=1;
+          remote.decks[PSYCH_DECK_ID].facts[id].alpha+=1;
+          remote.decks[PSYCH_DECK_ID].facts[id].directCorrect+=1;
+          const merged=mergeSyncedStates(base,local,remote);
+          return {alpha:merged.decks[PSYCH_DECK_ID].facts[id].alpha,
+                  correct:merged.decks[PSYCH_DECK_ID].facts[id].directCorrect,
+                  baseAlpha:base.decks[PSYCH_DECK_ID].facts[id].alpha,
+                  baseCorrect:base.decks[PSYCH_DECK_ID].facts[id].directCorrect};
         }""")
-        check('cloud load writes recovery before replacement',page.evaluate("__reloaded===true && __storageWrites.lastIndexOf(PRE_CLOUD_RESTORE_KEY)<__storageWrites.lastIndexOf(STORAGE_KEY) && !!JSON.parse(localStorage.getItem(PRE_CLOUD_RESTORE_KEY)).state"))
-        page.evaluate('firebaseCloudBusy=false;signOutGoogle()')
-        check('sign-out leaves local library',page.evaluate('firebaseUser===null && !!localStorage.getItem(STORAGE_KEY)'))
-        page.evaluate(CLOUD)
-        page.evaluate("__cloud.failWrite='/decks/';uploadLocalStateToCloud()")
-        check('failed initial deck write does not mark ready',page.evaluate("firebaseCloudStatus==='error' && !__cloud.docs['users/synthetic-uid']"))
+        check('concurrent review deltas merge additively',
+              merge_result['alpha']==merge_result['baseAlpha']+2 and
+              merge_result['correct']==merge_result['baseCorrect']+2)
+
+        page.evaluate("saveLocalRecoverySnapshot('synthetic-test')")
+        check('account-scoped recovery snapshot is written',page.evaluate(
+          "!!JSON.parse(localStorage.getItem(recoveryStorageKey())).state"
+        ))
+
+        page.evaluate("""() => {
+          __cloud.failWrite='/decks/';appState.userName='Unsynced after failure';persistState();
+        }""")
+        page.evaluate('performFirebaseSync({force:true})')
+        page.wait_for_function("firebaseCloudStatus === 'error' && !firebaseCloudBusy")
+        check('failed generation write keeps local dirty',page.evaluate('firebaseSyncDirty===true'))
+        page.evaluate("__cloud.failWrite=null")
         check('no uncaught app errors in smoke scenarios',not errors)
 
         # Compare representative actual browser renders, without contacting SDKs.
