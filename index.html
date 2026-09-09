@@ -24,7 +24,7 @@ html,body{margin:0;min-height:100%;background:#090d13;color:#eef2f7;font-family:
 (async()=>{
  try{
   // Version invalidates old cache URLs. It is NOT the local/cloud schema version.
-  const version='live-sync-v15-20260908';
+  const version='sensation-unit1-v16-20260909';
   const texts=await Promise.all(Array.from({length:14},async(_,i)=>{
    const part=String(i+1).padStart(2,'0');
    const r=await fetch(`assets/mobile-build-${part}?v=${version}`,{cache:'no-store'});

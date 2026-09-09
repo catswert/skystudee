@@ -7,7 +7,7 @@ sections of [`src/skystudee.html`](../src/skystudee.html).
 
 | Value | Meaning |
 | --- | --- |
-| `APP_VERSION = 10` | Local profile schema/migration version |
+| `APP_VERSION = 11` | Local profile schema/migration version |
 | `CLOUD_SCHEMA_VERSION = 2` | Revisioned immutable-generation sync |
 | `StudyCardsDeck.version = 1` | Interchange content format |
 | `build-manifest.json.version` | Static deployment/cache identity |
@@ -65,17 +65,18 @@ directional and pooled keys; do not introduce another encoding casually.
 
 ## One-time placement versus everyday repair
 
-Fresh defaults include German and Research Methods. Brain is separately seeded.
-Known startup placements are German/Needs unit, AP Psychology/Unit 0 for Research
-Methods, and AP Psychology/Unit 1 for Brain. Units are not otherwise a global
-course catalog.
+Fresh defaults include German, Research Methods, and Sensation. Brain is separately
+seeded. Known startup placements are German/Needs unit, AP Psychology/Unit 0 for
+Research Methods, and AP Psychology/Unit 1 for both Brain and Sensation. Units are
+not otherwise a global course catalog.
 
-Research Methods is added to older saves only for versions below 6. Organization
-seeding/suggestions are enabled for the pre-7 organization migration; regular
-`ensureOrganizationState` calls just repair/normalize references. Brain uses its
-separate browser seed flag. A unit/class removal in current schema must survive
-save, reload and backup/cloud normalization. Do not turn `ensure*` into “always
-restore canonical placement.”
+Research Methods is added to older saves only for versions below 6. Sensation is added
+once to profiles below version 11 and placed in AP Psychology / Unit 1; after that,
+a user deletion remains authoritative. Organization seeding/suggestions are enabled
+for the pre-7 organization migration; regular `ensureOrganizationState` calls just
+repair/normalize references. Brain uses its separate account-scoped seed flag. A
+unit/class removal in current schema must survive save, reload and backup/cloud
+normalization. Do not turn `ensure*` into “always restore canonical placement.”
 
 The old Brain title is renamed only when it is exactly the old canonical string.
 It preserves the deck ID and does not override deliberate user names. The rename

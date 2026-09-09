@@ -52,18 +52,20 @@ Copy intentionally creates a new real-deck ID and independent progress.
 export timestamp. It does not export mastery. `exportBackup` is different: it
 contains private complete appState. Never publish a backup as educational content.
 
-## Starter decks: three different lifecycle policies
+## Starter decks: four different lifecycle policies
 
 | Deck | ID | Initial placement | Behavior |
 | --- | --- | --- | --- |
 | German — Verben im Perfekt | `builtin:german-perfect:v1` | German / Needs unit | Forced fallback, 95 cards; `ensureBuiltInDeck` refreshes content; normal delete/update blocked |
 | AP Psychology Unit 0 — Research Methods | `ap_psych:unit_0_research_methods` | AP Psychology / Unit 0 | 76-card default; pre-v6 upgrade seed; removable afterward |
 | Unit 1 — AP Psychology — Biological Bases of Behavior: The Brain | `ap_psych:biological_bases_brain` | AP Psychology / Unit 1 | 95 cards; browser one-time seed flag; removable afterward |
+| Unit 1 — AP Psychology — Biological Bases of Behavior: Sensation | `ap_psych:unit_1_sensation` | AP Psychology / Unit 1 | 70 cards; pre-v11 upgrade seed; removable afterward |
 
-Counts are the inspected v13 content snapshot. Update this table when content
-changes. Arrays `BUILTIN_CARDS`, `PSYCH_CARDS`, `BRAIN_CARDS` are what the app uses.
-`decks/biological-bases-brain.studydeck.json` is a public reference/export; editing
-only that file does **not** update the starter deck in the running app.
+Counts are the current bundled-content snapshot. Update this table when content
+changes. Arrays `BUILTIN_CARDS`, `PSYCH_CARDS`, `BRAIN_CARDS`, and
+`SENSATION_CARDS` are what the app uses. The matching files in `decks/` are public
+references/exports; editing only a JSON file does **not** update the starter deck
+in the running app.
 
 To add a new preload, first decide whether it is removable or a forced fallback.
 Prefer explicit one-time seeding with a version/marker and tests for deletion,

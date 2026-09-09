@@ -15,7 +15,8 @@ underlying `firebase-bootstrap-v13-20260904`.
   Never hand-edit/base64-patch individual chunks. Rebuild and commit the entire
   generated set with the source in one change.
 - Public `decks/*.studydeck.json` files are exports/reference content. They are
-  not automatically fetched or seeded. See [deck maintenance](docs/DECKS.md).
+  not automatically fetched or seeded. Keep Brain/Sensation exports synchronized
+  with their embedded arrays. See [deck maintenance](docs/DECKS.md).
 - This documentation pass added source/build tooling without a runtime refactor.
   Keep routine fixes narrow; do not replace the monolith or redesign the UI merely
   to implement a small requested change.

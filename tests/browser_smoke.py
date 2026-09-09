@@ -135,12 +135,32 @@ def run(source: str, baseline: str | None) -> dict:
 
         page, errors = new_page()
         check('fresh Library home',page.locator('#decksView').is_visible())
-        check('local studying available with SDK blocked',page.evaluate('!firebaseAuthReady && Object.keys(appState.decks).length===3'))
+        check('local studying available with SDK blocked',page.evaluate('!firebaseAuthReady && Object.keys(appState.decks).length===4'))
+        check('Sensation is bundled in AP Psychology Unit 1',page.evaluate("""() => {
+          const deck=appState.decks[SENSATION_DECK_ID];
+          const cls=appState.classes[deck?.classId];
+          const unit=appState.units[deck?.unitId];
+          return deck?.preloaded===true && deck.cards.length===70 &&
+            cls?.catalogId==='ap_psychology' && unit?.name==='Unit 1';
+        }"""))
         saved = page.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
         saved['decks']['ap_psych:biological_bases_brain']['name']='AP Psychology — Biological Bases of Behavior: The Brain'
         legacy, legacy_errors = new_page(saved=saved)
         check('legacy Brain migration loads without TDZ error',not legacy_errors and legacy.locator('#decksView').is_visible())
         check('legacy rename persisted',legacy.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY)).decks[BRAIN_DECK_ID].name===BRAIN_DECK_NAME'))
+
+        pre_sensation = page.evaluate('plainJson(appState)')
+        pre_sensation['version'] = 10
+        pre_sensation['decks'].pop('ap_psych:unit_1_sensation', None)
+        upgraded, upgraded_errors = new_page(saved=pre_sensation)
+        check('pre-v11 profile receives Sensation once',not upgraded_errors and upgraded.evaluate("""() => {
+          const deck=appState.decks[SENSATION_DECK_ID];
+          return deck?.cards.length===70 && appState.units[deck.unitId]?.name==='Unit 1';
+        }"""))
+        upgraded.evaluate("delete appState.decks[SENSATION_DECK_ID];persistState({includeSession:false})")
+        deleted_sensation = upgraded.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
+        after_delete, after_delete_errors = new_page(saved=deleted_sensation)
+        check('deleted Sensation preload stays deleted after v11',not after_delete_errors and after_delete.evaluate('!appState.decks[SENSATION_DECK_ID]'))
 
         # Synthetic colliding card IDs in separate real decks must not merge evidence.
         page.evaluate(r"""() => {
