@@ -1,0 +1,39 @@
+{
+  "files": [
+    {
+      "filename": "arrival.png",
+      "bytes": 510117,
+      "sha256": "6143200571b3f6bfb23523f157a6d94edd078a9fd3d7b8d51a628a4210f00374"
+    },
+    {
+      "filename": "channel-wide.png",
+      "bytes": 693117,
+      "sha256": "be9d1a73e2666550556e3b2d44f483807a46da6bb9499f0ed871a58c88bf7d22"
+    },
+    {
+      "filename": "phone-claim.png",
+      "bytes": 135700,
+      "sha256": "c27738c48e004f2523e4aaf4fc3ac75d1c4ad9e8961d6abb08c88af727e33065"
+    },
+    {
+      "filename": "phone-saul.png",
+      "bytes": 148889,
+      "sha256": "2e1ed64500cdc5f676895390e08dea8e58e5b02e8ade54a20345cb02f3323ae1"
+    },
+    {
+      "filename": "saul.png",
+      "bytes": 281942,
+      "sha256": "60b28cfe8956880dd11a7bff286bef909c72c36211c08e69bb4fce3f56ac78dc"
+    },
+    {
+      "filename": "showroom-channel-download.mp4",
+      "bytes": 3839850,
+      "sha256": "5962f53cf36792280c0afcb4930753b50ccc114b13c3925d756227242cbaf4ec"
+    },
+    {
+      "filename": "showroom-verification-photos.zip",
+      "bytes": 1770394,
+      "sha256": "31991c558f8f223ea8c1b2eb05ca521a179f0195e1c85e879f653311cc6c9987"
+    }
+  ]
+}
