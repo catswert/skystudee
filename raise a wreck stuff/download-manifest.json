@@ -34,6 +34,11 @@
       "filename": "showroom-verification-photos.zip",
       "bytes": 1770394,
       "sha256": "31991c558f8f223ea8c1b2eb05ca521a179f0195e1c85e879f653311cc6c9987"
+    },
+    {
+      "filename": "fishing-laser-15s.mp4",
+      "bytes": 16894518,
+      "sha256": "e00ef8ad77d26ec4f8df51177b61d9f190af371cdf164879666c067a29214911"
     }
   ]
 }
