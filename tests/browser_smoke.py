@@ -135,13 +135,20 @@ def run(source: str, baseline: str | None) -> dict:
 
         page, errors = new_page()
         check('fresh Library home',page.locator('#decksView').is_visible())
-        check('local studying available with SDK blocked',page.evaluate('!firebaseAuthReady && Object.keys(appState.decks).length===4'))
+        check('local studying available with SDK blocked',page.evaluate('!firebaseAuthReady && Object.keys(appState.decks).length===5'))
         check('combined Unit 1 deck is bundled in AP Psychology Unit 1',page.evaluate("""() => {
           const deck=appState.decks[SENSATION_DECK_ID];
           const cls=appState.classes[deck?.classId];
           const unit=appState.units[deck?.unitId];
           return deck?.preloaded===true && deck.cards.length===105 &&
             cls?.catalogId==='ap_psychology' && unit?.name==='Unit 1';
+        }"""))
+        check('Unit 2 Part 1 is bundled in AP Psychology Unit 2',page.evaluate("""() => {
+          const deck=appState.decks[COGNITION_PART1_DECK_ID];
+          const cls=appState.classes[deck?.classId];
+          const unit=appState.units[deck?.unitId];
+          return deck?.preloaded===true && deck.cards.length===122 &&
+            cls?.catalogId==='ap_psychology' && unit?.name==='Unit 2';
         }"""))
         saved = page.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
         saved['decks']['ap_psych:biological_bases_brain']['name']='AP Psychology — Biological Bases of Behavior: The Brain'
@@ -179,6 +186,20 @@ def run(source: str, baseline: str | None) -> dict:
         deleted_sensation = upgraded.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
         after_delete, after_delete_errors = new_page(saved=deleted_sensation)
         check('deleted Unit 1 preload stays deleted after migration',not after_delete_errors and after_delete.evaluate('!appState.decks[SENSATION_DECK_ID]'))
+
+        pre_unit2 = page.evaluate('plainJson(appState)')
+        pre_unit2['version'] = 12
+        pre_unit2['decks'].pop('ap_psych:unit_2_part_1_cognition', None)
+        unit2_upgraded, unit2_upgraded_errors = new_page(saved=pre_unit2)
+        check('v12 profile receives Unit 2 Part 1 once',not unit2_upgraded_errors and unit2_upgraded.evaluate("""() => {
+          const deck=appState.decks[COGNITION_PART1_DECK_ID];
+          return deck?.preloaded===true && deck.cards.length===122 &&
+            appState.units[deck.unitId]?.name==='Unit 2';
+        }"""))
+        unit2_upgraded.evaluate("delete appState.decks[COGNITION_PART1_DECK_ID];persistState({includeSession:false})")
+        deleted_unit2 = unit2_upgraded.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
+        after_unit2_delete, after_unit2_delete_errors = new_page(saved=deleted_unit2)
+        check('deleted Unit 2 Part 1 preload stays deleted after v13',not after_unit2_delete_errors and after_unit2_delete.evaluate('!appState.decks[COGNITION_PART1_DECK_ID]'))
 
         # Synthetic colliding card IDs in separate real decks must not merge evidence.
         page.evaluate(r"""() => {
