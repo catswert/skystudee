@@ -60,10 +60,11 @@ contains private complete appState. Never publish a backup as educational conten
 | AP Psychology Unit 0 — Research Methods | `ap_psych:unit_0_research_methods` | AP Psychology / Unit 0 | 76-card default; pre-v6 upgrade seed; removable afterward |
 | Unit 1 — AP Psychology — Biological Bases of Behavior: The Brain | `ap_psych:biological_bases_brain` | AP Psychology / Unit 1 | 95 cards; browser one-time seed flag; removable afterward |
 | Unit 1 — AP Psychology — Biological Bases of Behavior: Sensation & States of Consciousness | `ap_psych:unit_1_sensation` | AP Psychology / Unit 1 | 105 cards; pre-v11 seed plus pre-v12 content expansion; removable afterward |
+| Unit 2 — Part 1 — AP Psychology — Perception, Cognition, Memory & Intelligence | `ap_psych:unit_2_part_1_cognition` | AP Psychology / Unit 2 | 122 cards; pre-v13 upgrade seed; removable afterward |
 
 Counts are the current bundled-content snapshot. Update this table when content
 changes. Arrays `BUILTIN_CARDS`, `PSYCH_CARDS`, `BRAIN_CARDS`, and
-`SENSATION_BASE_CARDS`, `CONSCIOUSNESS_CARDS`, and `SENSATION_CARDS` are what the app uses. The matching files in `decks/` are public
+`SENSATION_BASE_CARDS`, `CONSCIOUSNESS_CARDS`, `SENSATION_CARDS`, and `COGNITION_PART1_CARDS` are what the app uses. The matching files in `decks/` are public
 references/exports; editing only a JSON file does **not** update the starter deck
 in the running app.
 
@@ -75,7 +76,7 @@ source and a corresponding public export when useful. Keep every identity stable
 ensure both-direction evidence initialization, and avoid rewriting custom local
 organization each launch. Editing embedded content will not automatically update
 already seeded removable deck copies; schema 12 therefore appends only missing
-States of Consciousness IDs while preserving progress, custom names, and deletion.
+States of Consciousness IDs while preserving progress, custom names, and deletion. Unit 2 Part 1 is independently seeded only for pre-v13 profiles, so later deletion remains authoritative.
 
 ## Class catalog updates
 

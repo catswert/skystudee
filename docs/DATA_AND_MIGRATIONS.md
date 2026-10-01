@@ -7,7 +7,7 @@ sections of [`src/skystudee.html`](../src/skystudee.html).
 
 | Value | Meaning |
 | --- | --- |
-| `APP_VERSION = 12` | Local profile schema/migration version |
+| `APP_VERSION = 13` | Local profile schema/migration version |
 | `CLOUD_SCHEMA_VERSION = 2` | Revisioned immutable-generation sync |
 | `StudyCardsDeck.version = 1` | Interchange content format |
 | `build-manifest.json.version` | Static deployment/cache identity |
@@ -65,15 +65,14 @@ directional and pooled keys; do not introduce another encoding casually.
 
 ## One-time placement versus everyday repair
 
-Fresh defaults include German, Research Methods, and the combined Sensation/States of
-Consciousness deck. Brain is separately seeded. Known startup placements are
-German/Needs unit, AP Psychology/Unit 0 for Research Methods, and AP Psychology/Unit 1
-for both Brain and the combined deck. Units are not otherwise a global course catalog.
+Fresh defaults include German, Research Methods, the combined Sensation/States of
+Consciousness deck, and Unit 2 Part 1. Brain is separately seeded. Known startup placements are
+German/Needs unit, AP Psychology/Unit 0 for Research Methods, AP Psychology/Unit 1 for Brain and the combined deck, and AP Psychology/Unit 2 for Unit 2 Part 1. Units are not otherwise a global course catalog.
 
 Research Methods is added to older saves only for versions below 6. The Unit 1 deck is
 added once below version 11. Version 12 appends only missing States of Consciousness
 card IDs when that deck still exists, preserving evidence, organization, custom titles,
-and an earlier deliberate deletion. Organization seeding/suggestions are enabled
+and an earlier deliberate deletion. Version 13 seeds Unit 2 Part 1 once for older profiles; deleting it afterward remains authoritative. Organization seeding/suggestions are enabled
 for the pre-7 organization migration; regular `ensureOrganizationState` calls just
 repair/normalize references. Brain uses its separate account-scoped seed flag. A
 unit/class removal in current schema must survive save, reload and backup/cloud

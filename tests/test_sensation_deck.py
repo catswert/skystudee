@@ -41,7 +41,7 @@ class SensationDeckTests(unittest.TestCase):
 
     def test_versioned_expansion_contract(self) -> None:
         source = (ROOT / "src" / "skystudee.html").read_text(encoding="utf-8")
-        self.assertIn("const APP_VERSION = 12;", source)
+        self.assertIn("const APP_VERSION = 13;", source)
         self.assertIn("function seedSensationDeckForUpgrade", source)
         self.assertIn("version >= 11 || target.decks[SENSATION_DECK_ID]", source)
         self.assertIn("function upgradeSensationDeckForConsciousness", source)

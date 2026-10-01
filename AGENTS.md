@@ -16,8 +16,8 @@ underlying `firebase-bootstrap-v13-20260904`.
   generated set with the source in one change.
 - Public `decks/*.studydeck.json` files are exports/reference content. The Unit 1
   Sensation/States deck uses a schema-gated missing-ID expansion. These files are
-  not automatically fetched or seeded. Keep Brain/Sensation exports synchronized
-  with their embedded arrays. See [deck maintenance](docs/DECKS.md).
+  not automatically fetched or seeded. Keep Brain/Sensation/Unit 2 Part 1 exports
+  synchronized with their embedded arrays. See [deck maintenance](docs/DECKS.md).
 - This documentation pass added source/build tooling without a runtime refactor.
   Keep routine fixes narrow; do not replace the monolith or redesign the UI merely
   to implement a small requested change.
