@@ -101,6 +101,8 @@ s=replace_one(s,'''      seedCognitionPart1DeckForUpgrade(target, saved.version)
       seedDevelopmentDeckForUpgrade(target, saved.version);
       ensureOrganizationState(target, {''',"migration")
 p.write_text(s)
+p=ROOT/"tests/test_sensation_deck.py"
+p.write_text(replace_one(p.read_text(),'self.assertIn("const APP_VERSION = 13;", source)','self.assertIn("const APP_VERSION = 14;", source)',"sensation schema"))
 p=ROOT/"tests/test_cognition_part1_deck.py"
 p.write_text(replace_one(p.read_text(),'self.assertIn("const APP_VERSION = 13;", source)','self.assertIn("const APP_VERSION = 14;", source)',"previous test"))
 test='''from __future__ import annotations
