@@ -1,0 +1,48 @@
+name: Apply Unit 3 Development deck
+on:
+  push:
+    branches:
+      - feature/ap-psych-unit-3-development-learning
+    paths:
+      - tools/.run-unit3
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  implement-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: feature/ap-psych-unit-3-development-learning
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply Unit 3 source/data/test changes
+        run: python tools/.apply-unit3.py
+      - name: Install dependencies
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          python -m pip install -r tests/requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: Rebuild deployment
+        run: python tools/build.py --version unit3-development-v19-20261013
+      - name: Validate source/build and deck content
+        run: |
+          python tools/build.py --check
+          npm run check
+          python -m unittest discover -s tests -p 'test_*.py'
+      - name: Browser smoke
+        run: python tests/browser_smoke.py
+      - name: Commit validated release
+        run: |
+          rm -f tools/.apply-unit3.py tools/.unit3-rows.txt tools/.run-unit3 .github/workflows/apply-unit3.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add AP Psychology Unit 3 Development and Learning deck"
+          git push origin HEAD:feature/ap-psych-unit-3-development-learning
