@@ -1,0 +1,117 @@
+Developmental Psychology|Scientific study of physical, cognitive, emotional, and social changes across the lifespan
+Stability and Change|Examining which characteristics persist and which change across life
+Nature and Nurture|Interaction of genetic inheritance and life experiences in shaping development
+Continuous Development|Development occurring gradually through steady, cumulative change
+Discontinuous Development|Development progressing through distinct stages with qualitative changes
+Cross-Sectional Research|Comparing different age groups at one point in time
+Longitudinal Research|Following the same individuals over time to study developmental change
+Teratogens|Prenatal exposures, such as alcohol or infections, that can harm fetal development
+Developmental Milestones|Skills or behaviors typically achieved within certain age ranges
+Prenatal Development|Growth and development from conception until birth
+Fine Motor Coordination|Control of small muscles for precise actions like writing or buttoning
+Gross Motor Coordination|Control of large muscles for movement like walking, jumping, and running
+Maturation|Biologically guided growth producing orderly developmental changes
+Reflexes|Automatic, inborn responses supporting newborn survival
+Rooting Reflex|Infant turns toward a cheek touch to find food
+Visual Cliff|Glass-covered apparent drop used to test infants’ depth perception
+Critical Periods|Narrow developmental windows especially important for acquiring particular abilities
+Sensitive Periods|Times when learning particular skills is easier, although possible later
+Imprinting|Rapid early attachment to the first moving stimulus, often seen in birds
+Growth Spurt|Rapid increase in height and weight during adolescent development
+Puberty|Hormonal and physical changes leading to sexual maturity
+Primary Sex Characteristics|Reproductive organs and structures directly involved in reproduction
+Secondary Sex Characteristics|Puberty-related physical traits not directly involved in reproduction
+Menarche|First menstrual period during puberty
+Spermarche|First production of sperm during puberty
+Menopause|Natural end of menstrual cycles and reproductive fertility, often around age 50
+Sex|Biologically influenced characteristics associated with male and female bodies
+Gender|Culturally associated attitudes, feelings, behaviors, and expectations related to sex
+Socialization|Learning cultural norms, behaviors, and roles through social interaction
+Jean Piaget|Psychologist who proposed four stages of children's cognitive development
+Schemas|Mental frameworks organizing information based on existing knowledge and experiences
+Assimilation|Fitting new experiences into existing schemas
+Accommodation|Changing schemas to incorporate new information
+Sensorimotor Stage|Piaget’s birth-to-two stage of learning through senses and actions
+Object Permanence|Understanding objects exist even when out of sight
+Preoperational Stage|Piaget’s ages-two-to-seven stage of symbolic thought without consistent logical reasoning
+Mental Symbols|Internal representations standing for objects, people, and events
+Pretend Play|Imaginative role-playing or acting out situations, reflecting symbolic thinking
+Conservation|Understanding quantity remains constant despite changes in appearance or shape
+Reversibility|Mentally reversing an action or operation to its original state
+Animism|Attributing life or feelings to nonliving objects
+Egocentrism|Difficulty understanding perspectives different from one's own
+Theory of Mind|Understanding other people have their own thoughts, feelings, and beliefs
+Concrete Operational Stage|Piaget’s ages-seven-to-eleven stage of logical thinking about tangible situations
+Formal Operational Stage|Piaget’s roughly age-twelve-plus stage of abstract and hypothetical reasoning
+Lev Vygotsky|Psychologist emphasizing social interaction, language, and culture in cognitive development
+Scaffolding|Temporary guided support gradually removed as learners gain independence
+Zone of Proximal Development|Difference between what a learner can do alone and with guidance
+Crystallized Intelligence|Accumulated knowledge and skills gained through education and experience
+Fluid Intelligence|Reasoning and solving unfamiliar problems without relying on learned knowledge
+Dementia|Cognitive decline interfering with daily functioning, including memory and judgment
+Language|System of communicating meaning through symbols, sounds, and rules
+Phonemes|Smallest contrasting speech sounds that distinguish word meanings
+Morphemes|Smallest language units that carry meaning
+Semantics|Meaning of words, phrases, and sentences in context
+Grammar|System of language rules governing meaningful word combinations
+Syntax|Rules governing word order and sentence structure
+Nonverbal Gestures|Hand or body movements communicating without speech, such as pointing or waving
+Cooing|Early infant vowel-like sounds such as “oo” and “ah”
+Babbling|Repeated consonant-vowel sounds such as “ba-ba,” usually beginning around six months
+One-Word Stage|Around age one, single words communicate whole ideas
+Telegraphic Speech|Brief, meaningful phrases omitting less essential words
+Overgeneralization of Language Rules|Applying grammatical patterns too widely, such as saying “goed”
+Ecological Systems Theory|Bronfenbrenner’s model of interacting environmental layers affecting child development
+Microsystem|Immediate settings and relationships, including family, peers, and school
+Mesosystem|Connections among a child’s immediate settings, such as family-school relationships
+Exosystem|Indirect influences, such as parental workplaces and community decisions
+Macrosystem|Broader cultural values, societal norms, and economic conditions
+Chronosystem|Life transitions and historical changes affecting development over time
+Authoritarian Parenting|High demands and strict rules with little warmth or discussion
+Authoritative Parenting|Clear expectations combined with warmth, responsiveness, and encouraged independence
+Permissive Parenting|Warm and responsive approach with few firm limits or demands
+Attachment Styles|Patterns of emotional bonding between children and caregivers
+Secure Attachment|Comfortable exploration and trust that caregivers will provide support
+Insecure Attachment|Attachment patterns marked by uncertainty, avoidance, or inconsistent responses to caregivers
+Avoidant Attachment|Little outward separation distress and avoidance of caregiver on reunion
+Anxious Attachment|Intense separation distress and difficulty being comforted on reunion
+Disorganized Attachment|Contradictory, confused, or fearful responses toward a caregiver
+Temperament|Early-emerging traits governing activity, emotional reactivity, and adaptability
+Separation Anxiety|Distress when an infant or child is separated from a caregiver
+Contact Comfort|Security and comfort gained from warm, physical contact with caregivers
+Parallel Play|Children play alongside others without direct coordinated interaction
+Imaginary Audience|Adolescent belief that others constantly watch and judge them
+Personal Fable|Adolescent belief that their experiences are unique and they are invulnerable
+Social Clock|Cultural expectations about the timing of major life milestones
+Emerging Adulthood|Late teens through twenties, often marked by exploration of roles and goals
+Erikson’s Psychosocial Stage Theory|Eight lifespan stages, each involving a social-emotional conflict
+Trust vs. Mistrust|Birth–18 months: consistent care fosters security and trust
+Autonomy vs. Shame and Doubt|18 months–3 years: encouraged independence builds personal control
+Initiative vs. Guilt|Ages 3–6: supported independent actions build initiative
+Industry vs. Inferiority|Ages 6–12: developing skills and competence builds confidence
+Identity vs. Role Confusion|Adolescence: exploring values and roles develops a coherent identity
+Intimacy vs. Isolation|Young adulthood: building close commitments counters loneliness
+Generativity vs. Stagnation|Middle adulthood: contributing to future generations supports purpose
+Integrity vs. Despair|Late adulthood: accepting one’s life brings satisfaction rather than regret
+Adverse Childhood Experiences (ACEs)|Potentially traumatic childhood events including abuse, neglect, and household dysfunction
+Identity Achievement|Explored alternatives and made commitments to identity, values, and goals
+Identity Diffusion|Neither exploring identity options nor committing to them
+Identity Foreclosure|Committing to an identity without exploring alternatives
+Identity Moratorium|Exploring identity options without making lasting commitments
+Racial/Ethnic Identity|Sense of heritage, cultural belonging, and community membership
+Sexual Orientation|Pattern of emotional, romantic, or sexual attraction to other people
+Religious Identity|Sense of self shaped by spiritual beliefs, values, and faith community
+Occupational Identity|Sense of self shaped by career interests, talents, and goals
+Familial Identity|Sense of oneself through family relationships, roles, and expectations
+Possible Selves|Imagined future versions of oneself, including hoped-for or feared identities
+Gender Identity|One’s internal sense of gender, which may differ from assigned sex
+Gender Roles|Social expectations for behavior and activities associated with gender
+Gender Typing|Learning and adopting culturally expected gender-related behaviors and interests
+Adolescent Egocentrism|Heightened self-focus and difficulty separating personal concerns from others’ attention
+Social Identity|Sense of self based on membership in social groups
+Two-Word Stage|Around age two, combining words into simple meaningful phrases
+Kohlberg’s Moral Development Theory|Three levels of moral reasoning: preconventional, conventional, and postconventional
+Preconventional Morality|Judging actions mainly by punishment avoidance or reward seeking
+Conventional Morality|Judging actions by social approval, rules, and maintaining order
+Postconventional Morality|Judging actions using abstract rights and ethical principles
+Ainsworth’s Strange Situation|Observed infant separation and reunion behaviors to assess attachment patterns
