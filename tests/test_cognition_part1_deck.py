@@ -36,7 +36,7 @@ class CognitionPart1DeckTests(unittest.TestCase):
 
     def test_versioned_removable_seed_contract(self) -> None:
         source = (ROOT / "src" / "skystudee.html").read_text(encoding="utf-8")
-        self.assertIn("const APP_VERSION = 13;", source)
+        self.assertIn("const APP_VERSION = 14;", source)
         self.assertIn("function seedCognitionPart1DeckForUpgrade", source)
         self.assertIn("version >= 13 || target.decks[COGNITION_PART1_DECK_ID]", source)
         self.assertIn('findOrCreateUnit(target, psych.id, "Unit 2")', source)
