@@ -135,7 +135,7 @@ def run(source: str, baseline: str | None) -> dict:
 
         page, errors = new_page()
         check('fresh Library home',page.locator('#decksView').is_visible())
-        check('local studying available with SDK blocked',page.evaluate('!firebaseAuthReady && Object.keys(appState.decks).length===5'))
+        check('local studying available with SDK blocked',page.evaluate('!firebaseAuthReady && Object.keys(appState.decks).length===6'))
         check('combined Unit 1 deck is bundled in AP Psychology Unit 1',page.evaluate("""() => {
           const deck=appState.decks[SENSATION_DECK_ID];
           const cls=appState.classes[deck?.classId];
@@ -149,6 +149,12 @@ def run(source: str, baseline: str | None) -> dict:
           const unit=appState.units[deck?.unitId];
           return deck?.preloaded===true && deck.cards.length===122 &&
             cls?.catalogId==='ap_psychology' && unit?.name==='Unit 2';
+        }"""))
+        check('Unit 3 Development deck preloaded in correct class/unit', page.evaluate("""() => {
+          const deck=appState.decks[DEVELOPMENT_DECK_ID];
+          return deck?.preloaded===true && deck.cards.length===117 &&
+            appState.classes[deck.classId]?.catalogId==='ap_psychology' &&
+            appState.units[deck.unitId]?.name==='Unit 3';
         }"""))
         saved = page.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
         saved['decks']['ap_psych:biological_bases_brain']['name']='AP Psychology — Biological Bases of Behavior: The Brain'
@@ -200,6 +206,19 @@ def run(source: str, baseline: str | None) -> dict:
         deleted_unit2 = unit2_upgraded.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
         after_unit2_delete, after_unit2_delete_errors = new_page(saved=deleted_unit2)
         check('deleted Unit 2 Part 1 preload stays deleted after v13',not after_unit2_delete_errors and after_unit2_delete.evaluate('!appState.decks[COGNITION_PART1_DECK_ID]'))
+
+        pre_unit3 = page.evaluate('plainJson(appState)')
+        pre_unit3['version'] = 13
+        pre_unit3['decks'].pop('ap_psych:unit_3_development_and_learning', None)
+        unit3_upgraded, unit3_errors = new_page(saved=pre_unit3)
+        check('v13 profile receives Unit 3 without losing Unit 2', not unit3_errors and unit3_upgraded.evaluate("""() => {
+          return appState.decks[DEVELOPMENT_DECK_ID]?.cards.length===117 &&
+            !!appState.decks[COGNITION_PART1_DECK_ID];
+        }"""))
+        unit3_upgraded.evaluate("delete appState.decks[DEVELOPMENT_DECK_ID];persistState({includeSession:false})")
+        deleted_unit3 = unit3_upgraded.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
+        deleted_unit3_page, unit3_delete_errors = new_page(saved=deleted_unit3)
+        check('deleted Unit 3 not silently restored at schema 14', not unit3_delete_errors and deleted_unit3_page.evaluate('!appState.decks[DEVELOPMENT_DECK_ID]'))
 
         # Synthetic colliding card IDs in separate real decks must not merge evidence.
         page.evaluate(r"""() => {
