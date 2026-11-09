@@ -1,0 +1,376 @@
+{
+  "format": "StudyCardsDeck",
+  "version": 1,
+  "deckId": "ap_psych:unit_4_social_psychology",
+  "name": "Unit 4 — AP Psychology — Social Psychology",
+  "classCatalogId": "ap_psychology",
+  "className": "AP Psychology",
+  "unitName": "Unit 4",
+  "cards": [
+    {
+      "id": "social_psychology",
+      "front": "Social Psychology",
+      "back": "Scientific study of how people think about, influence, and relate to one another"
+    },
+    {
+      "id": "attribution_theory",
+      "front": "Attribution Theory",
+      "back": "Explains whether we credit behavior to someone’s personality or their situation"
+    },
+    {
+      "id": "attributions",
+      "front": "Attributions",
+      "back": "Inferences people make about the causes of behavior"
+    },
+    {
+      "id": "dispositional_attributions",
+      "front": "Dispositional Attributions",
+      "back": "Explaining behavior by a person’s personality or traits rather than situation"
+    },
+    {
+      "id": "situational_attributions",
+      "front": "Situational Attributions",
+      "back": "Explaining behavior by circumstances or environment rather than personality"
+    },
+    {
+      "id": "fundamental_attribution_error",
+      "front": "Fundamental Attribution Error",
+      "back": "Overweighting personality and underweighting situation when explaining others’ behavior"
+    },
+    {
+      "id": "actor_observer_bias",
+      "front": "Actor-Observer Bias",
+      "back": "Blaming our own actions on situations but others’ actions on their personality"
+    },
+    {
+      "id": "self_serving_bias",
+      "front": "Self-Serving Bias",
+      "back": "Crediting successes to ourselves and blaming failures on outside factors"
+    },
+    {
+      "id": "explanatory_style",
+      "front": "Explanatory Style",
+      "back": "A person’s habitual way of explaining why good and bad events happen"
+    },
+    {
+      "id": "optimistic_explanatory_style",
+      "front": "Optimistic Explanatory Style",
+      "back": "Seeing setbacks as external, temporary, and specific; good events as lasting"
+    },
+    {
+      "id": "pessimistic_explanatory_style",
+      "front": "Pessimistic Explanatory Style",
+      "back": "Seeing setbacks as internal, stable, and global; good events as flukes"
+    },
+    {
+      "id": "internal_locus_of_control",
+      "front": "Internal Locus of Control",
+      "back": "Belief that your own actions and decisions control your outcomes"
+    },
+    {
+      "id": "external_locus_of_control",
+      "front": "External Locus of Control",
+      "back": "Belief that luck, fate, or outside forces control your outcomes"
+    },
+    {
+      "id": "rotter_locus_of_control_scale",
+      "front": "Rotter’s Locus of Control Scale",
+      "back": "Julian Rotter’s questionnaire measuring internal versus external locus of control"
+    },
+    {
+      "id": "mere_exposure_effect",
+      "front": "Mere Exposure Effect",
+      "back": "Repeated exposure to someone or something increases liking for it"
+    },
+    {
+      "id": "self_fulfilling_prophecy",
+      "front": "Self-Fulfilling Prophecy",
+      "back": "A belief that leads to actions that make the belief come true"
+    },
+    {
+      "id": "social_comparison",
+      "front": "Social Comparison",
+      "back": "Judging your abilities, status, or opinions by comparing yourself with others"
+    },
+    {
+      "id": "upward_social_comparison",
+      "front": "Upward Social Comparison",
+      "back": "Comparing yourself with someone better off; can motivate or lower self-esteem"
+    },
+    {
+      "id": "downward_social_comparison",
+      "front": "Downward Social Comparison",
+      "back": "Comparing yourself with someone worse off; can boost self-esteem or breed complacency"
+    },
+    {
+      "id": "relative_deprivation",
+      "front": "Relative Deprivation",
+      "back": "Feeling worse off or unfairly treated compared with others, regardless of actual needs"
+    },
+    {
+      "id": "stereotype",
+      "front": "Stereotype",
+      "back": "Generalized, often oversimplified belief about a group of people"
+    },
+    {
+      "id": "cognitive_load",
+      "front": "Cognitive Load",
+      "back": "Amount of mental effort in use; stereotypes act as shortcuts that reduce it"
+    },
+    {
+      "id": "prejudice",
+      "front": "Prejudice",
+      "back": "Unjustifiable, usually negative attitude toward a group and its members"
+    },
+    {
+      "id": "discrimination",
+      "front": "Discrimination",
+      "back": "Unjustifiable negative behavior toward a group or its members"
+    },
+    {
+      "id": "jane_elliott_eye_color_exercise",
+      "front": "Jane Elliott’s Third-Grade Exercise",
+      "back": "Dividing students by eye color to show how quickly prejudice and discrimination form"
+    },
+    {
+      "id": "implicit_attitudes",
+      "front": "Implicit Attitudes",
+      "back": "Unconscious beliefs or feelings that shape behavior without awareness"
+    },
+    {
+      "id": "just_world_phenomenon",
+      "front": "Just-World Phenomenon",
+      "back": "Belief that people get what they deserve; often leads to blaming victims"
+    },
+    {
+      "id": "out_group_homogeneity_bias",
+      "front": "Out-Group Homogeneity Bias",
+      "back": "Seeing out-group members as more alike than members of your own group"
+    },
+    {
+      "id": "in_group_bias",
+      "front": "In-Group Bias",
+      "back": "Favoring members of your own group over members of other groups"
+    },
+    {
+      "id": "ethnocentrism",
+      "front": "Ethnocentrism",
+      "back": "Judging other cultures by your own culture’s standards, seeing yours as superior"
+    },
+    {
+      "id": "belief_perseverance",
+      "front": "Belief Perseverance",
+      "back": "Clinging to beliefs even after evidence has shown them false"
+    },
+    {
+      "id": "confirmation_bias",
+      "front": "Confirmation Bias",
+      "back": "Seeking, favoring, and remembering information that supports existing beliefs"
+    },
+    {
+      "id": "cognitive_dissonance",
+      "front": "Cognitive Dissonance",
+      "back": "Discomfort from conflicting beliefs and actions, resolved by changing one of them"
+    },
+    {
+      "id": "social_norms",
+      "front": "Social Norms",
+      "back": "Unwritten rules for acceptable behavior within a group or society"
+    },
+    {
+      "id": "social_influence_theory",
+      "front": "Social Influence Theory",
+      "back": "Explains how others’ words and actions change our thoughts, feelings, and behavior"
+    },
+    {
+      "id": "normative_social_influence",
+      "front": "Normative Social Influence",
+      "back": "Conforming to gain approval or avoid rejection from a group"
+    },
+    {
+      "id": "informational_social_influence",
+      "front": "Informational Social Influence",
+      "back": "Conforming because others seem to know what is correct, especially when uncertain"
+    },
+    {
+      "id": "conformity",
+      "front": "Conformity",
+      "back": "Adjusting thoughts, feelings, or behavior to match a group under real or imagined pressure"
+    },
+    {
+      "id": "asch_line_experiment",
+      "front": "Solomon Asch’s Line Experiment",
+      "back": "Participants often agreed with a group’s obviously wrong line-length judgments"
+    },
+    {
+      "id": "obedience",
+      "front": "Obedience",
+      "back": "Following direct commands, usually from an authority figure, even against personal morals"
+    },
+    {
+      "id": "milgram_obedience_experiment",
+      "front": "Stanley Milgram’s Obedience Experiment",
+      "back": "Most participants obeyed orders to deliver apparently dangerous shocks up to 450 volts"
+    },
+    {
+      "id": "social_role",
+      "front": "Social Role",
+      "back": "Set of expectations for how someone in a social position should behave"
+    },
+    {
+      "id": "stanford_prison_experiment",
+      "front": "Philip Zimbardo’s Stanford Prison Experiment",
+      "back": "Students assigned guard or prisoner roles quickly became them; study ended early"
+    },
+    {
+      "id": "persuasion",
+      "front": "Persuasion",
+      "back": "Changing others’ attitudes, beliefs, or behaviors through communication"
+    },
+    {
+      "id": "elaboration_likelihood_model",
+      "front": "Elaboration Likelihood Model",
+      "back": "Persuasion happens through careful central processing or quick peripheral cues"
+    },
+    {
+      "id": "central_route",
+      "front": "Central Route to Persuasion",
+      "back": "Persuasion through careful analysis of facts and arguments; produces lasting change"
+    },
+    {
+      "id": "peripheral_route",
+      "front": "Peripheral Route to Persuasion",
+      "back": "Persuasion through surface cues like attractiveness or status; produces temporary change"
+    },
+    {
+      "id": "halo_effect",
+      "front": "Halo Effect",
+      "back": "One positive impression of a person colors judgments of their other traits"
+    },
+    {
+      "id": "foot_in_the_door_technique",
+      "front": "Foot-in-the-Door Technique",
+      "back": "Agreeing to a small request makes agreeing to a larger one more likely"
+    },
+    {
+      "id": "door_in_the_face_technique",
+      "front": "Door-in-the-Face Technique",
+      "back": "Refusing a large request makes agreeing to a smaller follow-up more likely"
+    },
+    {
+      "id": "collectivism",
+      "front": "Collectivism",
+      "back": "Cultural value placing group goals and interdependence above individual desires"
+    },
+    {
+      "id": "multiculturalism",
+      "front": "Multiculturalism",
+      "back": "Respecting and valuing many cultural identities coexisting within one society"
+    },
+    {
+      "id": "group_polarization",
+      "front": "Group Polarization",
+      "back": "Group discussion pushes members’ shared leanings toward a more extreme position"
+    },
+    {
+      "id": "groupthink",
+      "front": "Groupthink",
+      "back": "Desire for group harmony overrides critical evaluation, producing poor decisions"
+    },
+    {
+      "id": "diffusion_of_responsibility",
+      "front": "Diffusion of Responsibility",
+      "back": "Feeling less personally responsible to act when other people are present"
+    },
+    {
+      "id": "social_loafing",
+      "front": "Social Loafing",
+      "back": "Putting in less effort when working in a group than when working alone"
+    },
+    {
+      "id": "deindividuation",
+      "front": "Deindividuation",
+      "back": "Loss of self-awareness and restraint in aroused, anonymous groups"
+    },
+    {
+      "id": "social_facilitation",
+      "front": "Social Facilitation",
+      "back": "An audience improves performance on simple tasks but hurts complex or new ones"
+    },
+    {
+      "id": "altruism",
+      "front": "Altruism",
+      "back": "Selfless concern for others’ welfare, helping even at a personal cost"
+    },
+    {
+      "id": "prosocial_behavior",
+      "front": "Prosocial Behavior",
+      "back": "Positive, helpful behavior that benefits other people"
+    },
+    {
+      "id": "social_debt",
+      "front": "Social Debt",
+      "back": "Feeling obligated to return help or favors someone has given you"
+    },
+    {
+      "id": "social_reciprocity_norm",
+      "front": "Social Reciprocity Norm",
+      "back": "Expectation that we should help those who have helped us"
+    },
+    {
+      "id": "social_responsibility_norm",
+      "front": "Social Responsibility Norm",
+      "back": "Expectation that we help people who need it, without expecting repayment"
+    },
+    {
+      "id": "bystander_effect",
+      "front": "Bystander Effect",
+      "back": "People are less likely to help a victim when others are present"
+    },
+    {
+      "id": "kitty_genovese_case",
+      "front": "Kitty Genovese Case",
+      "back": "1964 New York murder whose reported bystander inaction inspired bystander-effect research"
+    },
+    {
+      "id": "breaking_the_bystander_effect",
+      "front": "Breaking the Bystander Effect",
+      "back": "Notice the event, interpret it as an emergency, take responsibility, then act"
+    },
+    {
+      "id": "situational_variables",
+      "front": "Situational Variables",
+      "back": "Features of a setting, like crowd size or ambiguity, that influence helping"
+    },
+    {
+      "id": "attentional_variables",
+      "front": "Attentional Variables",
+      "back": "Factors like hurry or distraction that affect whether we notice someone needing help"
+    },
+    {
+      "id": "false_consensus_effect",
+      "front": "False Consensus Effect",
+      "back": "Overestimating how much others share your beliefs and behaviors"
+    },
+    {
+      "id": "superordinate_goals",
+      "front": "Superordinate Goals",
+      "back": "Shared goals that require cooperation and override differences between groups"
+    },
+    {
+      "id": "social_traps",
+      "front": "Social Traps",
+      "back": "Pursuing short-term self-interest in ways that cause long-term harm to everyone"
+    },
+    {
+      "id": "io_psychologists",
+      "front": "Industrial-Organizational (I/O) Psychologists",
+      "back": "Apply psychology to workplaces: hiring, productivity, and organizational culture"
+    },
+    {
+      "id": "burnout",
+      "front": "Burnout",
+      "back": "Physical, emotional, and mental exhaustion from prolonged work stress"
+    }
+  ]
+}

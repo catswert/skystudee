@@ -44,7 +44,14 @@ than the source supports. Treat the listed areas as regression-test targets.
 - Phone detection uses a legacy screen-width condition, not device OS. Small
   tablets may match; desktop emulation alone is not a real iPhone Safari test.
 - Text fitting has a 12px minimum and bounded retries; extremely long text and
-  accessibility zoom are not guaranteed to fit.
+  accessibility zoom are not guaranteed to fit. Desktop uses only the length tiers
+  (sized in container units), not measured shrinking.
+- Fonts come from Google Fonts. Offline or blocked, the system UI font is used; layout
+  still works but card text loses the handwritten face.
+- The deck picker sizes to its text with `field-sizing: content`; browsers without it
+  (Safari at the time of writing) size the select to its longest option.
+- There is no forced fallback deck. Deleting the last remaining deck is refused, and a
+  restored/synced snapshot with zero decks receives the starter decks instead.
 - Card swaps are timer-based. Test slow-frame/rAF interruptions before claiming
   content can never be exposed during transition.
 - The global keyboard router blocks every current modal. Any new overlay must be added to that guard.

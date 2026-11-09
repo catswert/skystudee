@@ -135,7 +135,14 @@ def run(source: str, baseline: str | None) -> dict:
 
         page, errors = new_page()
         check('fresh Library home',page.locator('#decksView').is_visible())
-        check('local studying available with SDK blocked',page.evaluate('!firebaseAuthReady && Object.keys(appState.decks).length===6'))
+        check('local studying available with SDK blocked',page.evaluate('!firebaseAuthReady && Object.keys(appState.decks).length===7'))
+        check('fresh profile has no German deck',page.evaluate('!appState.decks[RETIRED_GERMAN_DECK_ID] && !!appState.decks[activeDeckId]'))
+        check('both Unit 4 decks bundled under AP Psychology Unit 4',page.evaluate("""() => [SOCIAL_PSYCH_DECK_ID,PERSONALITY_DECK_ID].every(id => {
+          const deck=appState.decks[id];
+          return deck?.preloaded===true && deck.cards.length===(id===SOCIAL_PSYCH_DECK_ID?73:80) &&
+            appState.classes[deck.classId]?.catalogId==='ap_psychology' &&
+            appState.units[deck.unitId]?.name==='Unit 4';
+        })"""))
         check('combined Unit 1 deck is bundled in AP Psychology Unit 1',page.evaluate("""() => {
           const deck=appState.decks[SENSATION_DECK_ID];
           const cls=appState.classes[deck?.classId];
@@ -219,6 +226,32 @@ def run(source: str, baseline: str | None) -> dict:
         deleted_unit3 = unit3_upgraded.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
         deleted_unit3_page, unit3_delete_errors = new_page(saved=deleted_unit3)
         check('deleted Unit 3 not silently restored at schema 14', not unit3_delete_errors and deleted_unit3_page.evaluate('!appState.decks[DEVELOPMENT_DECK_ID]'))
+
+        pre_unit4 = page.evaluate('plainJson(appState)')
+        pre_unit4['version'] = 14
+        pre_unit4['decks'].pop('ap_psych:unit_4_social_psychology', None)
+        pre_unit4['decks'].pop('ap_psych:unit_4_motivation_emotion_personality', None)
+        pre_unit4['decks']['builtin:german-perfect:v1'] = {'id':'builtin:german-perfect:v1','name':'German — Verben im Perfekt','builtin':True,
+            'cards':[{'id':'machen','front':'machen','back':'hat gemacht'}],'facts':{}}
+        pre_unit4['activeDeckId'] = 'builtin:german-perfect:v1'
+        pre_unit4['studySet'] = {'active':True,'deckIds':['builtin:german-perfect:v1','ap_psych:unit_0_research_methods'],'settings':{},'sessionState':None}
+        unit4_page, unit4_errors = new_page(saved=pre_unit4)
+        check('v14 profile gains both Unit 4 decks and loses German', not unit4_errors and unit4_page.evaluate("""() =>
+          !!appState.decks[SOCIAL_PSYCH_DECK_ID] && !!appState.decks[PERSONALITY_DECK_ID] &&
+          !appState.decks[RETIRED_GERMAN_DECK_ID] && !!appState.decks[activeDeckId] &&
+          !appState.studySet.deckIds.includes(RETIRED_GERMAN_DECK_ID) &&
+          !JSON.parse(localStorage.getItem(STORAGE_KEY)).decks[RETIRED_GERMAN_DECK_ID]"""))
+        unit4_page.evaluate("delete appState.decks[PERSONALITY_DECK_ID];persistState({includeSession:false})")
+        deleted_unit4 = unit4_page.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
+        deleted_unit4_page, unit4_delete_errors = new_page(saved=deleted_unit4)
+        check('deleted Unit 4 deck stays deleted at schema 15', not unit4_delete_errors and deleted_unit4_page.evaluate('!appState.decks[PERSONALITY_DECK_ID] && !!appState.decks[SOCIAL_PSYCH_DECK_ID]'))
+        only_german = {'version':14,'userName':'Synthetic','decks':{'builtin:german-perfect:v1':pre_unit4['decks']['builtin:german-perfect:v1']},'activeDeckId':'builtin:german-perfect:v1'}
+        only_german_page, only_german_errors = new_page(saved=only_german)
+        check('German-only snapshot falls back to starter decks', not only_german_errors and only_german_page.evaluate('Object.keys(appState.decks).length>=7 && !!activeDeck() && !appState.decks[RETIRED_GERMAN_DECK_ID]'))
+        last_deck = {'version':15,'userName':'Synthetic','decks':{'test:solo':{'id':'test:solo','name':'Solo','cards':[{'id':'a','front':'A','back':'B'}],'facts':{}}},'activeDeckId':'test:solo'}
+        solo_page, solo_errors = new_page(saved=last_deck)
+        solo_page.evaluate("for (const id of Object.keys(appState.decks)) if (id!=='test:solo') delete appState.decks[id]; deleteRealDeck('test:solo')")
+        check('last remaining deck cannot be deleted', not solo_errors and solo_page.evaluate("!!appState.decks['test:solo'] && Object.keys(appState.decks).length===1"))
 
         # Synthetic colliding card IDs in separate real decks must not merge evidence.
         page.evaluate(r"""() => {

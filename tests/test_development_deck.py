@@ -23,7 +23,7 @@ class DevelopmentDeckTests(unittest.TestCase):
             self.assertIn(term,fronts)
     def test_schema_migration(self):
         s=(ROOT/"src/skystudee.html").read_text()
-        self.assertIn("const APP_VERSION = 14;",s)
+        self.assertIn("const APP_VERSION = 15;",s)
         self.assertIn("function seedDevelopmentDeckForUpgrade",s)
         self.assertIn("version >= 14 || target.decks[DEVELOPMENT_DECK_ID]",s)
         self.assertIn('findOrCreateUnit(target, psych.id, "Unit 3")',s)

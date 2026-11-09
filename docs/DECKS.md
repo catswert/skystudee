@@ -56,20 +56,28 @@ contains private complete appState. Never publish a backup as educational conten
 
 | Deck | ID | Initial placement | Behavior |
 | --- | --- | --- | --- |
-| German — Verben im Perfekt | `builtin:german-perfect:v1` | German / Needs unit | Forced fallback, 95 cards; `ensureBuiltInDeck` refreshes content; normal delete/update blocked |
 | AP Psychology Unit 0 — Research Methods | `ap_psych:unit_0_research_methods` | AP Psychology / Unit 0 | 76-card default; pre-v6 upgrade seed; removable afterward |
 | Unit 1 — AP Psychology — Biological Bases of Behavior: The Brain | `ap_psych:biological_bases_brain` | AP Psychology / Unit 1 | 95 cards; browser one-time seed flag; removable afterward |
 | Unit 1 — AP Psychology — Biological Bases of Behavior: Sensation & States of Consciousness | `ap_psych:unit_1_sensation` | AP Psychology / Unit 1 | 105 cards; pre-v11 seed plus pre-v12 content expansion; removable afterward |
 | Unit 2 — Part 1 — AP Psychology — Perception, Cognition, Memory & Intelligence | `ap_psych:unit_2_part_1_cognition` | AP Psychology / Unit 2 | 122 cards; pre-v13 upgrade seed; removable afterward |
 | Unit 3 — AP Psychology — Development and Learning | `ap_psych:unit_3_development_and_learning` | AP Psychology / Unit 3 | 117 cards; pre-v14 upgrade seed; removable afterward |
+| Unit 4 — AP Psychology — Social Psychology | `ap_psych:unit_4_social_psychology` | AP Psychology / Unit 4 | 73 cards; pre-v15 upgrade seed; removable afterward |
+| Unit 4 — AP Psychology — Motivation, Emotion & Personality | `ap_psych:unit_4_motivation_emotion_personality` | AP Psychology / Unit 4 | 80 cards; pre-v15 upgrade seed; removable afterward |
+
+The German deck (`builtin:german-perfect:v1`, formerly a forced, undeletable fallback) was
+retired in schema 15. `ensureLibraryDecks` strips that ID on every load, restore, save and cloud
+merge, including copies re-sent by older clients, and an import using that ID becomes a copy.
+There is no forced fallback deck any more: the last remaining deck cannot be deleted, and a
+snapshot that would leave zero decks receives the fresh-profile starter decks.
 
 Counts are the current bundled-content snapshot. Update this table when content
-changes. Arrays `BUILTIN_CARDS`, `PSYCH_CARDS`, `BRAIN_CARDS`, and
-`SENSATION_BASE_CARDS`, `CONSCIOUSNESS_CARDS`, `SENSATION_CARDS`, and `COGNITION_PART1_CARDS` and `DEVELOPMENT_CARDS` are what the app uses. The matching files in `decks/` are public
+changes. Arrays `PSYCH_CARDS`, `BRAIN_CARDS`, `SENSATION_BASE_CARDS`,
+`CONSCIOUSNESS_CARDS`, `SENSATION_CARDS`, `COGNITION_PART1_CARDS`, `DEVELOPMENT_CARDS`,
+`SOCIAL_PSYCH_CARDS` and `PERSONALITY_CARDS` are what the app uses. The matching files in `decks/` are public
 references/exports; editing only a JSON file does **not** update the starter deck
 in the running app.
 
-To add a new preload, first decide whether it is removable or a forced fallback.
+To add a new preload, make it removable (there is no forced-fallback concept any more).
 Prefer explicit one-time seeding with a version/marker and tests for deletion,
 existing-ID preservation, migrations and cloud restore. Define the class catalog
 association and only a user-approved initial unit. Add content in the embedded
@@ -77,7 +85,11 @@ source and a corresponding public export when useful. Keep every identity stable
 ensure both-direction evidence initialization, and avoid rewriting custom local
 organization each launch. Editing embedded content will not automatically update
 already seeded removable deck copies; schema 12 therefore appends only missing
-States of Consciousness IDs while preserving progress, custom names, and deletion. Unit 2 Part 1 is independently seeded only for pre-v13 profiles, so later deletion remains authoritative. Unit 3 is independently seeded only for pre-v14 profiles; later deletion remains authoritative.
+States of Consciousness IDs while preserving progress, custom names, and deletion. Unit 2 Part 1 is independently seeded only for pre-v13 profiles, so later deletion remains authoritative. Unit 3 is independently seeded only for pre-v14 profiles; later deletion remains authoritative. Both Unit 4 decks are seeded only for pre-v15 profiles (`seedUnit4DecksForUpgrade`); deleting either afterward is authoritative.
+
+The Library and deck picker show a shortened name (`displayDeckName`) that drops `" — "`
+segments repeating the deck's class or unit, so "Unit 4 — AP Psychology — Social Psychology"
+under AP Psychology / Unit 4 shows as "Social Psychology". The stored name is unchanged.
 
 ## Class catalog updates
 

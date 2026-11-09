@@ -164,13 +164,24 @@ See [Decks](DECKS.md) for stable update/copy behavior and accepted formats.
 
 ## Presentation and motion invariants
 
-There is one stylesheet: desktop defaults, narrow/short/large-screen adjustments,
-then phone overrides. Phone detection currently uses both viewport and screen
-width <=960; it is not OS detection and may include small tablets. Phone layout
-uses a bottom navigation bar, compact header and Options sheet. Keep the desktop
-layout unchanged when repairing phone-only problems.
+There is one stylesheet: design tokens (light, plus a `prefers-color-scheme: dark` override of
+the same tokens), desktop defaults, short/narrow window adjustments, then phone overrides. Its
+header comment records the design direction (ruled index card on a kraft desk / lamp-lit walnut
+desk; Atkinson Hyperlegible Next for UI, Shantell Sans for card text and titles, both from Google
+Fonts with system fallbacks). Phone detection uses both viewport and screen width <=960; it is
+not OS detection and may include small tablets. Phone layout uses a bottom navigation bar, a
+compact header and a bottom-sheet Options panel; on desktop the same `#studySettings` panel is a
+dropdown under the Options button (both via the `mobile-open` class; Escape closes it). Keep the
+desktop layout unchanged when repairing phone-only problems.
 
-The rotating element owns a square border. Its DOM front means the current
+On the study page `body[data-view="study"] .app` is exactly one viewport tall, so `.card-stage`
+(a CSS size container) receives the remaining height and the card keeps 5:3 proportions with
+container units. Container units need that definite height; do not switch the shell back to a
+min-height-only column. Library rows put secondary actions in `<details class="menu">` dropdowns
+built by `actionMenu`; a document listener closes them on outside clicks and Escape.
+
+The rotating element owns the 3D transform; each face paints its own paper, border and shadow
+and hides its backface. Its DOM front means the current
 **prompt**, and back means **answer**, even when studying original back-to-front.
 `renderCurrentFact` protects old text during handoff. The flip is 520 ms, but input
 locks for 104 ms. Tokens cancel stale motion callbacks; rapid actions capture the

@@ -1,0 +1,411 @@
+{
+  "format": "StudyCardsDeck",
+  "version": 1,
+  "deckId": "ap_psych:unit_4_motivation_emotion_personality",
+  "name": "Unit 4 — AP Psychology — Motivation, Emotion & Personality",
+  "classCatalogId": "ap_psychology",
+  "className": "AP Psychology",
+  "unitName": "Unit 4",
+  "cards": [
+    {
+      "id": "motivation",
+      "front": "Motivation",
+      "back": "A need or desire that energizes and directs behavior"
+    },
+    {
+      "id": "instincts",
+      "front": "Instincts",
+      "back": "Innate, fixed, unlearned behavior patterns triggered by specific stimuli"
+    },
+    {
+      "id": "drive_reduction_theory",
+      "front": "Drive-Reduction Theory",
+      "back": "Physiological needs create drives that push behavior to restore homeostasis"
+    },
+    {
+      "id": "homeostasis",
+      "front": "Homeostasis",
+      "back": "The body’s tendency to maintain a stable internal state"
+    },
+    {
+      "id": "ghrelin",
+      "front": "Ghrelin",
+      "back": "Stomach hormone that signals hunger; think “growlin’ stomach”"
+    },
+    {
+      "id": "leptin",
+      "front": "Leptin",
+      "back": "Fat-cell hormone that signals fullness and reduces hunger; think “last bite”"
+    },
+    {
+      "id": "hypothalamus",
+      "front": "Hypothalamus",
+      "back": "Brain structure regulating hunger, thirst, body temperature, and the pituitary gland"
+    },
+    {
+      "id": "pituitary_gland",
+      "front": "Pituitary Gland",
+      "back": "Master endocrine gland, directed by the hypothalamus, that releases hormones"
+    },
+    {
+      "id": "maslow_hierarchy_of_needs",
+      "front": "Maslow’s Hierarchy of Needs",
+      "back": "Lower physiological needs must be met before higher needs, up to self-actualization"
+    },
+    {
+      "id": "maslow_levels",
+      "front": "Maslow’s Levels, Bottom to Top",
+      "back": "Physiological, safety, love and belonging, esteem, self-actualization"
+    },
+    {
+      "id": "belongingness",
+      "front": "Belongingness",
+      "back": "Innate need to form and keep close, meaningful relationships"
+    },
+    {
+      "id": "arousal_theory",
+      "front": "Arousal Theory",
+      "back": "Motivation to keep an optimal level of alertness, neither too low nor too high"
+    },
+    {
+      "id": "yerkes_dodson_law",
+      "front": "Yerkes-Dodson Law",
+      "back": "Performance rises with arousal up to an optimal point, then declines"
+    },
+    {
+      "id": "sensation_seeking_theory",
+      "front": "Sensation-Seeking Theory",
+      "back": "Motivation driven by a need for varied, novel, and intense experiences"
+    },
+    {
+      "id": "thrill_seeking",
+      "front": "Thrill Seeking",
+      "back": "Sensation-seeking component: craving intense, exciting, often risky activities"
+    },
+    {
+      "id": "adventure_seeking",
+      "front": "Adventure Seeking",
+      "back": "Sensation-seeking component: pursuing new places, experiences, and unusual lifestyles"
+    },
+    {
+      "id": "disinhibition",
+      "front": "Disinhibition",
+      "back": "Sensation-seeking component: seeking stimulation through uninhibited social behavior"
+    },
+    {
+      "id": "boredom_susceptibility",
+      "front": "Boredom Susceptibility",
+      "back": "Intolerance of repetition and monotony that drives a search for new stimulation"
+    },
+    {
+      "id": "incentive_theory",
+      "front": "Incentive Theory",
+      "back": "Behavior is pulled by external rewards like money, praise, or grades"
+    },
+    {
+      "id": "extrinsic_motivation",
+      "front": "Extrinsic Motivation",
+      "back": "Doing something for external rewards or to avoid punishment"
+    },
+    {
+      "id": "intrinsic_motivation",
+      "front": "Intrinsic Motivation",
+      "back": "Doing something for its own sake, for internal satisfaction"
+    },
+    {
+      "id": "self_determination_theory",
+      "front": "Self-Determination Theory",
+      "back": "Motivation thrives when needs for autonomy, competence, and relatedness are met"
+    },
+    {
+      "id": "overjustification_effect",
+      "front": "Overjustification Effect",
+      "back": "Rewarding an already enjoyed activity can reduce intrinsic motivation for it"
+    },
+    {
+      "id": "achievement_motivation",
+      "front": "Achievement Motivation",
+      "back": "Desire to challenge oneself and meet a high standard of excellence"
+    },
+    {
+      "id": "low_achievement_motivation",
+      "front": "Low Achievement Motivation",
+      "back": "Choosing very easy or very hard tasks to avoid responsibility for failure"
+    },
+    {
+      "id": "lewin_motivational_conflicts_theory",
+      "front": "Lewin’s Motivational Conflicts Theory",
+      "back": "Explains decision struggles as conflicts between approach and avoidance motives"
+    },
+    {
+      "id": "approach_approach_conflict",
+      "front": "Approach-Approach Conflict",
+      "back": "Choosing between two desirable options"
+    },
+    {
+      "id": "avoidance_avoidance_conflict",
+      "front": "Avoidance-Avoidance Conflict",
+      "back": "Choosing between two undesirable options"
+    },
+    {
+      "id": "approach_avoidance_conflict",
+      "front": "Approach-Avoidance Conflict",
+      "back": "Being both attracted to and repelled by the same option"
+    },
+    {
+      "id": "double_approach_avoidance_conflict",
+      "front": "Double Approach-Avoidance Conflict",
+      "back": "Choosing between two options that each have appealing and unappealing parts"
+    },
+    {
+      "id": "emotion",
+      "front": "Emotion",
+      "back": "A response combining bodily arousal, expressive behavior, and conscious experience"
+    },
+    {
+      "id": "affect",
+      "front": "Affect",
+      "back": "The felt experience of emotion or mood"
+    },
+    {
+      "id": "elicitors",
+      "front": "Elicitors",
+      "back": "Stimuli or events that trigger an emotional response"
+    },
+    {
+      "id": "james_lange_theory",
+      "front": "James-Lange Theory",
+      "back": "Emotion follows awareness of bodily arousal: we fear because we tremble"
+    },
+    {
+      "id": "cannon_bard_theory",
+      "front": "Cannon-Bard Theory",
+      "back": "Bodily arousal and emotional experience happen at the same time, independently"
+    },
+    {
+      "id": "schachter_singer_two_factor_theory",
+      "front": "Schachter-Singer Two-Factor Theory",
+      "back": "Emotion results from physiological arousal plus a cognitive label for it"
+    },
+    {
+      "id": "facial_feedback_hypothesis",
+      "front": "Facial-Feedback Hypothesis",
+      "back": "Facial expressions can trigger or intensify the matching emotions"
+    },
+    {
+      "id": "display_rules",
+      "front": "Display Rules",
+      "back": "Cultural norms for how, when, and where emotions should be expressed"
+    },
+    {
+      "id": "broaden_and_build_theory",
+      "front": "Broaden-and-Build Theory of Emotion",
+      "back": "Positive emotions broaden thinking and build lasting resources; negative emotions narrow them"
+    },
+    {
+      "id": "universal_emotions",
+      "front": "Universal Emotions",
+      "back": "Basic emotions like anger, fear, and happiness recognized across cultures"
+    },
+    {
+      "id": "personality",
+      "front": "Personality",
+      "back": "A person’s characteristic pattern of thinking, feeling, and acting"
+    },
+    {
+      "id": "psychodynamic_theory",
+      "front": "Psychodynamic Theory",
+      "back": "Freud’s view that unconscious forces, conflicts, and childhood experiences shape personality"
+    },
+    {
+      "id": "conscious_mind",
+      "front": "Conscious Mind",
+      "back": "Thoughts and information in your immediate awareness"
+    },
+    {
+      "id": "preconscious_mind",
+      "front": "Preconscious Mind",
+      "back": "Information outside current awareness that can easily be recalled"
+    },
+    {
+      "id": "unconscious_mind",
+      "front": "Unconscious Mind",
+      "back": "Thoughts, feelings, and memories beyond awareness that still influence behavior"
+    },
+    {
+      "id": "id",
+      "front": "Id",
+      "back": "Irrational, impulsive part of personality seeking immediate gratification"
+    },
+    {
+      "id": "ego",
+      "front": "Ego",
+      "back": "Rational, planning part of personality that mediates between id, superego, and reality"
+    },
+    {
+      "id": "superego",
+      "front": "Superego",
+      "back": "Moralistic, judgmental, perfectionist part of personality"
+    },
+    {
+      "id": "projective_tests",
+      "front": "Projective Tests",
+      "back": "Ambiguous stimuli used to reveal preconscious and unconscious thoughts"
+    },
+    {
+      "id": "rorschach_inkblot_test",
+      "front": "Rorschach Inkblot Test",
+      "back": "Projective test interpreting what a person sees in ambiguous inkblots"
+    },
+    {
+      "id": "thematic_apperception_test",
+      "front": "Thematic Apperception Test (TAT)",
+      "back": "Projective test where people invent stories about ambiguous scenes"
+    },
+    {
+      "id": "ego_defense_mechanisms",
+      "front": "Ego Defense Mechanisms",
+      "back": "Unconscious strategies the ego uses to protect itself from anxiety"
+    },
+    {
+      "id": "denial",
+      "front": "Denial",
+      "back": "Refusing to acknowledge a painful reality"
+    },
+    {
+      "id": "displacement",
+      "front": "Displacement",
+      "back": "Redirecting impulses from their real source to a safer target"
+    },
+    {
+      "id": "projection",
+      "front": "Projection",
+      "back": "Attributing your own unacceptable feelings or motives to someone else"
+    },
+    {
+      "id": "rationalization",
+      "front": "Rationalization",
+      "back": "Inventing logical-sounding excuses that hide the real reasons for behavior"
+    },
+    {
+      "id": "reaction_formation",
+      "front": "Reaction Formation",
+      "back": "Acting the opposite of an unacceptable impulse or feeling"
+    },
+    {
+      "id": "regression",
+      "front": "Regression",
+      "back": "Retreating to childlike behavior under stress"
+    },
+    {
+      "id": "repression",
+      "front": "Repression",
+      "back": "Unconsciously blocking distressing thoughts and memories from awareness"
+    },
+    {
+      "id": "sublimation",
+      "front": "Sublimation",
+      "back": "Channeling unacceptable impulses into socially acceptable, constructive activities"
+    },
+    {
+      "id": "humanistic_psychology",
+      "front": "Humanistic Psychology",
+      "back": "Focuses on the whole person, their uniqueness, and growth toward potential"
+    },
+    {
+      "id": "unconditional_positive_regard",
+      "front": "Unconditional Positive Regard",
+      "back": "Accepting and valuing a person without conditions or judgment"
+    },
+    {
+      "id": "conditions_of_worth",
+      "front": "Conditions of Worth",
+      "back": "Conditions others attach to their approval and positive regard"
+    },
+    {
+      "id": "self_actualizing_tendency",
+      "front": "Self-Actualizing Tendency",
+      "back": "Innate drive to grow and fulfill one’s full potential"
+    },
+    {
+      "id": "rogers_growth_conditions",
+      "front": "Rogers’ Growth-Promoting Conditions",
+      "back": "Genuineness, acceptance, and empathy"
+    },
+    {
+      "id": "social_cognitive_theory",
+      "front": "Social-Cognitive Theory",
+      "back": "Personality is learned through observation and shaped by thoughts, behavior, and context"
+    },
+    {
+      "id": "reciprocal_determinism",
+      "front": "Reciprocal Determinism",
+      "back": "Behavior, personal factors, and environment continually influence each other"
+    },
+    {
+      "id": "self_concept",
+      "front": "Self-Concept",
+      "back": "Your overall perception and understanding of who you are"
+    },
+    {
+      "id": "self_efficacy",
+      "front": "Self-Efficacy",
+      "back": "Belief in your ability to succeed at a specific task"
+    },
+    {
+      "id": "self_esteem",
+      "front": "Self-Esteem",
+      "back": "Your overall emotional judgment of your own worth"
+    },
+    {
+      "id": "trait_theories",
+      "front": "Trait Theories",
+      "back": "Personality is made of stable traits that consistently guide behavior"
+    },
+    {
+      "id": "big_five_theory",
+      "front": "Big Five Theory",
+      "back": "Openness, conscientiousness, extraversion, agreeableness, and emotional stability (neuroticism)"
+    },
+    {
+      "id": "personality_inventories",
+      "front": "Personality Inventories",
+      "back": "Standardized self-report questionnaires that measure personality traits"
+    },
+    {
+      "id": "mmpi",
+      "front": "Minnesota Multiphasic Personality Inventory (MMPI)",
+      "back": "Widely used objective personality inventory of hundreds of true-false items"
+    },
+    {
+      "id": "factor_analysis",
+      "front": "Factor Analysis",
+      "back": "Statistical method finding clusters of related items; revealed the Big Five"
+    },
+    {
+      "id": "openness_to_experience",
+      "front": "Openness to Experience",
+      "back": "Imagination, curiosity, and willingness to try new ideas and experiences"
+    },
+    {
+      "id": "conscientiousness",
+      "front": "Conscientiousness",
+      "back": "Organization, dependability, discipline, and goal-directed behavior"
+    },
+    {
+      "id": "extraversion",
+      "front": "Extraversion",
+      "back": "Sociability, energy, assertiveness, and seeking social stimulation"
+    },
+    {
+      "id": "agreeableness",
+      "front": "Agreeableness",
+      "back": "Warmth, kindness, empathy, cooperation, and trust"
+    },
+    {
+      "id": "emotional_stability",
+      "front": "Emotional Stability (Neuroticism)",
+      "back": "Staying calm and resilient under stress; low stability means high neuroticism"
+    }
+  ]
+}
