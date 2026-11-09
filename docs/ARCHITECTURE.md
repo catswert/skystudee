@@ -118,18 +118,30 @@ has no corresponding sibling transfer in this build.
 `knowledgeMetrics` uses 65% mean mastery and 35% twentieth percentile, so weak
 facts matter. It is independent from normalized draw probabilities.
 
-`displayPriority` calculates the positive weighting shown on screen.
-`adaptivePriority` adds temporary cooldown/recent-pair suppression; the displayed
-number is not the actual probability of the next draw. Both Cram and Memory use
-stored mastery and session boosts. Memory additionally uses evidence age and the
-**source deck's deadline**. Cram omits these time/deadline factors, but does not
-ignore historical evidence altogether despite older brief UI copy.
+Card selection (`weightedRandomFact`, Cram and Memory) works in **rounds** with three lanes:
 
-Misses rest for 4–7 served-card steps before receiving elevated priority. Known
-answers reduce the session miss boost; skips defer for three steps. No elapsed
-reading/response time is used as evidence. Passive absence never decays stored
-alpha/beta. The weighted selector has an exhaustion fallback, so a one-pair pool
-cannot uphold an absolute no-repeat promise.
+- **new**: facts not yet shown this round that have never been answered; always picked first.
+- **review**: facts not yet shown this round that have been answered before, chosen by weighted
+  random with weight `need²`, where need is `displayPriority` without the session miss boost
+  (weak cards; in Memory also long-unreviewed and deadline-pressed cards).
+- **practice**: missed facts in learning whose rest has expired, most overdue first.
+
+`session.coverage` lists the keys shown this round; a round ends when every eligible fact has
+been shown once, so a deck of N facts is fully seen in about N draws plus practice, instead of
+the ~N·ln N a pure weighted lottery needs (measured: 120 cards, one new card in three missed,
+median 434 draws before vs 188 after). Practice is interleaved after every two round cards, or
+after every one once five or more misses are due, so it never takes more than half the draws
+while a round is unfinished. `session.lastLane` drives the status label (New card / Review /
+Missed earlier) and `session.sinceLearning` counts round cards since the last practice card.
+
+Learning steps (`updateRuntimeAfterResult`): a miss sets `learning = 2`, rests the fact 4–7
+served cards and raises its bounded miss boost; a correct answer in learning schedules the second
+check 9–14 served cards later; the next correct graduates it. Later (`skipAdaptiveFact`) defers
+three steps and returns the fact to the round's unseen pool. No elapsed reading/response time is
+used as evidence. Passive absence never decays stored alpha/beta. If every fact is withheld
+(rests, Later, the immediately previous card) the old weighted lottery over `adaptivePriority`
+is the fallback, so a one-pair pool cannot uphold an absolute no-repeat promise. Round state is
+part of the device-local session snapshot and undo clone; it never syncs.
 
 Memory's daily goal combines knowledge progress and direct sampling, keyed by
 local date/direction/deadline. Status is informational: not/mostly/complete does
@@ -215,7 +227,7 @@ and unresolved same-field content conflicts prefer the remote value.
 | Startup/migration | `loadAppState`, `mergeAppState`, `ensureOrganizationState`, final STARTUP |
 | Local save/restore | `persistState`, `serializeSessionData`, `restoreSessionSnapshot` |
 | Durable grading | `recordPersistentResult`, `recordDailyEvidence`, `siblingFact` |
-| Probability/recency | `displayPriority`, `adaptivePriority`, `weightedRandomFact` |
+| Card selection | `weightedRandomFact` (rounds/lanes), `updateRuntimeAfterResult` (learning steps), `displayPriority` |
 | Flip/text/typing | `renderCurrentFact`, `animateSameCardToSide`, `updateCardTextFits`, `submitTypedAnswer` |
 | Combined study | `factKey`, `deckForFact`, `startStudySetFromPicker`, `finishColdTest` |
 | Organization | `openOrganization`, `saveOrganization`, `mergeClasses`, `mergeUnits`, `renderDeckManager` |

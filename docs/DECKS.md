@@ -62,7 +62,7 @@ contains private complete appState. Never publish a backup as educational conten
 | Unit 2 — Part 1 — AP Psychology — Perception, Cognition, Memory & Intelligence | `ap_psych:unit_2_part_1_cognition` | AP Psychology / Unit 2 | 122 cards; pre-v13 upgrade seed; removable afterward |
 | Unit 3 — AP Psychology — Development and Learning | `ap_psych:unit_3_development_and_learning` | AP Psychology / Unit 3 | 117 cards; pre-v14 upgrade seed; removable afterward |
 | Unit 4 — AP Psychology — Social Psychology | `ap_psych:unit_4_social_psychology` | AP Psychology / Unit 4 | 73 cards; pre-v15 upgrade seed; removable afterward |
-| Unit 4 — AP Psychology — Motivation, Emotion & Personality | `ap_psych:unit_4_motivation_emotion_personality` | AP Psychology / Unit 4 | 80 cards; pre-v15 upgrade seed; removable afterward |
+| Unit 4 — AP Psychology — Motivation, Emotion & Personality | `ap_psych:unit_4_motivation_emotion_personality` | AP Psychology / Unit 4 | 81 cards; pre-v15 upgrade seed; removable afterward |
 
 The German deck (`builtin:german-perfect:v1`, formerly a forced, undeletable fallback) was
 retired in schema 15. `ensureLibraryDecks` strips that ID on every load, restore, save and cloud

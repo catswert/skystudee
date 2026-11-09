@@ -60,5 +60,5 @@ study does not. Export a private backup before experiments on real study data.
 The source was originally recovered from `main` commit
 `93c20c86725d819f03c073213bf5b7a05f2cf64f`, whose loader was
 `firebase-bootstrap-v13-20260904`. The current implementation uses local schema
-`15` and cloud schema `2`. Future changes should update these guides rather than
+`15` and cloud schema `3` (same layout as `2`, bumped to fence out older clients). Future changes should update these guides rather than
 treating the original recovery snapshot as an eternal description.

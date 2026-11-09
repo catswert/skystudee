@@ -85,7 +85,12 @@
     {
       "id": "adventure_seeking",
       "front": "Adventure Seeking",
-      "back": "Sensation-seeking component: pursuing new places, experiences, and unusual lifestyles"
+      "back": "Paired with thrill seeking: pursuing risky physical adventures like skydiving or climbing"
+    },
+    {
+      "id": "experience_seeking",
+      "front": "Experience Seeking",
+      "back": "Sensation-seeking component: seeking novel sensations and experiences, often an unconventional lifestyle"
     },
     {
       "id": "disinhibition",

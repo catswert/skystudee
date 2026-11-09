@@ -6,7 +6,7 @@
   <title>SkyStudee</title>
   <meta name="theme-color" content="#e8d9bc" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#1e1812" media="(prefers-color-scheme: dark)" />
-  <!-- TYPE: Atkinson Hyperlegible Next (Braille Institute) is chosen for card legibility. Offline or blocked, the system UI font takes over; nothing else depends on the network font. -->
+  <!-- TYPE: Atkinson Hyperlegible Next (Braille Institute) for the interface; Shantell Sans for card text and titles. Offline or blocked, the system UI font takes over; nothing else depends on the network font. -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400..800&family=Shantell+Sans:wght@400..800&display=swap" />
@@ -18,9 +18,10 @@
       The flashcard is drawn as a real ruled index card: card stock, a red head rule, faint blue
       lines, 5:3 proportions on wide screens. It is the ONLY raised object; everything else is
       printed flat on the desk. The Library reads like a card file: classes are divider tabs,
-      units are sections, decks are rows. Colors: desk stone, card stock, ink, pencil, margin
-      red (also "Don't know"), library green (primary actions, "Know it"), lamp brass (current
-      / highlight). Type: Atkinson Hyperlegible Next, chosen for reading speed on cards.
+      units are sections, decks are rows. Colors: kraft desk (walnut at night), card stock,
+      brown-black ink, pencil, margin red (also "Don't know"), leaf green ("Know it" only),
+      marigold (current / selected). Type: Atkinson Hyperlegible Next for the interface, Shantell
+      Sans (hand-drawn, legible) for card text and titles, so cards read as written.
       Avoid: all-caps tracked labels, middot meta strings, arrows appended to buttons, glows,
       gradients, one-sided accent borders. Light and dark come from the same tokens below.
 
@@ -36,12 +37,12 @@
       --stock-2: #f7eedc;
       --ink: #2b2118;
       --pencil: #67533f;
-      --faint: #8d7962;
+      --faint: #74604a;
       --line: #d3bf98;
       --line-strong: #b39a70;
       --red: #c13d26;
       --red-soft: rgba(193, 61, 38, .1);
-      --rule-blue: rgba(92, 120, 160, .17);
+      --rule-blue: rgba(92, 120, 160, .12);
       --green: #3f7a32;
       --green-strong: #33662a;
       --green-soft: rgba(63, 122, 50, .12);
@@ -53,7 +54,7 @@
       --on-primary: #fffaf0;
       --card-stock: #fffaf0;
       --card-ink: #2b2118;
-      --card-faint: #9a8466;
+      --card-faint: #7a6550;
       --card-line: #e0cfab;
       --focus: #b5760b;
       --scrim: rgba(43, 28, 12, .42);
@@ -674,7 +675,7 @@
     .card-text.fit-long { font-size: clamp(1.3rem, 6.6cqh, 3rem); line-height: 1.22; letter-spacing: -.01em; }
     .card-text.fit-xlong { font-size: clamp(1.1rem, 5cqh, 2.2rem); line-height: 1.3; letter-spacing: 0; text-wrap: pretty; }
     .card-text.fit-xxlong { font-size: clamp(1rem, 3.9cqh, 1.7rem); line-height: 1.38; letter-spacing: 0; text-wrap: pretty; }
-    .flip-hint { color: var(--card-faint); font-size: .875rem; }
+    .flip-hint { position: relative; color: var(--card-faint); font-size: .875rem; padding: 0 8px; background: var(--card-stock); border-radius: 4px; }
 
     /* TYPED RECALL: normalized prefix suggestions retain a randomized order, not an alphabetical or model-ranked order. */
     .typed-area { display: none; width: min(760px, 100%); margin: 0 auto 14px; }
@@ -1321,6 +1322,8 @@
       .library-actions > .library-more { grid-column: 2; grid-row: 1; }
       .library-actions .deck-bar-btn, .library-actions .menu > summary { width: 100%; justify-content: center; min-height: 42px; font-size: .9rem; }
       .library-actions .menu .menu-list { left: 0; right: auto; }
+      /* the last deck's menu opens upward so the bottom navigation never covers it */
+      .class-group:last-child .unit-group:last-child .deck-row:last-child .menu-list { top: auto; bottom: calc(100% + 6px); }
       .library-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
       .library-filters label { width: auto; }
       .library-filters select { font-size: .9rem; padding-inline: 8px; }
@@ -1388,9 +1391,9 @@
       .import-summary { gap: 4px 18px; }
       .import-stat b { font-size: 1.3rem; }
       .import-preview-header, .import-preview-row { grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr); gap: 6px; padding: 9px 10px; font-size: .875rem; }
-      .modal-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-      .modal-btn { min-height: 46px; padding: 8px 6px; }
-      .modal-btn.primary, #updateExistingBtn:not(.hidden) { grid-column: 1 / -1; }
+      .modal-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+      .modal-btn { flex: 1 1 40%; min-height: 46px; padding: 8px 6px; }
+      .modal-btn.primary, #updateExistingBtn:not(.hidden) { flex-basis: 100%; }
       .onboard-card { padding: 0 20px 24px; }
       .onboard-card::before { margin: 0 -20px 22px; height: 40px; }
       .onboard-card h2 { font-size: 2.3rem; }
@@ -1401,6 +1404,11 @@
       .score-box { padding: 16px 6px; }
       .score-box b { font-size: 2rem; }
       .summary-btn { min-height: 48px; }
+    }
+
+    @media (max-width: 360px) {
+      .tab-btn { font-size: .82rem; padding-inline: 2px; }
+      .mobile-options-btn { padding-inline: 9px; font-size: .85rem; }
     }
 
     /* Phone landscape: shorter stack, one-row grading. */
@@ -1843,6 +1851,7 @@
     // only so every load, restore and cloud merge strips that deck, including copies re-sent by
     // older clients. Libraries now always keep at least one real deck instead (see deleteRealDeck).
     const RETIRED_GERMAN_DECK_ID = "builtin:german-perfect:v1";
+    const RETIRED_GERMAN_STASH_PREFIX = "skystudee_retired_german_deck_v1:";
 
     // ==========================================================
     // PRELOADED PSYCHOLOGY DECK
@@ -2316,10 +2325,10 @@
     // Keep decks/ap-psychology-unit-4-*.studydeck.json equal to these arrays; IDs are stable.
     const SOCIAL_PSYCH_DECK_ID = "ap_psych:unit_4_social_psychology";
     const SOCIAL_PSYCH_DECK_NAME = "Unit 4 — AP Psychology — Social Psychology";
-    const SOCIAL_PSYCH_CARDS = [{"id":"social_psychology","front":"Social Psychology","back":"Scientific study of how people think about, influence, and relate to one another"},{"id":"attribution_theory","front":"Attribution Theory","back":"Explains whether we credit behavior to someone’s personality or their situation"},{"id":"attributions","front":"Attributions","back":"Inferences people make about the causes of behavior"},{"id":"dispositional_attributions","front":"Dispositional Attributions","back":"Explaining behavior by a person’s personality or traits rather than situation"},{"id":"situational_attributions","front":"Situational Attributions","back":"Explaining behavior by circumstances or environment rather than personality"},{"id":"fundamental_attribution_error","front":"Fundamental Attribution Error","back":"Overweighting personality and underweighting situation when explaining others’ behavior"},{"id":"actor_observer_bias","front":"Actor-Observer Bias","back":"Blaming our own actions on situations but others’ actions on their personality"},{"id":"self_serving_bias","front":"Self-Serving Bias","back":"Crediting successes to ourselves and blaming failures on outside factors"},{"id":"explanatory_style","front":"Explanatory Style","back":"A person’s habitual way of explaining why good and bad events happen"},{"id":"optimistic_explanatory_style","front":"Optimistic Explanatory Style","back":"Seeing setbacks as external, temporary, and specific; good events as lasting"},{"id":"pessimistic_explanatory_style","front":"Pessimistic Explanatory Style","back":"Seeing setbacks as internal, stable, and global; good events as flukes"},{"id":"internal_locus_of_control","front":"Internal Locus of Control","back":"Belief that your own actions and decisions control your outcomes"},{"id":"external_locus_of_control","front":"External Locus of Control","back":"Belief that luck, fate, or outside forces control your outcomes"},{"id":"rotter_locus_of_control_scale","front":"Rotter’s Locus of Control Scale","back":"Julian Rotter’s questionnaire measuring internal versus external locus of control"},{"id":"mere_exposure_effect","front":"Mere Exposure Effect","back":"Repeated exposure to someone or something increases liking for it"},{"id":"self_fulfilling_prophecy","front":"Self-Fulfilling Prophecy","back":"A belief that leads to actions that make the belief come true"},{"id":"social_comparison","front":"Social Comparison","back":"Judging your abilities, status, or opinions by comparing yourself with others"},{"id":"upward_social_comparison","front":"Upward Social Comparison","back":"Comparing yourself with someone better off; can motivate or lower self-esteem"},{"id":"downward_social_comparison","front":"Downward Social Comparison","back":"Comparing yourself with someone worse off; can boost self-esteem or breed complacency"},{"id":"relative_deprivation","front":"Relative Deprivation","back":"Feeling worse off or unfairly treated compared with others, regardless of actual needs"},{"id":"stereotype","front":"Stereotype","back":"Generalized, often oversimplified belief about a group of people"},{"id":"cognitive_load","front":"Cognitive Load","back":"Amount of mental effort in use; stereotypes act as shortcuts that reduce it"},{"id":"prejudice","front":"Prejudice","back":"Unjustifiable, usually negative attitude toward a group and its members"},{"id":"discrimination","front":"Discrimination","back":"Unjustifiable negative behavior toward a group or its members"},{"id":"jane_elliott_eye_color_exercise","front":"Jane Elliott’s Third-Grade Exercise","back":"Dividing students by eye color to show how quickly prejudice and discrimination form"},{"id":"implicit_attitudes","front":"Implicit Attitudes","back":"Unconscious beliefs or feelings that shape behavior without awareness"},{"id":"just_world_phenomenon","front":"Just-World Phenomenon","back":"Belief that people get what they deserve; often leads to blaming victims"},{"id":"out_group_homogeneity_bias","front":"Out-Group Homogeneity Bias","back":"Seeing out-group members as more alike than members of your own group"},{"id":"in_group_bias","front":"In-Group Bias","back":"Favoring members of your own group over members of other groups"},{"id":"ethnocentrism","front":"Ethnocentrism","back":"Judging other cultures by your own culture’s standards, seeing yours as superior"},{"id":"belief_perseverance","front":"Belief Perseverance","back":"Clinging to beliefs even after evidence has shown them false"},{"id":"confirmation_bias","front":"Confirmation Bias","back":"Seeking, favoring, and remembering information that supports existing beliefs"},{"id":"cognitive_dissonance","front":"Cognitive Dissonance","back":"Discomfort from conflicting beliefs and actions, resolved by changing one of them"},{"id":"social_norms","front":"Social Norms","back":"Unwritten rules for acceptable behavior within a group or society"},{"id":"social_influence_theory","front":"Social Influence Theory","back":"Explains how others’ words and actions change our thoughts, feelings, and behavior"},{"id":"normative_social_influence","front":"Normative Social Influence","back":"Conforming to gain approval or avoid rejection from a group"},{"id":"informational_social_influence","front":"Informational Social Influence","back":"Conforming because others seem to know what is correct, especially when uncertain"},{"id":"conformity","front":"Conformity","back":"Adjusting thoughts, feelings, or behavior to match a group under real or imagined pressure"},{"id":"asch_line_experiment","front":"Solomon Asch’s Line Experiment","back":"Participants often agreed with a group’s obviously wrong line-length judgments"},{"id":"obedience","front":"Obedience","back":"Following direct commands, usually from an authority figure, even against personal morals"},{"id":"milgram_obedience_experiment","front":"Stanley Milgram’s Obedience Experiment","back":"Most participants obeyed orders to deliver apparently dangerous shocks up to 450 volts"},{"id":"social_role","front":"Social Role","back":"Set of expectations for how someone in a social position should behave"},{"id":"stanford_prison_experiment","front":"Philip Zimbardo’s Stanford Prison Experiment","back":"Students assigned guard or prisoner roles quickly became them; study ended early"},{"id":"persuasion","front":"Persuasion","back":"Changing others’ attitudes, beliefs, or behaviors through communication"},{"id":"elaboration_likelihood_model","front":"Elaboration Likelihood Model","back":"Persuasion happens through careful central processing or quick peripheral cues"},{"id":"central_route","front":"Central Route to Persuasion","back":"Persuasion through careful analysis of facts and arguments; produces lasting change"},{"id":"peripheral_route","front":"Peripheral Route to Persuasion","back":"Persuasion through surface cues like attractiveness or status; produces temporary change"},{"id":"halo_effect","front":"Halo Effect","back":"One positive impression of a person colors judgments of their other traits"},{"id":"foot_in_the_door_technique","front":"Foot-in-the-Door Technique","back":"Agreeing to a small request makes agreeing to a larger one more likely"},{"id":"door_in_the_face_technique","front":"Door-in-the-Face Technique","back":"Refusing a large request makes agreeing to a smaller follow-up more likely"},{"id":"collectivism","front":"Collectivism","back":"Cultural value placing group goals and interdependence above individual desires"},{"id":"multiculturalism","front":"Multiculturalism","back":"Respecting and valuing many cultural identities coexisting within one society"},{"id":"group_polarization","front":"Group Polarization","back":"Group discussion pushes members’ shared leanings toward a more extreme position"},{"id":"groupthink","front":"Groupthink","back":"Desire for group harmony overrides critical evaluation, producing poor decisions"},{"id":"diffusion_of_responsibility","front":"Diffusion of Responsibility","back":"Feeling less personally responsible to act when other people are present"},{"id":"social_loafing","front":"Social Loafing","back":"Putting in less effort when working in a group than when working alone"},{"id":"deindividuation","front":"Deindividuation","back":"Loss of self-awareness and restraint in aroused, anonymous groups"},{"id":"social_facilitation","front":"Social Facilitation","back":"An audience improves performance on simple tasks but hurts complex or new ones"},{"id":"altruism","front":"Altruism","back":"Selfless concern for others’ welfare, helping even at a personal cost"},{"id":"prosocial_behavior","front":"Prosocial Behavior","back":"Positive, helpful behavior that benefits other people"},{"id":"social_debt","front":"Social Debt","back":"Feeling obligated to return help or favors someone has given you"},{"id":"social_reciprocity_norm","front":"Social Reciprocity Norm","back":"Expectation that we should help those who have helped us"},{"id":"social_responsibility_norm","front":"Social Responsibility Norm","back":"Expectation that we help people who need it, without expecting repayment"},{"id":"bystander_effect","front":"Bystander Effect","back":"People are less likely to help a victim when others are present"},{"id":"kitty_genovese_case","front":"Kitty Genovese Case","back":"1964 New York murder whose reported bystander inaction inspired bystander-effect research"},{"id":"breaking_the_bystander_effect","front":"Breaking the Bystander Effect","back":"Notice the event, interpret it as an emergency, take responsibility, then act"},{"id":"situational_variables","front":"Situational Variables","back":"Features of a setting, like crowd size or ambiguity, that influence helping"},{"id":"attentional_variables","front":"Attentional Variables","back":"Factors like hurry or distraction that affect whether we notice someone needing help"},{"id":"false_consensus_effect","front":"False Consensus Effect","back":"Overestimating how much others share your beliefs and behaviors"},{"id":"superordinate_goals","front":"Superordinate Goals","back":"Shared goals that require cooperation and override differences between groups"},{"id":"social_traps","front":"Social Traps","back":"Pursuing short-term self-interest in ways that cause long-term harm to everyone"},{"id":"io_psychologists","front":"Industrial-Organizational (I/O) Psychologists","back":"Apply psychology to workplaces: hiring, productivity, and organizational culture"},{"id":"burnout","front":"Burnout","back":"Physical, emotional, and mental exhaustion from prolonged work stress"}];
+    const SOCIAL_PSYCH_CARDS = [{"id":"social_psychology","front":"Social Psychology","back":"Scientific study of how people think about, influence, and relate to one another"},{"id":"attribution_theory","front":"Attribution Theory","back":"Explains whether we credit behavior to someone’s personality or their situation"},{"id":"attributions","front":"Attributions","back":"Inferences people make about the causes of behavior"},{"id":"dispositional_attributions","front":"Dispositional Attributions","back":"Explaining behavior by a person’s personality or traits rather than situation"},{"id":"situational_attributions","front":"Situational Attributions","back":"Explaining behavior by circumstances or environment rather than personality"},{"id":"fundamental_attribution_error","front":"Fundamental Attribution Error","back":"Overweighting personality and underweighting situation when explaining others’ behavior"},{"id":"actor_observer_bias","front":"Actor-Observer Bias","back":"Blaming our own actions on situations but others’ actions on their personality"},{"id":"self_serving_bias","front":"Self-Serving Bias","back":"Crediting successes to ourselves and blaming failures on outside factors"},{"id":"explanatory_style","front":"Explanatory Style","back":"A person’s habitual way of explaining why good and bad events happen"},{"id":"optimistic_explanatory_style","front":"Optimistic Explanatory Style","back":"Seeing setbacks as external, temporary, and specific; good events as lasting"},{"id":"pessimistic_explanatory_style","front":"Pessimistic Explanatory Style","back":"Seeing setbacks as internal, stable, and global; good events as flukes"},{"id":"internal_locus_of_control","front":"Internal Locus of Control","back":"Belief that your own actions and decisions control your outcomes"},{"id":"external_locus_of_control","front":"External Locus of Control","back":"Belief that luck, fate, or outside forces control your outcomes"},{"id":"rotter_locus_of_control_scale","front":"Rotter’s Locus of Control Scale","back":"Julian Rotter’s questionnaire measuring internal versus external locus of control"},{"id":"mere_exposure_effect","front":"Mere Exposure Effect","back":"Repeated exposure to someone or something increases liking for it"},{"id":"self_fulfilling_prophecy","front":"Self-Fulfilling Prophecy","back":"A belief that leads to actions that make the belief come true"},{"id":"social_comparison","front":"Social Comparison","back":"Judging your abilities, status, or opinions by comparing yourself with others"},{"id":"upward_social_comparison","front":"Upward Social Comparison","back":"Comparing yourself with someone better off; can motivate or lower self-esteem"},{"id":"downward_social_comparison","front":"Downward Social Comparison","back":"Comparing yourself with someone worse off; can boost self-esteem or breed complacency"},{"id":"relative_deprivation","front":"Relative Deprivation","back":"Feeling worse off or unfairly treated compared with others, regardless of actual needs"},{"id":"stereotype","front":"Stereotype","back":"Generalized, often oversimplified belief about a group of people"},{"id":"cognitive_load","front":"Cognitive Load","back":"Amount of mental effort in use; stereotypes act as shortcuts that reduce it"},{"id":"prejudice","front":"Prejudice","back":"Unjustifiable, usually negative attitude toward a group and its members"},{"id":"discrimination","front":"Discrimination","back":"Unjustifiable negative behavior toward a group or its members"},{"id":"jane_elliott_eye_color_exercise","front":"Jane Elliott’s Third-Grade Exercise","back":"Dividing students by eye color to show how quickly prejudice and discrimination form"},{"id":"implicit_attitudes","front":"Implicit Attitudes","back":"Unconscious beliefs or feelings that shape behavior without awareness"},{"id":"just_world_phenomenon","front":"Just-World Phenomenon","back":"Belief that people get what they deserve; often leads to blaming victims"},{"id":"out_group_homogeneity_bias","front":"Out-Group Homogeneity Bias","back":"Seeing out-group members as more alike than members of your own group"},{"id":"in_group_bias","front":"In-Group Bias","back":"Favoring members of your own group over members of other groups"},{"id":"ethnocentrism","front":"Ethnocentrism","back":"Judging other cultures by your own culture’s standards, seeing yours as superior"},{"id":"belief_perseverance","front":"Belief Perseverance","back":"Clinging to beliefs even after evidence has shown them false"},{"id":"confirmation_bias","front":"Confirmation Bias","back":"Seeking, favoring, and remembering information that supports existing beliefs"},{"id":"cognitive_dissonance","front":"Cognitive Dissonance","back":"Discomfort from conflicting beliefs and actions, resolved by changing one of them"},{"id":"social_norms","front":"Social Norms","back":"Unwritten rules for acceptable behavior within a group or society"},{"id":"social_influence_theory","front":"Social Influence Theory","back":"Explains how others’ words and actions change our thoughts, feelings, and behavior"},{"id":"normative_social_influence","front":"Normative Social Influence","back":"Conforming to gain approval or avoid rejection from a group"},{"id":"informational_social_influence","front":"Informational Social Influence","back":"Conforming because others seem to know what is correct, especially when uncertain"},{"id":"conformity","front":"Conformity","back":"Adjusting thoughts, feelings, or behavior to match a group under real or imagined pressure"},{"id":"asch_line_experiment","front":"Solomon Asch’s Line Experiment","back":"Participants often agreed with a group’s obviously wrong line-length judgments"},{"id":"obedience","front":"Obedience","back":"Following direct commands, usually from an authority figure, even against personal morals"},{"id":"milgram_obedience_experiment","front":"Stanley Milgram’s Obedience Experiment","back":"Most participants obeyed orders to deliver apparently dangerous shocks up to 450 volts"},{"id":"social_role","front":"Social Role","back":"Set of expectations for how someone in a social position should behave"},{"id":"stanford_prison_experiment","front":"Philip Zimbardo’s Stanford Prison Experiment","back":"Students assigned guard or prisoner roles quickly became them; study ended early"},{"id":"persuasion","front":"Persuasion","back":"Changing others’ attitudes, beliefs, or behaviors through communication"},{"id":"elaboration_likelihood_model","front":"Elaboration Likelihood Model","back":"Persuasion happens through careful central processing or quick peripheral cues"},{"id":"central_route","front":"Central Route to Persuasion","back":"Persuasion through careful analysis of facts and arguments; produces lasting change"},{"id":"peripheral_route","front":"Peripheral Route to Persuasion","back":"Persuasion through surface cues like attractiveness or status; produces temporary change"},{"id":"halo_effect","front":"Halo Effect","back":"One positive impression of a person colors judgments of their other traits"},{"id":"foot_in_the_door_technique","front":"Foot-in-the-Door Technique","back":"Agreeing to a small request makes agreeing to a larger one more likely"},{"id":"door_in_the_face_technique","front":"Door-in-the-Face Technique","back":"Refusing a large request makes agreeing to a smaller follow-up more likely"},{"id":"collectivism","front":"Collectivism","back":"Cultural value placing group goals and interdependence above individual desires"},{"id":"multiculturalism","front":"Multiculturalism","back":"Respecting and valuing many cultural identities coexisting within one society"},{"id":"group_polarization","front":"Group Polarization","back":"Group discussion pushes members’ shared leanings toward a more extreme position"},{"id":"groupthink","front":"Groupthink","back":"Desire for group harmony overrides critical evaluation, producing poor decisions"},{"id":"diffusion_of_responsibility","front":"Diffusion of Responsibility","back":"Feeling less personally responsible to act when other people are present"},{"id":"social_loafing","front":"Social Loafing","back":"Putting in less effort when working in a group than when working alone"},{"id":"deindividuation","front":"Deindividuation","back":"Loss of self-awareness and restraint in aroused, anonymous groups"},{"id":"social_facilitation","front":"Social Facilitation","back":"An audience improves performance on simple tasks but hurts complex or new ones"},{"id":"altruism","front":"Altruism","back":"Selfless concern for others’ welfare, helping even at a personal cost"},{"id":"prosocial_behavior","front":"Prosocial Behavior","back":"Positive, helpful behavior that benefits other people"},{"id":"social_debt","front":"Social Debt","back":"Feeling obligated to return help or favors someone has given you"},{"id":"social_reciprocity_norm","front":"Social Reciprocity Norm","back":"Expectation that we should help those who have helped us"},{"id":"social_responsibility_norm","front":"Social Responsibility Norm","back":"Expectation that we help people who need it, without expecting repayment"},{"id":"bystander_effect","front":"Bystander Effect","back":"People are less likely to help a victim when others are present"},{"id":"kitty_genovese_case","front":"Kitty Genovese Case","back":"1964 New York murder whose reported bystander inaction inspired bystander-effect research"},{"id":"breaking_the_bystander_effect","front":"Breaking the Bystander Effect","back":"Notice, interpret it as an emergency, take responsibility, decide how to help, act"},{"id":"situational_variables","front":"Situational Variables","back":"Features of a setting, like crowd size or ambiguity, that influence helping"},{"id":"attentional_variables","front":"Attentional Variables","back":"Factors like hurry or distraction that affect whether we notice someone needing help"},{"id":"false_consensus_effect","front":"False Consensus Effect","back":"Overestimating how much others share your beliefs and behaviors"},{"id":"superordinate_goals","front":"Superordinate Goals","back":"Shared goals that require cooperation and override differences between groups"},{"id":"social_traps","front":"Social Traps","back":"Pursuing short-term self-interest in ways that cause long-term harm to everyone"},{"id":"io_psychologists","front":"Industrial-Organizational (I/O) Psychologists","back":"Apply psychology to workplaces: hiring, productivity, and organizational culture"},{"id":"burnout","front":"Burnout","back":"Physical, emotional, and mental exhaustion from prolonged work stress"}];
     const PERSONALITY_DECK_ID = "ap_psych:unit_4_motivation_emotion_personality";
     const PERSONALITY_DECK_NAME = "Unit 4 — AP Psychology — Motivation, Emotion & Personality";
-    const PERSONALITY_CARDS = [{"id":"motivation","front":"Motivation","back":"A need or desire that energizes and directs behavior"},{"id":"instincts","front":"Instincts","back":"Innate, fixed, unlearned behavior patterns triggered by specific stimuli"},{"id":"drive_reduction_theory","front":"Drive-Reduction Theory","back":"Physiological needs create drives that push behavior to restore homeostasis"},{"id":"homeostasis","front":"Homeostasis","back":"The body’s tendency to maintain a stable internal state"},{"id":"ghrelin","front":"Ghrelin","back":"Stomach hormone that signals hunger; think “growlin’ stomach”"},{"id":"leptin","front":"Leptin","back":"Fat-cell hormone that signals fullness and reduces hunger; think “last bite”"},{"id":"hypothalamus","front":"Hypothalamus","back":"Brain structure regulating hunger, thirst, body temperature, and the pituitary gland"},{"id":"pituitary_gland","front":"Pituitary Gland","back":"Master endocrine gland, directed by the hypothalamus, that releases hormones"},{"id":"maslow_hierarchy_of_needs","front":"Maslow’s Hierarchy of Needs","back":"Lower physiological needs must be met before higher needs, up to self-actualization"},{"id":"maslow_levels","front":"Maslow’s Levels, Bottom to Top","back":"Physiological, safety, love and belonging, esteem, self-actualization"},{"id":"belongingness","front":"Belongingness","back":"Innate need to form and keep close, meaningful relationships"},{"id":"arousal_theory","front":"Arousal Theory","back":"Motivation to keep an optimal level of alertness, neither too low nor too high"},{"id":"yerkes_dodson_law","front":"Yerkes-Dodson Law","back":"Performance rises with arousal up to an optimal point, then declines"},{"id":"sensation_seeking_theory","front":"Sensation-Seeking Theory","back":"Motivation driven by a need for varied, novel, and intense experiences"},{"id":"thrill_seeking","front":"Thrill Seeking","back":"Sensation-seeking component: craving intense, exciting, often risky activities"},{"id":"adventure_seeking","front":"Adventure Seeking","back":"Sensation-seeking component: pursuing new places, experiences, and unusual lifestyles"},{"id":"disinhibition","front":"Disinhibition","back":"Sensation-seeking component: seeking stimulation through uninhibited social behavior"},{"id":"boredom_susceptibility","front":"Boredom Susceptibility","back":"Intolerance of repetition and monotony that drives a search for new stimulation"},{"id":"incentive_theory","front":"Incentive Theory","back":"Behavior is pulled by external rewards like money, praise, or grades"},{"id":"extrinsic_motivation","front":"Extrinsic Motivation","back":"Doing something for external rewards or to avoid punishment"},{"id":"intrinsic_motivation","front":"Intrinsic Motivation","back":"Doing something for its own sake, for internal satisfaction"},{"id":"self_determination_theory","front":"Self-Determination Theory","back":"Motivation thrives when needs for autonomy, competence, and relatedness are met"},{"id":"overjustification_effect","front":"Overjustification Effect","back":"Rewarding an already enjoyed activity can reduce intrinsic motivation for it"},{"id":"achievement_motivation","front":"Achievement Motivation","back":"Desire to challenge oneself and meet a high standard of excellence"},{"id":"low_achievement_motivation","front":"Low Achievement Motivation","back":"Choosing very easy or very hard tasks to avoid responsibility for failure"},{"id":"lewin_motivational_conflicts_theory","front":"Lewin’s Motivational Conflicts Theory","back":"Explains decision struggles as conflicts between approach and avoidance motives"},{"id":"approach_approach_conflict","front":"Approach-Approach Conflict","back":"Choosing between two desirable options"},{"id":"avoidance_avoidance_conflict","front":"Avoidance-Avoidance Conflict","back":"Choosing between two undesirable options"},{"id":"approach_avoidance_conflict","front":"Approach-Avoidance Conflict","back":"Being both attracted to and repelled by the same option"},{"id":"double_approach_avoidance_conflict","front":"Double Approach-Avoidance Conflict","back":"Choosing between two options that each have appealing and unappealing parts"},{"id":"emotion","front":"Emotion","back":"A response combining bodily arousal, expressive behavior, and conscious experience"},{"id":"affect","front":"Affect","back":"The felt experience of emotion or mood"},{"id":"elicitors","front":"Elicitors","back":"Stimuli or events that trigger an emotional response"},{"id":"james_lange_theory","front":"James-Lange Theory","back":"Emotion follows awareness of bodily arousal: we fear because we tremble"},{"id":"cannon_bard_theory","front":"Cannon-Bard Theory","back":"Bodily arousal and emotional experience happen at the same time, independently"},{"id":"schachter_singer_two_factor_theory","front":"Schachter-Singer Two-Factor Theory","back":"Emotion results from physiological arousal plus a cognitive label for it"},{"id":"facial_feedback_hypothesis","front":"Facial-Feedback Hypothesis","back":"Facial expressions can trigger or intensify the matching emotions"},{"id":"display_rules","front":"Display Rules","back":"Cultural norms for how, when, and where emotions should be expressed"},{"id":"broaden_and_build_theory","front":"Broaden-and-Build Theory of Emotion","back":"Positive emotions broaden thinking and build lasting resources; negative emotions narrow them"},{"id":"universal_emotions","front":"Universal Emotions","back":"Basic emotions like anger, fear, and happiness recognized across cultures"},{"id":"personality","front":"Personality","back":"A person’s characteristic pattern of thinking, feeling, and acting"},{"id":"psychodynamic_theory","front":"Psychodynamic Theory","back":"Freud’s view that unconscious forces, conflicts, and childhood experiences shape personality"},{"id":"conscious_mind","front":"Conscious Mind","back":"Thoughts and information in your immediate awareness"},{"id":"preconscious_mind","front":"Preconscious Mind","back":"Information outside current awareness that can easily be recalled"},{"id":"unconscious_mind","front":"Unconscious Mind","back":"Thoughts, feelings, and memories beyond awareness that still influence behavior"},{"id":"id","front":"Id","back":"Irrational, impulsive part of personality seeking immediate gratification"},{"id":"ego","front":"Ego","back":"Rational, planning part of personality that mediates between id, superego, and reality"},{"id":"superego","front":"Superego","back":"Moralistic, judgmental, perfectionist part of personality"},{"id":"projective_tests","front":"Projective Tests","back":"Ambiguous stimuli used to reveal preconscious and unconscious thoughts"},{"id":"rorschach_inkblot_test","front":"Rorschach Inkblot Test","back":"Projective test interpreting what a person sees in ambiguous inkblots"},{"id":"thematic_apperception_test","front":"Thematic Apperception Test (TAT)","back":"Projective test where people invent stories about ambiguous scenes"},{"id":"ego_defense_mechanisms","front":"Ego Defense Mechanisms","back":"Unconscious strategies the ego uses to protect itself from anxiety"},{"id":"denial","front":"Denial","back":"Refusing to acknowledge a painful reality"},{"id":"displacement","front":"Displacement","back":"Redirecting impulses from their real source to a safer target"},{"id":"projection","front":"Projection","back":"Attributing your own unacceptable feelings or motives to someone else"},{"id":"rationalization","front":"Rationalization","back":"Inventing logical-sounding excuses that hide the real reasons for behavior"},{"id":"reaction_formation","front":"Reaction Formation","back":"Acting the opposite of an unacceptable impulse or feeling"},{"id":"regression","front":"Regression","back":"Retreating to childlike behavior under stress"},{"id":"repression","front":"Repression","back":"Unconsciously blocking distressing thoughts and memories from awareness"},{"id":"sublimation","front":"Sublimation","back":"Channeling unacceptable impulses into socially acceptable, constructive activities"},{"id":"humanistic_psychology","front":"Humanistic Psychology","back":"Focuses on the whole person, their uniqueness, and growth toward potential"},{"id":"unconditional_positive_regard","front":"Unconditional Positive Regard","back":"Accepting and valuing a person without conditions or judgment"},{"id":"conditions_of_worth","front":"Conditions of Worth","back":"Conditions others attach to their approval and positive regard"},{"id":"self_actualizing_tendency","front":"Self-Actualizing Tendency","back":"Innate drive to grow and fulfill one’s full potential"},{"id":"rogers_growth_conditions","front":"Rogers’ Growth-Promoting Conditions","back":"Genuineness, acceptance, and empathy"},{"id":"social_cognitive_theory","front":"Social-Cognitive Theory","back":"Personality is learned through observation and shaped by thoughts, behavior, and context"},{"id":"reciprocal_determinism","front":"Reciprocal Determinism","back":"Behavior, personal factors, and environment continually influence each other"},{"id":"self_concept","front":"Self-Concept","back":"Your overall perception and understanding of who you are"},{"id":"self_efficacy","front":"Self-Efficacy","back":"Belief in your ability to succeed at a specific task"},{"id":"self_esteem","front":"Self-Esteem","back":"Your overall emotional judgment of your own worth"},{"id":"trait_theories","front":"Trait Theories","back":"Personality is made of stable traits that consistently guide behavior"},{"id":"big_five_theory","front":"Big Five Theory","back":"Openness, conscientiousness, extraversion, agreeableness, and emotional stability (neuroticism)"},{"id":"personality_inventories","front":"Personality Inventories","back":"Standardized self-report questionnaires that measure personality traits"},{"id":"mmpi","front":"Minnesota Multiphasic Personality Inventory (MMPI)","back":"Widely used objective personality inventory of hundreds of true-false items"},{"id":"factor_analysis","front":"Factor Analysis","back":"Statistical method finding clusters of related items; revealed the Big Five"},{"id":"openness_to_experience","front":"Openness to Experience","back":"Imagination, curiosity, and willingness to try new ideas and experiences"},{"id":"conscientiousness","front":"Conscientiousness","back":"Organization, dependability, discipline, and goal-directed behavior"},{"id":"extraversion","front":"Extraversion","back":"Sociability, energy, assertiveness, and seeking social stimulation"},{"id":"agreeableness","front":"Agreeableness","back":"Warmth, kindness, empathy, cooperation, and trust"},{"id":"emotional_stability","front":"Emotional Stability (Neuroticism)","back":"Staying calm and resilient under stress; low stability means high neuroticism"}];
+    const PERSONALITY_CARDS = [{"id":"motivation","front":"Motivation","back":"A need or desire that energizes and directs behavior"},{"id":"instincts","front":"Instincts","back":"Innate, fixed, unlearned behavior patterns triggered by specific stimuli"},{"id":"drive_reduction_theory","front":"Drive-Reduction Theory","back":"Physiological needs create drives that push behavior to restore homeostasis"},{"id":"homeostasis","front":"Homeostasis","back":"The body’s tendency to maintain a stable internal state"},{"id":"ghrelin","front":"Ghrelin","back":"Stomach hormone that signals hunger; think “growlin’ stomach”"},{"id":"leptin","front":"Leptin","back":"Fat-cell hormone that signals fullness and reduces hunger; think “last bite”"},{"id":"hypothalamus","front":"Hypothalamus","back":"Brain structure regulating hunger, thirst, body temperature, and the pituitary gland"},{"id":"pituitary_gland","front":"Pituitary Gland","back":"Master endocrine gland, directed by the hypothalamus, that releases hormones"},{"id":"maslow_hierarchy_of_needs","front":"Maslow’s Hierarchy of Needs","back":"Lower physiological needs must be met before higher needs, up to self-actualization"},{"id":"maslow_levels","front":"Maslow’s Levels, Bottom to Top","back":"Physiological, safety, love and belonging, esteem, self-actualization"},{"id":"belongingness","front":"Belongingness","back":"Innate need to form and keep close, meaningful relationships"},{"id":"arousal_theory","front":"Arousal Theory","back":"Motivation to keep an optimal level of alertness, neither too low nor too high"},{"id":"yerkes_dodson_law","front":"Yerkes-Dodson Law","back":"Performance rises with arousal up to an optimal point, then declines"},{"id":"sensation_seeking_theory","front":"Sensation-Seeking Theory","back":"Motivation driven by a need for varied, novel, and intense experiences"},{"id":"thrill_seeking","front":"Thrill Seeking","back":"Sensation-seeking component: craving intense, exciting, often risky activities"},{"id":"adventure_seeking","front":"Adventure Seeking","back":"Paired with thrill seeking: pursuing risky physical adventures like skydiving or climbing"},{"id":"experience_seeking","front":"Experience Seeking","back":"Sensation-seeking component: seeking novel sensations and experiences, often an unconventional lifestyle"},{"id":"disinhibition","front":"Disinhibition","back":"Sensation-seeking component: seeking stimulation through uninhibited social behavior"},{"id":"boredom_susceptibility","front":"Boredom Susceptibility","back":"Intolerance of repetition and monotony that drives a search for new stimulation"},{"id":"incentive_theory","front":"Incentive Theory","back":"Behavior is pulled by external rewards like money, praise, or grades"},{"id":"extrinsic_motivation","front":"Extrinsic Motivation","back":"Doing something for external rewards or to avoid punishment"},{"id":"intrinsic_motivation","front":"Intrinsic Motivation","back":"Doing something for its own sake, for internal satisfaction"},{"id":"self_determination_theory","front":"Self-Determination Theory","back":"Motivation thrives when needs for autonomy, competence, and relatedness are met"},{"id":"overjustification_effect","front":"Overjustification Effect","back":"Rewarding an already enjoyed activity can reduce intrinsic motivation for it"},{"id":"achievement_motivation","front":"Achievement Motivation","back":"Desire to challenge oneself and meet a high standard of excellence"},{"id":"low_achievement_motivation","front":"Low Achievement Motivation","back":"Choosing very easy or very hard tasks to avoid responsibility for failure"},{"id":"lewin_motivational_conflicts_theory","front":"Lewin’s Motivational Conflicts Theory","back":"Explains decision struggles as conflicts between approach and avoidance motives"},{"id":"approach_approach_conflict","front":"Approach-Approach Conflict","back":"Choosing between two desirable options"},{"id":"avoidance_avoidance_conflict","front":"Avoidance-Avoidance Conflict","back":"Choosing between two undesirable options"},{"id":"approach_avoidance_conflict","front":"Approach-Avoidance Conflict","back":"Being both attracted to and repelled by the same option"},{"id":"double_approach_avoidance_conflict","front":"Double Approach-Avoidance Conflict","back":"Choosing between two options that each have appealing and unappealing parts"},{"id":"emotion","front":"Emotion","back":"A response combining bodily arousal, expressive behavior, and conscious experience"},{"id":"affect","front":"Affect","back":"The felt experience of emotion or mood"},{"id":"elicitors","front":"Elicitors","back":"Stimuli or events that trigger an emotional response"},{"id":"james_lange_theory","front":"James-Lange Theory","back":"Emotion follows awareness of bodily arousal: we fear because we tremble"},{"id":"cannon_bard_theory","front":"Cannon-Bard Theory","back":"Bodily arousal and emotional experience happen at the same time, independently"},{"id":"schachter_singer_two_factor_theory","front":"Schachter-Singer Two-Factor Theory","back":"Emotion results from physiological arousal plus a cognitive label for it"},{"id":"facial_feedback_hypothesis","front":"Facial-Feedback Hypothesis","back":"Facial expressions can trigger or intensify the matching emotions"},{"id":"display_rules","front":"Display Rules","back":"Cultural norms for how, when, and where emotions should be expressed"},{"id":"broaden_and_build_theory","front":"Broaden-and-Build Theory of Emotion","back":"Positive emotions broaden thinking and build lasting resources; negative emotions narrow them"},{"id":"universal_emotions","front":"Universal Emotions","back":"Basic emotions like anger, fear, and happiness recognized across cultures"},{"id":"personality","front":"Personality","back":"A person’s characteristic pattern of thinking, feeling, and acting"},{"id":"psychodynamic_theory","front":"Psychodynamic Theory","back":"Freud’s view that unconscious forces, conflicts, and childhood experiences shape personality"},{"id":"conscious_mind","front":"Conscious Mind","back":"Thoughts and information in your immediate awareness"},{"id":"preconscious_mind","front":"Preconscious Mind","back":"Information outside current awareness that can easily be recalled"},{"id":"unconscious_mind","front":"Unconscious Mind","back":"Thoughts, feelings, and memories beyond awareness that still influence behavior"},{"id":"id","front":"Id","back":"Irrational, impulsive part of personality seeking immediate gratification"},{"id":"ego","front":"Ego","back":"Rational, planning part of personality that mediates between id, superego, and reality"},{"id":"superego","front":"Superego","back":"Moralistic, judgmental, perfectionist part of personality"},{"id":"projective_tests","front":"Projective Tests","back":"Ambiguous stimuli used to reveal preconscious and unconscious thoughts"},{"id":"rorschach_inkblot_test","front":"Rorschach Inkblot Test","back":"Projective test interpreting what a person sees in ambiguous inkblots"},{"id":"thematic_apperception_test","front":"Thematic Apperception Test (TAT)","back":"Projective test where people invent stories about ambiguous scenes"},{"id":"ego_defense_mechanisms","front":"Ego Defense Mechanisms","back":"Unconscious strategies the ego uses to protect itself from anxiety"},{"id":"denial","front":"Denial","back":"Refusing to acknowledge a painful reality"},{"id":"displacement","front":"Displacement","back":"Redirecting impulses from their real source to a safer target"},{"id":"projection","front":"Projection","back":"Attributing your own unacceptable feelings or motives to someone else"},{"id":"rationalization","front":"Rationalization","back":"Inventing logical-sounding excuses that hide the real reasons for behavior"},{"id":"reaction_formation","front":"Reaction Formation","back":"Acting the opposite of an unacceptable impulse or feeling"},{"id":"regression","front":"Regression","back":"Retreating to childlike behavior under stress"},{"id":"repression","front":"Repression","back":"Unconsciously blocking distressing thoughts and memories from awareness"},{"id":"sublimation","front":"Sublimation","back":"Channeling unacceptable impulses into socially acceptable, constructive activities"},{"id":"humanistic_psychology","front":"Humanistic Psychology","back":"Focuses on the whole person, their uniqueness, and growth toward potential"},{"id":"unconditional_positive_regard","front":"Unconditional Positive Regard","back":"Accepting and valuing a person without conditions or judgment"},{"id":"conditions_of_worth","front":"Conditions of Worth","back":"Conditions others attach to their approval and positive regard"},{"id":"self_actualizing_tendency","front":"Self-Actualizing Tendency","back":"Innate drive to grow and fulfill one’s full potential"},{"id":"rogers_growth_conditions","front":"Rogers’ Growth-Promoting Conditions","back":"Genuineness, acceptance, and empathy"},{"id":"social_cognitive_theory","front":"Social-Cognitive Theory","back":"Personality is learned through observation and shaped by thoughts, behavior, and context"},{"id":"reciprocal_determinism","front":"Reciprocal Determinism","back":"Behavior, personal factors, and environment continually influence each other"},{"id":"self_concept","front":"Self-Concept","back":"Your overall perception and understanding of who you are"},{"id":"self_efficacy","front":"Self-Efficacy","back":"Belief in your ability to succeed at a specific task"},{"id":"self_esteem","front":"Self-Esteem","back":"Your overall emotional judgment of your own worth"},{"id":"trait_theories","front":"Trait Theories","back":"Personality is made of stable traits that consistently guide behavior"},{"id":"big_five_theory","front":"Big Five Theory","back":"Openness, conscientiousness, extraversion, agreeableness, and emotional stability (neuroticism)"},{"id":"personality_inventories","front":"Personality Inventories","back":"Standardized self-report questionnaires that measure personality traits"},{"id":"mmpi","front":"Minnesota Multiphasic Personality Inventory (MMPI)","back":"Widely used objective personality inventory of hundreds of true-false items"},{"id":"factor_analysis","front":"Factor Analysis","back":"Statistical method finding clusters of related items; revealed the Big Five"},{"id":"openness_to_experience","front":"Openness to Experience","back":"Imagination, curiosity, and willingness to try new ideas and experiences"},{"id":"conscientiousness","front":"Conscientiousness","back":"Organization, dependability, discipline, and goal-directed behavior"},{"id":"extraversion","front":"Extraversion","back":"Sociability, energy, assertiveness, and seeking social stimulation"},{"id":"agreeableness","front":"Agreeableness","back":"Warmth, kindness, empathy, cooperation, and trust"},{"id":"emotional_stability","front":"Emotional Stability (Neuroticism)","back":"Staying calm and resilient under stress; low stability means high neuroticism"}];
 
     // CATALOG DATA: internal templates/aliases, not user instances. Unit names are intentionally absent from the global class catalog.
     const SUBJECT_FAMILIES = [{"id":"english","name":"English / Language Arts"},{"id":"history","name":"History / Social Science"},{"id":"math","name":"Mathematics"},{"id":"science","name":"Science"},{"id":"world_languages","name":"World Languages"},{"id":"cs_engineering","name":"Computer Science / Engineering"},{"id":"business","name":"Business / Finance"},{"id":"arts","name":"Visual & Performing Arts"},{"id":"health_pe","name":"Health / Physical Education"},{"id":"capstone","name":"Interdisciplinary / Capstone"},{"id":"cte","name":"Career Technical Education"},{"id":"other","name":"Other"}];
@@ -2539,7 +2548,11 @@
       messagingSenderId: "653437754339",
       appId: "1:653437754339:web:a965cf7cbab2ba88239ed6"
     };
-    const CLOUD_SCHEMA_VERSION = 2;
+    const CLOUD_SCHEMA_VERSION = 3;
+    // Schema 3 has the same document layout as 2. The bump is a fence: v14 clients (which re-add the
+    // retired German deck on every merge) stop at "unsupported schema" instead of syncing in a
+    // publish loop with v15. This client still reads schema-2 generations and republishes them as 3.
+    const CLOUD_READABLE_SCHEMAS = [2, 3];
     const STORAGE_KEY = "study_cards_multideck_engine_v5";
     const PRE_CLOUD_RESTORE_KEY = "skystudee_pre_cloud_restore_v1";
     const OLD_STORAGE_KEY = "study_cards_memory_engine_v4";
@@ -3075,6 +3088,20 @@
     }
 
     /**
+     * Schema 15 only: remove class records created for the retired German deck (catalog "german")
+     * when no deck or unit uses them, so they stop appearing in class pickers. Classes the user
+     * filled with their own decks or units are kept.
+     */
+    function dropEmptyGermanClass(target) {
+      for (const cls of Object.values(target.classes || {})) {
+        if (cls?.catalogId !== "german") continue;
+        const used = Object.values(target.decks || {}).some(deck => deck.classId === cls.id) ||
+          Object.values(target.units || {}).some(unit => unit.classId === cls.id);
+        if (!used) delete target.classes[cls.id];
+      }
+    }
+
+    /**
      * Pick the deck to fall back to when the active ID is missing: the first deck in Library order
      * (class order, unit order, deck order, then name). Returns null only for an empty map, which
      * ensureLibraryDecks prevents. Pure; reads only the passed state.
@@ -3275,6 +3302,7 @@
       seedCognitionPart1DeckForUpgrade(target, saved.version);
       seedDevelopmentDeckForUpgrade(target, saved.version);
       seedUnit4DecksForUpgrade(target, saved.version);
+      if (Number(saved.version || 0) < 15) dropEmptyGermanClass(target);
       ensureOrganizationState(target, {
         seedBundled: Number(saved.version || 0) < 7,
         suggestUnclassified: Number(saved.version || 0) < 7
@@ -3303,13 +3331,33 @@
       return target;
     }
 
+    /**
+     * Before schema 15 strips the retired German deck, copy that deck record (with its evidence) to
+     * its own storage key once per profile, so the progress is recoverable from a backup tool or
+     * devtools. Direct storage write only: safe before runtime initialization, never persistState.
+     */
+    function stashRetiredGermanDeck(saved) {
+      const deck = saved?.decks?.[RETIRED_GERMAN_DECK_ID];
+      if (!deck) return;
+      try {
+        const key = `${RETIRED_GERMAN_STASH_PREFIX}${activeAccountUid ? encodedAccountUid(activeAccountUid) : "guest"}`;
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem(key, JSON.stringify({ savedAt: new Date().toISOString(), deck }));
+        }
+      } catch (error) {}
+    }
+
     /** Load/normalize the active guest/account profile, with legacy migration only for guest. */
     function loadAppState() {
       try {
         const testKey = "__study_cards_storage_test__";
         localStorage.setItem(testKey, "1"); localStorage.removeItem(testKey);
         const raw = localStorage.getItem(currentStorageKey());
-        if (raw) return mergeAppState(JSON.parse(raw));
+        if (raw) {
+          const saved = JSON.parse(raw);
+          stashRetiredGermanDeck(saved);
+          return mergeAppState(saved);
+        }
         if (!activeAccountUid) {
           const oldRaw = localStorage.getItem(OLD_STORAGE_KEY);
           if (oldRaw) {
@@ -3624,7 +3672,12 @@
         typedValue: "",
         autocompleteUsed: false,
         suggestionOrder: [],
-        cold: { order: [], index: 0, results: [] }
+        cold: { order: [], index: 0, results: [] },
+        // ROUNDS: keys shown in the current round; every eligible fact is shown once per round.
+        coverage: [],
+        round: 1,
+        sinceLearning: 0,
+        lastLane: null
       };
     }
 
@@ -3650,6 +3703,10 @@
         autocompleteUsed: session.autocompleteUsed,
         suggestionOrder: [...session.suggestionOrder],
         cold: deepClone(session.cold),
+        coverage: [...(session.coverage || [])],
+        round: session.round || 1,
+        sinceLearning: session.sinceLearning || 0,
+        lastLane: session.lastLane || null,
         currentFactKey: currentFact ? factKey(currentFact) : null,
         currentFactId: currentFact ? currentFact.id : null
       };
@@ -3731,7 +3788,11 @@
           order: coldOrder,
           index: Number(data.cold?.index) || 0,
           results: Array.isArray(data.cold?.results) ? data.cold.results : []
-        }
+        },
+        coverage: [...new Set((Array.isArray(data.coverage) ? data.coverage : []).map(keyOf).filter(key => eligibleMap.has(key)))],
+        round: Math.max(1, Number(data.round) || 1),
+        sinceLearning: Math.max(0, Number(data.sinceLearning) || 0),
+        lastLane: typeof data.lastLane === "string" ? data.lastLane : null
       };
       currentFact = savedFactKey ? eligibleMap.get(savedFactKey) : null;
       if (savedMode === "cold" && (!session.cold.order.length || session.cold.index >= session.cold.order.length)) return false;
@@ -4259,16 +4320,17 @@
         session.runtime[factId] = {
           missBoost: 0,
           restUntil: 0,
-          skipUntil: 0
+          skipUntil: 0,
+          learning: 0
         };
       }
       return session.runtime[factId];
     }
 
     /**
-     * Compute the positive base weighting shown in the UI, including miss boost and Memory-only
-     * freshness/deadline factors. It excludes temporary rest/no-repeat suppressions; it is not the
-     * actual draw probability.
+     * Compute the positive need weighting from mastery, first-attempt status, the miss boost and
+     * Memory-only freshness/deadline factors. weightedRandomFact uses it (without the miss boost)
+     * to order cards inside a round; it is not a draw probability and is no longer shown on screen.
      */
     function displayPriority(fact, targetMode) {
       const rt = runtimeForFact(factKey(fact));
@@ -4325,49 +4387,104 @@
     }
 
     /**
-     * Draw across eligible facts with adaptive weights; retry ignoring rest if all are withheld,
-     * then fall back to the first fact if no weight remains. No-repeat is best-effort in
-     * exhausted/single-pair pools; do not document it as an absolute guarantee.
+     * Choose the next adaptive card (Cram and Memory) from three lanes, then record which lane won
+     * in session.lastLane/sinceLearning (callers always serve the returned fact).
+     *
+     *   new      unseen-this-round cards that have never been answered, picked first;
+     *   review   unseen-this-round cards that have been answered before, weighted toward weak and
+     *            (Memory) long-unreviewed or deadline-pressed cards by need^2;
+     *   practice missed cards still in learning whose served-card rest has expired.
+     *
+     * A ROUND shows every eligible fact once (session.coverage), so a deck of N facts is fully seen
+     * in about N draws instead of the ~N·ln N a weighted lottery needs. Practice is interleaved:
+     * one due miss after every two round cards, or after every one once five or more are waiting,
+     * so missed cards never take more than half of the draws while round cards remain. When the
+     * round is exhausted a new round starts. If everything is withheld (rests, Later, immediate
+     * repeat) the old weighted lottery is the fallback, so a one-pair pool still returns a card.
      */
     function weightedRandomFact(targetMode) {
       const facts = getEligibleFacts();
       if (!facts.length) return null;
+      if (!Array.isArray(session.coverage)) session.coverage = [];
+      const served = session.servedCount;
+      const lastPair = session.recentPairs[0];
+      const rtOf = fact => runtimeForFact(factKey(fact));
+      const available = fact => {
+        const rt = rtOf(fact);
+        return served >= (Number(rt.skipUntil) || 0) &&
+          served >= (Number(rt.restUntil) || 0) &&
+          (facts.length < 2 || pairKey(fact) !== lastPair);
+      };
 
-      let entries = facts.map(fact => ({
-        fact,
-        weight: adaptivePriority(fact, targetMode)
-      }));
+      let covered = new Set(session.coverage);
+      let uncovered = facts.filter(fact => !covered.has(factKey(fact)));
+      if (!uncovered.length) {
+        session.coverage = [];
+        session.round = (Number(session.round) || 1) + 1;
+        covered = new Set();
+        uncovered = facts;
+      }
+      const roundPool = uncovered.filter(available);
+      const dueLearning = facts.filter(fact => (Number(rtOf(fact).learning) || 0) > 0 && available(fact));
 
-      let total = entries.reduce(
-        (sum, entry) => sum + entry.weight,
-        0
-      );
-
-      if (total <= 0) {
-        entries = facts.map(fact => ({
-          fact,
-          weight: adaptivePriority(
-            fact,
-            targetMode,
-            { ignoreRest: true }
-          )
-        }));
-
-        total = entries.reduce(
-          (sum, entry) => sum + entry.weight,
-          0
-        );
+      const gap = dueLearning.length >= 5 ? 1 : 2;
+      let lane = null;
+      let fact = null;
+      if (dueLearning.length && (!roundPool.length || (Number(session.sinceLearning) || 0) >= gap)) {
+        lane = "practice";
+        const soonest = Math.min(...dueLearning.map(item => Number(rtOf(item).restUntil) || 0));
+        const overdue = dueLearning.filter(item => (Number(rtOf(item).restUntil) || 0) === soonest);
+        fact = overdue[Math.floor(Math.random() * overdue.length)];
+      } else if (roundPool.length) {
+        const unseen = roundPool.filter(item => factDirectAttempts(item.id, deckForFact(item)) === 0);
+        lane = unseen.length ? "new" : "review";
+        fact = weightedPick(unseen.length ? unseen : roundPool, item => {
+          const need = displayPriority(item, targetMode) / (1 + (Number(rtOf(item).missBoost) || 0));
+          return need * need * recentPairFactor(item);
+        });
       }
 
-      if (total <= 0) return facts[0];
+      if (!fact) {
+        lane = "fallback";
+        const weights = facts.map(item => adaptivePriority(item, targetMode));
+        const anyWeight = weights.some(weight => weight > 0);
+        fact = weightedPick(facts, (item, index) => anyWeight
+          ? weights[index]
+          : adaptivePriority(item, targetMode, { ignoreRest: true })) || facts[0];
+      }
 
+      session.sinceLearning = lane === "practice" ? 0 : (Number(session.sinceLearning) || 0) + 1;
+      session.lastLane = lane;
+      return fact;
+    }
+
+    /**
+     * Weighted random choice over items using weightOf(item, index). Returns null for an empty list
+     * and the first item when every weight is zero. Pure apart from Math.random.
+     */
+    function weightedPick(items, weightOf) {
+      if (!items.length) return null;
+      const weights = items.map((item, index) => Math.max(0, Number(weightOf(item, index)) || 0));
+      const total = weights.reduce((sum, weight) => sum + weight, 0);
+      if (total <= 0) return items[0];
       let roll = Math.random() * total;
-      for (const entry of entries) {
-        roll -= entry.weight;
-        if (roll <= 0) return entry.fact;
+      for (let index = 0; index < items.length; index++) {
+        roll -= weights[index];
+        if (roll <= 0) return items[index];
       }
+      return items[items.length - 1];
+    }
 
-      return entries[entries.length - 1].fact;
+    /**
+     * Soft penalty for real cards shown two to four cards ago (the immediately previous card is
+     * excluded outright by the caller). Returns a multiplier in (0, 1].
+     */
+    function recentPairFactor(fact) {
+      const position = session.recentPairs.indexOf(pairKey(fact));
+      if (position === 1) return 0.28;
+      if (position === 2) return 0.55;
+      if (position === 3) return 0.78;
+      return 1;
     }
 
     /**
@@ -4385,11 +4502,15 @@
       ].slice(0, 5);
 
       session.unique.add(factKey(fact));
+      if (!Array.isArray(session.coverage)) session.coverage = [];
+      if (!session.coverage.includes(factKey(fact))) session.coverage.push(factKey(fact));
     }
 
     /**
-     * Relax miss boost after success or apply a randomized 4-7-served-card rest and bounded boost
-     * after failure. Waiting in real time must not strengthen the penalty.
+     * Learning steps. A miss puts the card in learning (two correct answers needed), rests it for
+     * 4-7 served cards and raises its bounded miss boost. A correct answer in learning schedules
+     * the second check 9-14 served cards later; the next correct graduates it. Waiting in real
+     * time must not strengthen the penalty.
      */
     function updateRuntimeAfterResult(fact, known) {
       const rt = runtimeForFact(factKey(fact));
@@ -4397,8 +4518,12 @@
       if (known) {
         rt.missBoost *= 0.46;
         if (rt.missBoost < 0.08) rt.missBoost = 0;
-        rt.restUntil = 0;
+        const learning = Math.max(0, (Number(rt.learning) || 0) - 1);
+        rt.learning = learning;
+        // A missed card graduates after two correct answers; the second check comes later.
+        rt.restUntil = learning > 0 ? session.servedCount + randomInt(9, 14) : 0;
       } else {
+        rt.learning = 2;
         rt.restUntil =
           session.servedCount + randomInt(4, 7);
         rt.missBoost = clamp(
@@ -4411,11 +4536,14 @@
 
     /**
      * Defer this namespaced fact for three served-card steps without recording a right/wrong result
-     * or changing mastery.
+     * or changing mastery, and return it to the current round's unseen pool.
      */
     function skipAdaptiveFact(fact) {
       const rt = runtimeForFact(factKey(fact));
       rt.skipUntil = session.servedCount + 3;
+      // Later keeps the card in the current round: it comes back after the skip window.
+      const key = factKey(fact);
+      if (Array.isArray(session.coverage)) session.coverage = session.coverage.filter(item => item !== key);
     }
 
     // ==========================================================
@@ -4433,7 +4561,8 @@
         recentPairs: [...session.recentPairs],
         history: [],
         suggestionOrder: [...session.suggestionOrder],
-        cold: deepClone(session.cold)
+        cold: deepClone(session.cold),
+        coverage: [...(session.coverage || [])]
       };
     }
 
@@ -5654,21 +5783,26 @@
           `${total ? (session.cold.index / total) * 100 : 0}%`;
       } else {
         const tiny = isPhoneUI() && window.innerWidth <= 340;
+        const roundTotal = getEligibleFacts().length;
+        const roundSeen = Math.min(roundTotal, (session.coverage || []).length);
         setStatusItems(leftStatus, [
           tiny ? null : escapeHtml(modeDisplay(mode)),
-          `<b>${session.answers}</b> answered`,
-          `<b>${session.unique.size}</b> seen`
+          `Round ${session.round || 1}: <b>${roundSeen}</b> of ${roundTotal}`,
+          tiny ? null : `<b>${session.answers}</b> answered`
         ]);
 
         const ownerDeck = deckForFact(currentFact);
         const mastery = factMastery(currentFact.id, ownerDeck);
-        const priority =
-          displayPriority(currentFact, mode);
+        const laneLabel = {
+          new: "New card",
+          review: "Review",
+          practice: "Missed earlier"
+        }[session.lastLane] || null;
 
         setStatusItems(rightStatus, [
           studySetActive && !isPhoneUI() ? `From ${escapeHtml(displayDeckName(ownerDeck))}` : null,
-          `This card <b>${mastery.toFixed(0)}%</b>`,
-          tiny ? null : `priority ${priority.toFixed(2)}×`
+          laneLabel,
+          `this card <b>${mastery.toFixed(0)}%</b>`
         ]);
 
         progressTrack.classList.add("hidden");
@@ -6877,13 +7011,19 @@ I will upload the topic soon, confirm your understanding`;
       populateClassChoice(importClassSelect);
       let selected = "";
       if (existing?.classId && appState.classes[existing.classId]) selected = `existing:${existing.classId}`;
-      if (!selected && parsed.classCatalogId && CLASS_CATALOG_BY_ID[parsed.classCatalogId]) selected = `catalog:${parsed.classCatalogId}`;
+      if (!selected && parsed.classCatalogId && CLASS_CATALOG_BY_ID[parsed.classCatalogId]) {
+        const existingClass = findClassByCatalog(appState, parsed.classCatalogId);
+        selected = existingClass ? `existing:${existingClass.id}` : `catalog:${parsed.classCatalogId}`;
+      }
       if (!selected && parsed.className) {
         const exact = Object.values(appState.classes).find(cls => normalizeLibraryText(cls.name) === normalizeLibraryText(parsed.className));
         if (exact) selected = `existing:${exact.id}`;
         else {
           const cat = CLASS_CATALOG.find(item => normalizeLibraryText(item.name) === normalizeLibraryText(parsed.className) || (item.aliases || []).some(alias => normalizeLibraryText(alias) === normalizeLibraryText(parsed.className)));
-          if (cat) selected = `catalog:${cat.id}`;
+          if (cat) {
+            const existingClass = findClassByCatalog(appState, cat.id);
+            selected = existingClass ? `existing:${existingClass.id}` : `catalog:${cat.id}`;
+          }
         }
       }
       if (!selected) {
@@ -8419,10 +8559,10 @@ I will upload the topic soon, confirm your understanding`;
         firebaseFirestoreApi.getDocs(cloudGenerationDecksRef(uid, generationId))
       ]);
       if (!marker.exists() || marker.data()?.snapshotComplete !== true ||
-          Number(marker.data()?.cloudSchemaVersion) !== CLOUD_SCHEMA_VERSION) {
+          !CLOUD_READABLE_SCHEMAS.includes(Number(marker.data()?.cloudSchemaVersion))) {
         throw new Error("The selected cloud generation is incomplete.");
       }
-      if (!core.exists() || Number(core.data()?.cloudSchemaVersion) !== CLOUD_SCHEMA_VERSION) {
+      if (!core.exists() || !CLOUD_READABLE_SCHEMAS.includes(Number(core.data()?.cloudSchemaVersion))) {
         throw new Error("The selected cloud generation is missing valid core state.");
       }
       const coreState = core.data()?.state;
@@ -8431,7 +8571,7 @@ I will upload the topic soon, confirm your understanding`;
       state.decks = {};
       decks.forEach(docSnap => {
         const payload = docSnap.data() || {}, deck = payload.deck;
-        if (Number(payload.cloudSchemaVersion) === CLOUD_SCHEMA_VERSION && deck?.id) {
+        if (CLOUD_READABLE_SCHEMAS.includes(Number(payload.cloudSchemaVersion)) && deck?.id) {
           state.decks[deck.id] = deck;
         }
       });
@@ -8487,7 +8627,7 @@ I will upload the topic soon, confirm your understanding`;
         const rootRef = cloudUserRef(uid);
         const rootSnap = await transaction.get(rootRef);
         const root = rootSnap.exists() ? rootSnap.data() || {} : {};
-        const currentRevision = Number(root.cloudSchemaVersion) === CLOUD_SCHEMA_VERSION
+        const currentRevision = CLOUD_READABLE_SCHEMAS.includes(Number(root.cloudSchemaVersion))
           ? Math.max(0, Number(root.revision) || 0) : 0;
         if (currentRevision !== expectedRevision) {
           const conflict = new Error("Cloud changed during publication.");
@@ -8544,7 +8684,7 @@ I will upload the topic soon, confirm your understanding`;
 
             const root = rootSnap.data() || {};
             let remote, remoteRevision;
-            if (Number(root.cloudSchemaVersion) === CLOUD_SCHEMA_VERSION && root.snapshotComplete === true) {
+            if (CLOUD_READABLE_SCHEMAS.includes(Number(root.cloudSchemaVersion)) && root.snapshotComplete === true) {
               remoteRevision = Math.max(0, Number(root.revision) || 0);
               remote = await readCloudGeneration(activeAccountUid, root);
             } else if (Number(root.cloudSchemaVersion) === 1 && root.snapshotComplete === true) {
@@ -8597,7 +8737,7 @@ I will upload the topic soon, confirm your understanding`;
         firebaseSyncUnsubscribe = firebaseFirestoreApi.onSnapshot(cloudUserRef(uid), snap => {
           if (firebaseUser?.uid !== uid || activeAccountUid !== uid || !snap.exists()) return;
           const root = snap.data() || {}, revision = Math.max(0, Number(root.revision) || 0);
-          if (Number(root.cloudSchemaVersion) === CLOUD_SCHEMA_VERSION &&
+          if (CLOUD_READABLE_SCHEMAS.includes(Number(root.cloudSchemaVersion)) &&
               (revision > firebaseSyncRevision || String(root.activeGeneration || "") !== firebaseSyncGenerationId)) {
             firebaseCloudMeta = root; firebaseCloudStatus = "ready"; scheduleFirebaseSync(40);
           }
@@ -8715,9 +8855,10 @@ I will upload the topic soon, confirm your understanding`;
         if (!snap.exists()) { firebaseCloudStatus = "empty"; firebaseCloudMeta = null; }
         else {
           const data = snap.data() || {}; firebaseCloudMeta = data;
-          if (Number(data.cloudSchemaVersion) === CLOUD_SCHEMA_VERSION && data.snapshotComplete === true && data.activeGeneration) {
+          if (CLOUD_READABLE_SCHEMAS.includes(Number(data.cloudSchemaVersion)) && data.snapshotComplete === true && data.activeGeneration) {
             firebaseCloudStatus = "ready";
-            if (Math.max(0, Number(data.revision) || 0) > firebaseSyncRevision || firebaseSyncDirty) scheduleFirebaseSync(20);
+            const olderSchema = Number(data.cloudSchemaVersion) !== CLOUD_SCHEMA_VERSION;
+            if (olderSchema || Math.max(0, Number(data.revision) || 0) > firebaseSyncRevision || firebaseSyncDirty) scheduleFirebaseSync(20);
           } else if (Number(data.cloudSchemaVersion) === 1 && data.snapshotComplete === true) firebaseCloudStatus = "legacy";
           else firebaseCloudStatus = "incomplete";
         }
@@ -8965,6 +9106,7 @@ I will upload the topic soon, confirm your understanding`;
     startStudySetBtn.addEventListener("click", startStudySetFromPicker);
 
     deckSelect.addEventListener("change", () => {
+      deckSelect.blur();
       if (deckSelect.value === "__study_set__") return;
       switchDeck(deckSelect.value);
     });
@@ -9274,15 +9416,17 @@ I will upload the topic soon, confirm your understanding`;
     document.addEventListener("keydown", event => {
       const target = event.target;
       if (event.key === "Escape") {
+        const openMenu = document.querySelector("details.menu[open]");
         closeOpenMenus();
+        if (openMenu) openMenu.querySelector("summary")?.focus({ preventScroll: true });
         if (studySettings.classList.contains("mobile-open")) {
           closeMobileOptions();
           mobileOptionsBtn.focus({ preventScroll: true });
           return;
         }
       }
-      // The deck picker is a native select: its arrow keys pick decks, they must not grade.
-      if (target === deckSelect) return;
+      // A focused deck picker owns its arrow keys; an open options panel pauses grading keys.
+      if (target === deckSelect || studySettings.classList.contains("mobile-open")) return;
       const typingIntoField =
         target === answerInput ||
         target === nameInput ||

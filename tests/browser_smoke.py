@@ -139,7 +139,7 @@ def run(source: str, baseline: str | None) -> dict:
         check('fresh profile has no German deck',page.evaluate('!appState.decks[RETIRED_GERMAN_DECK_ID] && !!appState.decks[activeDeckId]'))
         check('both Unit 4 decks bundled under AP Psychology Unit 4',page.evaluate("""() => [SOCIAL_PSYCH_DECK_ID,PERSONALITY_DECK_ID].every(id => {
           const deck=appState.decks[id];
-          return deck?.preloaded===true && deck.cards.length===(id===SOCIAL_PSYCH_DECK_ID?73:80) &&
+          return deck?.preloaded===true && deck.cards.length===(id===SOCIAL_PSYCH_DECK_ID?73:81) &&
             appState.classes[deck.classId]?.catalogId==='ap_psychology' &&
             appState.units[deck.unitId]?.name==='Unit 4';
         })"""))
@@ -253,6 +253,55 @@ def run(source: str, baseline: str | None) -> dict:
         solo_page.evaluate("for (const id of Object.keys(appState.decks)) if (id!=='test:solo') delete appState.decks[id]; deleteRealDeck('test:solo')")
         check('last remaining deck cannot be deleted', not solo_errors and solo_page.evaluate("!!appState.decks['test:solo'] && Object.keys(appState.decks).length===1"))
 
+        # ROUND SCHEDULER: coverage, new-first, bounded practice share, missed cards return.
+        SIM = r"""(missEvery) => {
+          const cards = Array.from({length:120},(_,i)=>({id:'c'+i,front:'Front '+i,back:'Back '+i}));
+          appState.decks['sim:big'] = createDeckRecord({id:'sim:big',name:'Sim',cards});
+          appState.decks['sim:big'].settings.direction = 'front';
+          studySetActive=false; appState.studySet.active=false;
+          activeDeckId='sim:big'; appState.activeDeckId='sim:big';
+          mode='memory'; session=makeFreshSession('memory');
+          const seen = new Set(); const missedAt = new Map(); const gaps = [];
+          let draws = 0, practice = 0, newCount = 0;
+          while (seen.size < 120 && draws < 2000) {
+            const fact = weightedRandomFact('memory'); recordServed(fact); draws++;
+            if (session.lastLane === 'practice') practice++;
+            if (missedAt.has(fact.id)) { gaps.push(session.servedCount - missedAt.get(fact.id)); missedAt.delete(fact.id); }
+            const isNew = factDirectAttempts(fact.id, appState.decks['sim:big']) === 0;
+            seen.add(fact.id);
+            let known = true;
+            if (isNew) { newCount++; known = !(missEvery && newCount % missEvery === 0); }
+            if (!known) missedAt.set(fact.id, session.servedCount);
+            recordSessionResult(fact, known, {answerMode:'self'});
+          }
+          delete appState.decks['sim:big'];
+          activeDeckId = fallbackDeckId(appState); appState.activeDeckId = activeDeckId;
+          mode='memory'; session=makeFreshSession('memory'); currentFact=weightedRandomFact('memory'); recordServed(currentFact);
+          return {draws, practice, returns: gaps.length, maxGap: gaps.length ? Math.max(...gaps) : 0,
+                  meanGap: gaps.length ? gaps.reduce((a,b)=>a+b,0)/gaps.length : 0};
+        }"""
+        typical = page.evaluate(SIM, 3)   # misses one new card in three
+        worst = page.evaluate(SIM, 1)     # misses every new card the first time
+        print('scheduler typical', typical); print('scheduler worst', worst)
+        coverage = page.evaluate(r"""() => {
+          const cards = Array.from({length:40},(_,i)=>({id:'s'+i,front:'S '+i,back:'T '+i}));
+          appState.decks['sim:small'] = createDeckRecord({id:'sim:small',name:'Small',cards});
+          appState.decks['sim:small'].settings.direction='front';
+          activeDeckId='sim:small'; appState.activeDeckId='sim:small'; mode='cram'; session=makeFreshSession('cram');
+          const ids = [];
+          for (let i=0;i<40;i++){ const f=weightedRandomFact('cram'); recordServed(f); ids.push(f.id); recordSessionResult(f,true,{answerMode:'self'}); }
+          delete appState.decks['sim:small'];
+          activeDeckId = fallbackDeckId(appState); appState.activeDeckId = activeDeckId;
+          mode='memory'; session=makeFreshSession('memory'); currentFact=weightedRandomFact('memory'); recordServed(currentFact);
+          return new Set(ids).size;
+        }""")
+        check('a round shows every card once before repeating', coverage == 40)
+        # Each miss costs at most two practice draws, so N + 2*misses bounds full coverage.
+        check('typical learner sees all 120 cards within 120 + 2 x 40 misses', typical['draws'] <= 200)
+        check('typical misses return within 25 served cards', typical['returns'] >= 30 and typical['maxGap'] <= 25)
+        check('worst case still sees all 120 cards within 260 draws', worst['draws'] <= 260)
+        check('missed-card practice never exceeds half of draws', typical['practice'] <= typical['draws'] * .5 and worst['practice'] <= worst['draws'] * .5)
+
         # Synthetic colliding card IDs in separate real decks must not merge evidence.
         page.evaluate(r"""() => {
           for(const [id,name] of [['test:a','Synthetic A'],['test:b','Synthetic B']]){
@@ -304,6 +353,7 @@ def run(source: str, baseline: str | None) -> dict:
         page.locator('#importUnitInput').fill('User-defined unit')
         check('unit enables import',not page.locator('#confirmImportBtn').is_disabled())
         check('all 120 preview rows exist',page.locator('.import-preview-row').count()==120)
+        check('import preselects the existing class for a catalog match',page.evaluate("importClassSelect.value.startsWith('existing:')"))
         page.evaluate('importPreviewOverlay.classList.remove("show")')
 
         page.evaluate(CLOUD)
@@ -316,8 +366,8 @@ def run(source: str, baseline: str | None) -> dict:
 
         page.evaluate('uploadLocalStateToCloud()')
         page.wait_for_function("firebaseCloudStatus === 'ready' && !firebaseCloudBusy")
-        check('first sync publishes schema-2 generation',page.evaluate(
-          "__cloud.docs['users/synthetic-uid'].cloudSchemaVersion===2 && "
+        check('first sync publishes schema-3 generation',page.evaluate(
+          "__cloud.docs['users/synthetic-uid'].cloudSchemaVersion===3 && "
           "__cloud.docs['users/synthetic-uid'].revision===1 && "
           "!!__cloud.docs['users/synthetic-uid'].activeGeneration"
         ))
@@ -326,6 +376,25 @@ def run(source: str, baseline: str | None) -> dict:
           const marker=__cloud.docs[`users/synthetic-uid/generations/${root.activeGeneration}`];
           return marker?.snapshotComplete===true && marker.deckCount===root.deckCount;
         }"""))
+
+        # A schema-2 cloud written by a v14 client (with the retired German deck) is read, merged
+        # without German, and republished as schema 3 at the next revision.
+        page.evaluate("""() => {
+          for (const doc of Object.values(__cloud.docs)) if (doc && doc.cloudSchemaVersion===3) doc.cloudSchemaVersion=2;
+          const root=__cloud.docs['users/synthetic-uid'];
+          __cloud.docs[`users/synthetic-uid/generations/${root.activeGeneration}/decks/german`] =
+            {cloudSchemaVersion:2, deck:{id:RETIRED_GERMAN_DECK_ID,name:'German',builtin:true,cards:[{id:'m',front:'machen',back:'gemacht'}],facts:{}}};
+          root.deckCount += 1;
+        }""")
+        schema2_revision = page.evaluate("__cloud.docs['users/synthetic-uid'].revision")
+        page.evaluate('performFirebaseSync({force:true})')
+        page.wait_for_function("firebaseCloudStatus !== 'checking' && !firebaseCloudBusy")
+        check('schema-2 cloud upgrades to schema 3 without German',page.evaluate("""() => {
+          const root=__cloud.docs['users/synthetic-uid'];
+          const deckDocs=Object.entries(__cloud.docs).filter(([k])=>k.startsWith(`users/synthetic-uid/generations/${root.activeGeneration}/`));
+          return firebaseCloudStatus==='ready' && root.cloudSchemaVersion===3 &&
+            !deckDocs.some(([,d])=>d?.deck?.id===RETIRED_GERMAN_DECK_ID) && !appState.decks[RETIRED_GERMAN_DECK_ID];
+        }""") and page.evaluate("__cloud.docs['users/synthetic-uid'].revision")==schema2_revision+1)
 
         prior_revision = page.evaluate("__cloud.docs['users/synthetic-uid'].revision")
         page.evaluate("""() => { appState.userName='Synthetic Updated'; persistState(); }""")

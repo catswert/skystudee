@@ -8,7 +8,7 @@ sections of [`src/skystudee.html`](../src/skystudee.html).
 | Value | Meaning |
 | --- | --- |
 | `APP_VERSION = 15` | Local profile schema/migration version |
-| `CLOUD_SCHEMA_VERSION = 2` | Revisioned immutable-generation sync |
+| `CLOUD_SCHEMA_VERSION = 3` | Revisioned immutable-generation sync (3 = same layout as 2; fences out v14 clients, which still re-add German; schema-2 roots are read and republished as 3) |
 | `StudyCardsDeck.version = 1` | Interchange content format |
 | `build-manifest.json.version` | Static deployment/cache identity |
 | `FIREBASE_SDK_VERSION = "12.18.0"` | Pinned runtime dependency |

@@ -18,6 +18,13 @@ than the source supports. Treat the listed areas as regression-test targets.
 - No-repeat suppression has an exhausted-pool fallback. A single real card has
   no alternative; `weightedRandomFact` can return the first fact when all weights
   are withheld. Do not promise an unconditional no-repeat property.
+- Rounds are per session and per eligible pool: changing direction, mode, deck or study set
+  starts a new session and therefore a new round. With very many misses outstanding (e.g. every
+  new card missed), practice holds at half the draws, so individual misses can wait 50+ cards.
+- `CLOUD_SCHEMA_VERSION` 3 is a compatibility fence with the same layout as 2. Tabs still
+  running the v14 build show "unsupported schema" for sync until reloaded; their local study is
+  unaffected. The retired German deck's evidence is copied once to
+  `skystudee_retired_german_deck_v1:<profile>` before it is stripped.
 - `constrainedPairShuffle` has a 10,000-iteration bound, so extraordinarily large
   Cold Test pools need explicit handling/tests before claiming every fact fits.
 - Cram still uses stored mastery. Its brief older description is not a precise

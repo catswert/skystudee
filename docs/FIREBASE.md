@@ -45,6 +45,12 @@ conservatively merges the old snapshot with the UID-local profile and publishes 
 With no common base, evidence uses maxima rather than addition to avoid counting the
 same old history twice.
 
+Schema 3 (app schema 15) keeps the v2 document layout. It exists only as a fence: v14 clients
+re-add the retired German deck on every merge, so a v14 and a v15 tab would otherwise publish
+back and forth. v15 reads schema-2 roots/generations, merges normally and republishes as 3; v14
+clients then report an unsupported schema until reloaded. Firestore rules do not need changes
+for this bump unless they pin `cloudSchemaVersion` to 2; check the published rules.
+
 ## Security rules
 
 `firestore.rules` contains owner-only access for `/users/{uid}` and every nested

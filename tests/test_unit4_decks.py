@@ -9,7 +9,7 @@ DECKS = {
                            ("Fundamental Attribution Error", "Bystander Effect", "Cognitive Dissonance",
                             "Elaboration Likelihood Model", "Stanley Milgram’s Obedience Experiment")),
     "PERSONALITY_CARDS": ("ap-psychology-unit-4-motivation-emotion-personality.studydeck.json",
-                          "ap_psych:unit_4_motivation_emotion_personality", 80,
+                          "ap_psych:unit_4_motivation_emotion_personality", 81,
                           ("Yerkes-Dodson Law", "Schachter-Singer Two-Factor Theory", "Reaction Formation",
                            "Reciprocal Determinism", "Big Five Theory")),
 }
