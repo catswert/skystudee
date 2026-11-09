@@ -2472,6 +2472,79 @@
     }
 
     /**
+     * Combine duplicate classes (same catalog link or same normalized name) and duplicate units
+     * (same normalized name inside one class). Duplicates appear when two devices independently
+     * create the same class/unit with different random IDs and sync merges keep both. The survivor
+     * is chosen deterministically (lowest order, then lowest ID) so every device converges on the
+     * same records. Only organization pointers change: decks, card IDs and evidence are untouched.
+     * Mutates target in place; never persists.
+     */
+    function mergeDuplicateOrganization(target) {
+      const byOrderThenId = (a, b) => (Number(a.order) || 0) - (Number(b.order) || 0) || String(a.id).localeCompare(String(b.id));
+      const survivors = new Map();
+      for (const cls of Object.values(target.classes).sort(byOrderThenId)) {
+        const keys = [cls.catalogId ? `catalog:${cls.catalogId}` : null, `name:${normalizeLibraryText(cls.name)}`].filter(Boolean);
+        const survivor = keys.map(key => survivors.get(key)).find(Boolean);
+        if (!survivor) {
+          for (const key of keys) survivors.set(key, cls);
+          continue;
+        }
+        if (!survivor.catalogId && cls.catalogId) {
+          survivor.catalogId = cls.catalogId;
+          survivors.set(`catalog:${cls.catalogId}`, survivor);
+        }
+        for (const unit of Object.values(target.units)) if (unit.classId === cls.id) unit.classId = survivor.id;
+        for (const deck of Object.values(target.decks || {})) if (deck.classId === cls.id) deck.classId = survivor.id;
+        delete target.classes[cls.id];
+      }
+
+      const unitSurvivors = new Map();
+      for (const unit of Object.values(target.units).sort(byOrderThenId)) {
+        const key = `${unit.classId}|${normalizeLibraryText(unit.name)}`;
+        const survivor = unitSurvivors.get(key);
+        if (!survivor) { unitSurvivors.set(key, unit); continue; }
+        const peers = Object.values(target.decks || {}).filter(deck => deck.unitId === survivor.id);
+        let next = peers.length ? Math.max(...peers.map(deck => Number(deck.order) || 0)) + 1 : 0;
+        const moving = Object.values(target.decks || {})
+          .filter(deck => deck.unitId === unit.id)
+          .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0) || a.name.localeCompare(b.name));
+        for (const deck of moving) { deck.unitId = survivor.id; deck.classId = survivor.classId; deck.order = next++; }
+        delete target.units[unit.id];
+      }
+    }
+
+    /**
+     * Return the class that holds the bundled AP Psychology decks (so later bundled decks join the
+     * user's existing class even if it lost its catalog link), else the catalog/same-name class,
+     * else create one with a stable ID that is identical on every device.
+     */
+    function bundledPsychologyClass(target) {
+      for (const id of [DEVELOPMENT_DECK_ID, COGNITION_PART1_DECK_ID, SENSATION_DECK_ID, BRAIN_DECK_ID, PSYCH_DECK_ID]) {
+        const cls = target.classes[target.decks?.[id]?.classId];
+        if (cls) return cls;
+      }
+      const existing = findClassByCatalog(target, "ap_psychology") ||
+        Object.values(target.classes).find(cls => normalizeLibraryText(cls.name) === normalizeLibraryText("AP Psychology"));
+      if (existing) return existing;
+      const record = makeClassRecord({ id: "class:ap_psychology:bundled", catalogId: "ap_psychology", name: "AP Psychology", order: nextOrder(target.classes) });
+      target.classes[record.id] = record;
+      return record;
+    }
+
+    /**
+     * Find a same-name unit in classId or create it with an ID derived from the class and name, so
+     * two devices running the same bundled-deck migration create the SAME unit record.
+     */
+    function bundledUnit(target, classId, unitName) {
+      const existing = Object.values(target.units || {}).find(unit => unit.classId === classId && normalizeLibraryText(unit.name) === normalizeLibraryText(unitName));
+      if (existing) return existing;
+      const peers = Object.fromEntries(Object.entries(target.units || {}).filter(([, unit]) => unit.classId === classId));
+      const record = makeUnitRecord({ id: `unit:${normalizeLibraryText(unitName).replace(/ /g, "_")}:bundled:${classId}`, classId, name: unitName, order: nextOrder(peers) });
+      target.units[record.id] = record;
+      return record;
+    }
+
+    /**
      * Repair class/unit pointers and normalize ordering in place. seedBundled and
      * suggestUnclassified are opt-in migration flags, NOT recurring rules: ordinary saves must not
      * recreate classes or units a user deleted/moved.
@@ -2487,6 +2560,7 @@
         if (!raw?.classId || !target.classes[raw.classId]) { delete target.units[id]; continue; }
         target.units[id] = makeUnitRecord({...raw, id});
       }
+      mergeDuplicateOrganization(target);
 
       for (const deck of Object.values(target.decks || {})) {
         if (deck.classId && !target.classes[deck.classId]) deck.classId = null;
@@ -2506,7 +2580,7 @@
         } else if (seedBundled && deck.id === DEVELOPMENT_DECK_ID && !deck.classId) {
           deck.classId = findOrCreateCatalogClass(target, "ap_psychology")?.id || null;
         } else if (seedBundled && (deck.id === SOCIAL_PSYCH_DECK_ID || deck.id === PERSONALITY_DECK_ID) && !deck.classId) {
-          deck.classId = findOrCreateCatalogClass(target, "ap_psychology")?.id || null;
+          deck.classId = bundledPsychologyClass(target).id;
         } else if (suggestUnclassified && !deck.classId) {
           const suggestion = suggestCatalogClass(deck.name, deck.cards);
           if (suggestion) deck.classId = findOrCreateCatalogClass(target, suggestion.id)?.id || null;
@@ -2528,8 +2602,7 @@
           const psych = findClassByCatalog(target, "ap_psychology");
           if (!deck.unitId && psych && deck.classId === psych.id) deck.unitId = findOrCreateUnit(target, psych.id, "Unit 3")?.id || null;
         } else if (seedBundled && (deck.id === SOCIAL_PSYCH_DECK_ID || deck.id === PERSONALITY_DECK_ID)) {
-          const psych = findClassByCatalog(target, "ap_psychology");
-          if (!deck.unitId && psych && deck.classId === psych.id) deck.unitId = findOrCreateUnit(target, psych.id, "Unit 4")?.id || null;
+          if (!deck.unitId && deck.classId && target.classes[deck.classId]) deck.unitId = bundledUnit(target, deck.classId, "Unit 4").id;
         }
 
         if (!Number.isFinite(Number(deck.order))) deck.order = 0;
@@ -3219,8 +3292,9 @@
     function seedUnit4DecksForUpgrade(target, savedVersion) {
       const version = Number(savedVersion || 0);
       if (version >= 15) return;
-      const psych = findOrCreateCatalogClass(target, "ap_psychology");
-      const unit = psych ? findOrCreateUnit(target, psych.id, "Unit 4") : null;
+      if (target.decks[SOCIAL_PSYCH_DECK_ID] && target.decks[PERSONALITY_DECK_ID]) return;
+      const psych = bundledPsychologyClass(target);
+      const unit = bundledUnit(target, psych.id, "Unit 4");
       for (const [id, name, cards] of [
         [SOCIAL_PSYCH_DECK_ID, SOCIAL_PSYCH_DECK_NAME, SOCIAL_PSYCH_CARDS],
         [PERSONALITY_DECK_ID, PERSONALITY_DECK_NAME, PERSONALITY_CARDS]

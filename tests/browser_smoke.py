@@ -253,6 +253,37 @@ def run(source: str, baseline: str | None) -> dict:
         solo_page.evaluate("for (const id of Object.keys(appState.decks)) if (id!=='test:solo') delete appState.decks[id]; deleteRealDeck('test:solo')")
         check('last remaining deck cannot be deleted', not solo_errors and solo_page.evaluate("!!appState.decks['test:solo'] && Object.keys(appState.decks).length===1"))
 
+        # Duplicate classes/units (e.g. created independently on two synced devices) merge into one.
+        dup = page.evaluate("plainJson(appState)")
+        psych_id = page.evaluate("findClassByCatalog(appState,'ap_psychology').id")
+        dup['classes']['class:ap_psychology:dupe'] = {'id':'class:ap_psychology:dupe','catalogId':None,'name':'AP  psychology','familyId':'history','order':99}
+        dup['units']['unit:unit_4:dupe'] = {'id':'unit:unit_4:dupe','classId':'class:ap_psychology:dupe','name':'Unit 4','order':0}
+        dup['units']['unit:unit_3:dupe'] = {'id':'unit:unit_3:dupe','classId':psych_id,'name':'unit 3','order':50}
+        dup['decks']['ap_psych:unit_4_social_psychology']['classId'] = 'class:ap_psychology:dupe'
+        dup['decks']['ap_psych:unit_4_social_psychology']['unitId'] = 'unit:unit_4:dupe'
+        dup['decks']['ap_psych:unit_4_social_psychology']['facts']['social_psychology|front']['alpha'] = 7
+        dup['decks']['ap_psych:unit_3_development_and_learning']['unitId'] = 'unit:unit_3:dupe'
+        merged_page, merged_errors = new_page(saved=dup)
+        check('duplicate AP Psychology classes and units merge into one', not merged_errors and merged_page.evaluate("""() => {
+          const psych = Object.values(appState.classes).filter(c => normalizeLibraryText(c.name) === 'ap psychology');
+          const names = Object.values(appState.units).filter(u => u.classId === psych[0]?.id).map(u => normalizeLibraryText(u.name));
+          const social = appState.decks[SOCIAL_PSYCH_DECK_ID], dev = appState.decks[DEVELOPMENT_DECK_ID];
+          return psych.length === 1 && psych[0].catalogId === 'ap_psychology' &&
+            names.length === new Set(names).size &&
+            social.classId === psych[0].id && appState.units[social.unitId]?.name === 'Unit 4' &&
+            social.facts['social_psychology|front'].alpha === 7 &&
+            dev.classId === psych[0].id && normalizeLibraryText(appState.units[dev.unitId]?.name) === 'unit 3' &&
+            document.querySelectorAll('.class-group').length === Object.values(appState.classes).filter(c => usedClassIds().has(c.id)).length;
+        }"""))
+        lost_link = page.evaluate("plainJson(appState)")
+        lost_link['version'] = 14
+        for key in ('ap_psych:unit_4_social_psychology', 'ap_psych:unit_4_motivation_emotion_personality'): lost_link['decks'].pop(key, None)
+        lost_link['units'] = {k:v for k,v in lost_link['units'].items() if v['name'] != 'Unit 4'}
+        lost_link['classes'][psych_id]['catalogId'] = None
+        lost_page, lost_errors = new_page(saved=lost_link)
+        check('Unit 4 upgrade joins an AP Psychology class that lost its catalog link', not lost_errors and lost_page.evaluate(
+          "appState.decks[SOCIAL_PSYCH_DECK_ID].classId===appState.decks[DEVELOPMENT_DECK_ID].classId && Object.values(appState.classes).filter(c=>normalizeLibraryText(c.name)==='ap psychology').length===1"))
+
         # ROUND SCHEDULER: coverage, new-first, bounded practice share, missed cards return.
         SIM = r"""(missEvery) => {
           const cards = Array.from({length:120},(_,i)=>({id:'c'+i,front:'Front '+i,back:'Back '+i}));
