@@ -135,7 +135,7 @@ def run(source: str, baseline: str | None) -> dict:
 
         page, errors = new_page()
         check('fresh Library home',page.locator('#decksView').is_visible())
-        check('local studying available with SDK blocked',page.evaluate('!firebaseAuthReady && Object.keys(appState.decks).length===7'))
+        check('local studying available with SDK blocked',page.evaluate('!firebaseAuthReady && Object.keys(appState.decks).length===8'))
         check('fresh profile has no German deck',page.evaluate('!appState.decks[RETIRED_GERMAN_DECK_ID] && !!appState.decks[activeDeckId]'))
         check('both Unit 4 decks bundled under AP Psychology Unit 4',page.evaluate("""() => [SOCIAL_PSYCH_DECK_ID,PERSONALITY_DECK_ID].every(id => {
           const deck=appState.decks[id];
@@ -252,6 +252,26 @@ def run(source: str, baseline: str | None) -> dict:
         solo_page, solo_errors = new_page(saved=last_deck)
         solo_page.evaluate("for (const id of Object.keys(appState.decks)) if (id!=='test:solo') delete appState.decks[id]; deleteRealDeck('test:solo')")
         check('last remaining deck cannot be deleted', not solo_errors and solo_page.evaluate("!!appState.decks['test:solo'] && Object.keys(appState.decks).length===1"))
+
+        check('Learning deck bundled beside Development in AP Psychology Unit 3', page.evaluate("""() => {
+          const learning = appState.decks[LEARNING_DECK_ID], dev = appState.decks[DEVELOPMENT_DECK_ID];
+          return learning?.preloaded === true && learning.cards.length === 54 &&
+            learning.classId === dev.classId && learning.unitId === dev.unitId &&
+            appState.units[learning.unitId]?.name === 'Unit 3' && learning.order > (Number(dev.order) || 0);
+        }"""))
+        pre_learning = page.evaluate("plainJson(appState)")
+        pre_learning['version'] = 15
+        pre_learning['decks'].pop('ap_psych:unit_3_learning', None)
+        learning_page, learning_errors = new_page(saved=pre_learning)
+        check('v15 profile gains the Learning deck in its existing Unit 3', not learning_errors and learning_page.evaluate("""() => {
+          const learning = appState.decks[LEARNING_DECK_ID], dev = appState.decks[DEVELOPMENT_DECK_ID];
+          const unit3 = Object.values(appState.units).filter(u => u.classId === dev.classId && normalizeLibraryText(u.name) === 'unit 3');
+          return !!learning && learning.unitId === dev.unitId && unit3.length === 1;
+        }"""))
+        learning_page.evaluate("delete appState.decks[LEARNING_DECK_ID];persistState({includeSession:false})")
+        deleted_learning = learning_page.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
+        deleted_learning_page, deleted_learning_errors = new_page(saved=deleted_learning)
+        check('deleted Learning deck stays deleted at schema 16', not deleted_learning_errors and deleted_learning_page.evaluate('!appState.decks[LEARNING_DECK_ID]'))
 
         # Duplicate classes/units (e.g. created independently on two synced devices) merge into one.
         dup = page.evaluate("plainJson(appState)")

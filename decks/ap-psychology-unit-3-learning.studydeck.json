@@ -1,0 +1,281 @@
+{
+  "format": "StudyCardsDeck",
+  "version": 1,
+  "deckId": "ap_psych:unit_3_learning",
+  "name": "Unit 3 — AP Psychology — Learning",
+  "classCatalogId": "ap_psychology",
+  "className": "AP Psychology",
+  "unitName": "Unit 3",
+  "cards": [
+    {
+      "id": "learning",
+      "front": "Learning",
+      "back": "A relatively permanent change in behavior due to experience with the environment"
+    },
+    {
+      "id": "behavioral_perspective",
+      "front": "Behavioral Perspective",
+      "back": "Studies how observable behaviors are learned and reinforced through the environment"
+    },
+    {
+      "id": "associative_learning",
+      "front": "Associative Learning",
+      "back": "Learning that certain events occur together, as in classical and operant conditioning"
+    },
+    {
+      "id": "association",
+      "front": "Association",
+      "back": "A learned link between two events; the basis of classical conditioning"
+    },
+    {
+      "id": "habituation",
+      "front": "Habituation",
+      "back": "Non-associative learning: responding less to a repeated, harmless stimulus"
+    },
+    {
+      "id": "classical_conditioning",
+      "front": "Classical Conditioning",
+      "back": "Learning to associate two stimuli so one comes to predict the other"
+    },
+    {
+      "id": "neutral_stimulus",
+      "front": "Neutral Stimulus (NS)",
+      "back": "A stimulus that triggers no particular response before conditioning"
+    },
+    {
+      "id": "unconditioned_stimulus",
+      "front": "Unconditioned Stimulus (UCS)",
+      "back": "A stimulus that naturally triggers a response without any learning"
+    },
+    {
+      "id": "unconditioned_response",
+      "front": "Unconditioned Response (UR)",
+      "back": "The natural, unlearned reaction to an unconditioned stimulus"
+    },
+    {
+      "id": "conditioned_stimulus",
+      "front": "Conditioned Stimulus (CS)",
+      "back": "A once-neutral stimulus that triggers a response after repeated pairing with the UCS"
+    },
+    {
+      "id": "conditioned_response",
+      "front": "Conditioned Response (CR)",
+      "back": "The learned response to a conditioned stimulus"
+    },
+    {
+      "id": "pavlov_dog_experiment",
+      "front": "Ivan Pavlov’s Dog Experiment",
+      "back": "Dogs learned to salivate to a sound that had been repeatedly paired with food"
+    },
+    {
+      "id": "little_albert_experiment",
+      "front": "John Watson’s Little Albert Experiment",
+      "back": "Pairing a white rat with a loud noise conditioned a baby to fear rats"
+    },
+    {
+      "id": "acquisition",
+      "front": "Acquisition",
+      "back": "The initial stage of learning, when an association is first formed"
+    },
+    {
+      "id": "extinction",
+      "front": "Extinction",
+      "back": "A conditioned response fades when the CS keeps appearing without the UCS"
+    },
+    {
+      "id": "spontaneous_recovery",
+      "front": "Spontaneous Recovery",
+      "back": "An extinguished conditioned response briefly reappears after a rest period"
+    },
+    {
+      "id": "stimulus_discrimination",
+      "front": "Stimulus Discrimination",
+      "back": "Responding to the conditioned stimulus but not to similar stimuli"
+    },
+    {
+      "id": "stimulus_generalization",
+      "front": "Stimulus Generalization",
+      "back": "Responding to stimuli that resemble the conditioned stimulus"
+    },
+    {
+      "id": "higher_order_conditioning",
+      "front": "Higher-Order Conditioning",
+      "back": "Pairing a conditioned stimulus with a new neutral stimulus, conditioning it too"
+    },
+    {
+      "id": "counterconditioning",
+      "front": "Counterconditioning",
+      "back": "Replacing an unwanted conditioned response by pairing the trigger with a new response"
+    },
+    {
+      "id": "taste_aversion",
+      "front": "Taste Aversion",
+      "back": "Avoiding a food after its taste was paired with illness, often just once"
+    },
+    {
+      "id": "one_trial_conditioning",
+      "front": "One-Trial Conditioning",
+      "back": "An association learned from a single pairing of two events"
+    },
+    {
+      "id": "biological_preparedness",
+      "front": "Biological Preparedness",
+      "back": "Inborn readiness to quickly learn survival-relevant associations, like food and illness"
+    },
+    {
+      "id": "operant_conditioning",
+      "front": "Operant Conditioning",
+      "back": "Learning in which consequences strengthen or weaken a behavior"
+    },
+    {
+      "id": "law_of_effect",
+      "front": "Law of Effect",
+      "back": "Thorndike’s principle: behaviors with favorable outcomes repeat; unfavorable ones become less likely"
+    },
+    {
+      "id": "reinforcement",
+      "front": "Reinforcement",
+      "back": "Any consequence that makes a behavior more likely to happen again"
+    },
+    {
+      "id": "punishment",
+      "front": "Punishment",
+      "back": "Any consequence that makes a behavior less likely to happen again"
+    },
+    {
+      "id": "positive_reinforcement",
+      "front": "Positive Reinforcement",
+      "back": "Adding something desirable after a behavior to increase it"
+    },
+    {
+      "id": "negative_reinforcement",
+      "front": "Negative Reinforcement",
+      "back": "Removing something unpleasant after a behavior to increase it"
+    },
+    {
+      "id": "positive_punishment",
+      "front": "Positive Punishment",
+      "back": "Adding something unpleasant after a behavior to decrease it"
+    },
+    {
+      "id": "negative_punishment",
+      "front": "Negative Punishment",
+      "back": "Removing something desirable after a behavior to decrease it"
+    },
+    {
+      "id": "primary_reinforcers",
+      "front": "Primary Reinforcers",
+      "back": "Naturally satisfying rewards that need no learning, like food or water"
+    },
+    {
+      "id": "secondary_reinforcers",
+      "front": "Secondary Reinforcers",
+      "back": "Learned rewards tied to primary ones, like money, grades, or praise"
+    },
+    {
+      "id": "reinforcement_discrimination",
+      "front": "Reinforcement Discrimination",
+      "back": "Learning which situations signal reinforcement, and responding only in those"
+    },
+    {
+      "id": "reinforcement_generalization",
+      "front": "Reinforcement Generalization",
+      "back": "Performing a reinforced behavior in new, similar situations"
+    },
+    {
+      "id": "shaping",
+      "front": "Shaping",
+      "back": "Reinforcing closer and closer approximations of a desired behavior"
+    },
+    {
+      "id": "bf_skinner",
+      "front": "B. F. Skinner",
+      "back": "Operant conditioning researcher; shaped pigeons’ behavior with rewards in an operant chamber"
+    },
+    {
+      "id": "instinctive_drift",
+      "front": "Instinctive Drift",
+      "back": "Trained animals drifting back toward natural, instinctive behaviors"
+    },
+    {
+      "id": "superstitious_behavior",
+      "front": "Superstitious Behavior",
+      "back": "A behavior repeated because it was accidentally reinforced, though it caused nothing"
+    },
+    {
+      "id": "learned_helplessness",
+      "front": "Learned Helplessness",
+      "back": "Giving up after repeated uncontrollable bad events, even once control is possible"
+    },
+    {
+      "id": "reinforcement_schedules",
+      "front": "Reinforcement Schedules",
+      "back": "Rules for when and how often a behavior is reinforced"
+    },
+    {
+      "id": "continuous_reinforcement",
+      "front": "Continuous Reinforcement",
+      "back": "Reinforcing every occurrence: fast learning, but fast extinction"
+    },
+    {
+      "id": "partial_reinforcement",
+      "front": "Partial Reinforcement",
+      "back": "Reinforcing only some occurrences: slower learning, but more resistant to extinction"
+    },
+    {
+      "id": "fixed_interval",
+      "front": "Fixed-Interval Schedule (FI)",
+      "back": "Reinforces the first response after a set time; responding rises near the deadline"
+    },
+    {
+      "id": "variable_interval",
+      "front": "Variable-Interval Schedule (VI)",
+      "back": "Reinforces after unpredictable amounts of time; slow, steady responding"
+    },
+    {
+      "id": "fixed_ratio",
+      "front": "Fixed-Ratio Schedule (FR)",
+      "back": "Reinforces after a set number of responses; high rate, brief pause after rewards"
+    },
+    {
+      "id": "variable_ratio",
+      "front": "Variable-Ratio Schedule (VR)",
+      "back": "Reinforces after an unpredictable number of responses; high, steady, extinction-resistant"
+    },
+    {
+      "id": "social_learning_theory",
+      "front": "Social Learning Theory",
+      "back": "Bandura’s theory that we learn by observing, imitating, and modeling others"
+    },
+    {
+      "id": "modeling",
+      "front": "Modeling",
+      "back": "Learning by observing and imitating others’ behavior"
+    },
+    {
+      "id": "bobo_doll_experiment",
+      "front": "Albert Bandura’s Bobo Doll Experiment",
+      "back": "Children who watched an adult hit a Bobo doll imitated the aggression"
+    },
+    {
+      "id": "vicarious_conditioning",
+      "front": "Vicarious Conditioning",
+      "back": "Learning from the consequences others experience, without experiencing them yourself"
+    },
+    {
+      "id": "insight_learning",
+      "front": "Insight Learning",
+      "back": "A sudden “aha” realization of a solution, without trial and error"
+    },
+    {
+      "id": "latent_learning",
+      "front": "Latent Learning",
+      "back": "Learning without obvious reinforcement that shows only once there’s a reason"
+    },
+    {
+      "id": "cognitive_maps",
+      "front": "Cognitive Maps",
+      "back": "Mental representations of the layout of one’s environment"
+    }
+  ]
+}
