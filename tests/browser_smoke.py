@@ -110,16 +110,16 @@ def run(source: str, baseline: str | None) -> dict:
         browser = pw.chromium.launch(**options)
         contexts = []
 
-        def new_page(html=source, saved=None, width=1440, height=900):
+        def new_page(html=source, saved=None, width=1440, height=900, store=None, scheme="light"):
             context = browser.new_context(viewport={"width":width,"height":height},
-                                          screen={"width":width,"height":height},
+                                          screen={"width":width,"height":height},color_scheme=scheme,
                                           is_mobile=width<961,has_touch=width<961,device_scale_factor=1)
             contexts.append(context)
             context.route("**/*", lambda route: route.abort())  # Never reach production Firebase.
             page = context.new_page(); errors = []
             page.on("pageerror", lambda error: errors.append(str(error)))
             page.on("dialog", lambda dialog: dialog.accept())
-            page.evaluate(STORAGE, {KEY:json.dumps(saved)} if saved else {})
+            page.evaluate(STORAGE, {**({KEY:json.dumps(saved)} if saved else {}), **(store or {})})
             page.set_content(html, wait_until="load")
             page.wait_for_function("firebaseAuthInitPromise === null")
             if page.locator('#onboardingOverlay').is_visible():
@@ -512,13 +512,34 @@ def run(source: str, baseline: str | None) -> dict:
         page.evaluate("__cloud.failWrite=null")
         check('no uncaught app errors in smoke scenarios',not errors)
 
+        # Theme switch: system default until used, then the saved per-device choice wins.
+        themed, themed_errors = new_page()
+        theme_state = "[document.documentElement.dataset.theme, themeToggle.getAttribute('aria-checked'), localStorage.getItem(THEME_STORAGE_KEY), document.getElementById('themeColorMeta').content]"
+        check('theme follows a light system setting with nothing saved', themed.evaluate(theme_state)==['light','false',None,'#e8d9bc'])
+        themed.locator('#themeToggle').click()
+        check('theme switch turns on dark mode and saves it', themed.evaluate(theme_state)==['dark','true','dark','#1e1812'] and
+              themed.evaluate("getComputedStyle(document.body).backgroundColor")=='rgb(30, 24, 18)')
+        check('mouse click on the theme switch hands focus back', themed.evaluate("document.activeElement!==themeToggle"))
+        themed.evaluate('switchDeck(PSYCH_DECK_ID);currentFact=getFactById("psychology|front",PSYCH_DECK_ID);renderCurrentFact({forceImmediate:true})')
+        themed.locator('#themeToggle').focus(); themed.keyboard.press('Space'); themed.wait_for_timeout(50)
+        check('Space on the focused switch toggles theme, not the card', themed.evaluate(theme_state)[0]=='light' and
+              themed.evaluate("visibleSide()==='front' && !isTransitioning"))
+        dark_saved, dark_saved_errors = new_page(store={'skystudee_theme_v1':'dark'})
+        check('saved dark theme applies on load', dark_saved.evaluate(theme_state)[:2]==['dark','true'])
+        system_dark, system_dark_errors = new_page(scheme='dark')
+        check('theme follows a dark system setting with nothing saved', system_dark.evaluate(theme_state)[:3]==['dark','true',None])
+        light_saved, light_saved_errors = new_page(scheme='dark', store={'skystudee_theme_v1':'light'})
+        check('saved light theme overrides a dark system setting', light_saved.evaluate(theme_state)[:2]==['light','false'])
+        check('theme scenarios raise no errors', not (themed_errors or dark_saved_errors or system_dark_errors or light_saved_errors))
+
         # Compare representative actual browser renders, without contacting SDKs.
         for width,height in [(1440,900),(393,852)]:
-            for state in ['library','study','account']:
+            for state in ['library','study','account','study-dark']:
                 images = []
                 for name,html in [('annotated',source)]+([('baseline',baseline)] if baseline else []):
-                    p,errs = new_page(html=html,width=width,height=height)
-                    if state=='study':
+                    p,errs = new_page(html=html,width=width,height=height,
+                                      store={'skystudee_theme_v1':'dark'} if state.endswith('-dark') else None)
+                    if state.startswith('study'):
                         p.evaluate('switchDeck(PSYCH_DECK_ID);currentFact=getFactById("psychology|front",PSYCH_DECK_ID);renderCurrentFact({forceImmediate:true})')
                     if state=='account':
                         p.evaluate(CLOUD);p.evaluate('openFirebaseAccount()')

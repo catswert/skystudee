@@ -4,8 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>SkyStudee</title>
-  <meta name="theme-color" content="#e8d9bc" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#1e1812" media="(prefers-color-scheme: dark)" />
+  <meta id="themeColorMeta" name="theme-color" content="#e8d9bc" />
+  <script>
+    // THEME BEFORE FIRST PAINT: a choice saved by the header switch (skystudee_theme_v1, this
+    // device only) wins; otherwise follow the system setting. The stylesheet keys every color off
+    // data-theme, so this must run before the body is drawn. applyTheme keeps it in sync later.
+    (function () {
+      var stored = null;
+      try { stored = localStorage.getItem("skystudee_theme_v1"); } catch (error) {}
+      var dark = stored === "dark" || stored === "light"
+        ? stored === "dark"
+        : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+      var meta = document.getElementById("themeColorMeta");
+      if (meta) meta.setAttribute("content", dark ? "#1e1812" : "#e8d9bc");
+    })();
+  </script>
   <!-- TYPE: Atkinson Hyperlegible Next (Braille Institute) for the interface; Shantell Sans for card text and titles. Offline or blocked, the system UI font takes over; nothing else depends on the network font. -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -29,7 +43,7 @@
       specificity/order deliberate; do not add a second, separately written theme.
     */
     :root {
-      color-scheme: light dark;
+      color-scheme: light;
       /* Light: kraft desk, warm card stock, brown-black ink, marigold highlight. */
       --desk: #e8d9bc;
       --desk-sunk: #dccaa6;
@@ -73,39 +87,39 @@
       --shell-pad-y: clamp(12px, 1.6vh, 28px);
       --card-head: 2.6rem;
     }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        /* Dark: a walnut desk at night; the index card stays paper, lit by the lamp. */
-        --desk: #1e1812;
-        --desk-sunk: #16110c;
-        --stock: #2a2219;
-        --stock-2: #241d15;
-        --ink: #f1e6d2;
-        --pencil: #bba78b;
-        --faint: #8f7d64;
-        --line: #3e3326;
-        --line-strong: #5a4a37;
-        --red: #e5664c;
-        --red-soft: rgba(229, 102, 76, .14);
-        --rule-blue: rgba(92, 120, 160, .2);
-        --green: #8db36b;
-        --green-strong: #9fc27d;
-        --green-soft: rgba(147, 194, 110, .14);
-        --on-green: #17200f;
-        --brass: #f0b23a;
-        --brass-soft: rgba(240, 178, 58, .15);
-        --primary: #f1e6d2;
-        --primary-strong: #ffffff;
-        --on-primary: #1e1812;
-        --card-stock: #eee2c9;
-        --card-ink: #2b2118;
-        --card-faint: #8a7457;
-        --card-line: #d3c09a;
-        --focus: #f0b23a;
-        --scrim: rgba(0, 0, 0, .6);
-        --paper-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 22px 50px -18px rgba(0, 0, 0, .85), 0 0 120px -30px rgba(240, 178, 58, .25);
-        --sheet-shadow: 0 26px 60px -20px rgba(0, 0, 0, .8);
-      }
+    /* data-theme is set before first paint (head script) and by the header switch (applyTheme). */
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      /* Dark: a walnut desk at night; the index card stays paper, lit by the lamp. */
+      --desk: #1e1812;
+      --desk-sunk: #16110c;
+      --stock: #2a2219;
+      --stock-2: #241d15;
+      --ink: #f1e6d2;
+      --pencil: #bba78b;
+      --faint: #8f7d64;
+      --line: #3e3326;
+      --line-strong: #5a4a37;
+      --red: #e5664c;
+      --red-soft: rgba(229, 102, 76, .14);
+      --rule-blue: rgba(92, 120, 160, .2);
+      --green: #8db36b;
+      --green-strong: #9fc27d;
+      --green-soft: rgba(147, 194, 110, .14);
+      --on-green: #17200f;
+      --brass: #f0b23a;
+      --brass-soft: rgba(240, 178, 58, .15);
+      --primary: #f1e6d2;
+      --primary-strong: #ffffff;
+      --on-primary: #1e1812;
+      --card-stock: #eee2c9;
+      --card-ink: #2b2118;
+      --card-faint: #8a7457;
+      --card-line: #d3c09a;
+      --focus: #f0b23a;
+      --scrim: rgba(0, 0, 0, .6);
+      --paper-shadow: 0 0 0 1px rgba(0, 0, 0, .25), 0 22px 50px -18px rgba(0, 0, 0, .85), 0 0 120px -30px rgba(240, 178, 58, .25);
+      --sheet-shadow: 0 26px 60px -20px rgba(0, 0, 0, .8);
     }
 
     * { box-sizing: border-box; }
@@ -239,6 +253,37 @@
       flex: 0 0 auto;
     }
     .memory-dot.bad { background: var(--red); }
+
+    /* THEME SWITCH: role="switch"; aria-checked mirrors data-theme (applyTheme). Light shows a
+       marigold sun on the left; dark slides it right and turns it into a crescent moon. */
+    .theme-toggle {
+      appearance: none;
+      position: relative;
+      flex: 0 0 auto;
+      width: 52px;
+      height: 30px;
+      padding: 0;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      background: var(--desk-sunk);
+    }
+    .theme-toggle:hover { border-color: var(--pencil); }
+    .theme-toggle-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--brass);
+      box-shadow: 0 0 0 2px var(--brass-soft);
+      transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease;
+    }
+    :root[data-theme="dark"] .theme-toggle-knob {
+      transform: translateX(22px);
+      background: transparent;
+      box-shadow: inset -7px -4px 0 0 var(--brass);
+    }
 
     /* ACCOUNT: Google identity and revisioned sync controls; the button label comes from renderFirebaseAccount. */
     .account-btn {
@@ -1407,6 +1452,9 @@
     }
 
     @media (max-width: 360px) {
+      /* keep the card mark, drop the wordmark so account and theme switch fit */
+      .brand-mark { font-size: 0; }
+      .account-btn { max-width: 120px; }
       .tab-btn { font-size: .82rem; padding-inline: 2px; }
       .mobile-options-btn { padding-inline: 9px; font-size: .85rem; }
     }
@@ -1431,6 +1479,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       .progress-bar { transition: none; }
+      .theme-toggle-knob { transition: none; }
     }
   </style>
 
@@ -1455,6 +1504,9 @@
           <span id="memoryChipText">Memory not loaded</span>
         </div>
         <button id="accountBtn" class="account-btn" type="button" disabled>Account…</button>
+        <button id="themeToggle" class="theme-toggle" type="button" role="switch" aria-checked="false" aria-label="Dark mode" title="Dark mode">
+          <span class="theme-toggle-knob" aria-hidden="true"></span>
+        </button>
       </div>
     </header>
 
@@ -2893,6 +2945,8 @@
     const memoryDot = document.getElementById("memoryDot");
     const memoryChipText = document.getElementById("memoryChipText");
     const memoryChip = document.getElementById("memoryChip");
+    const themeToggle = document.getElementById("themeToggle");
+    const THEME_STORAGE_KEY = "skystudee_theme_v1";
     const accountBtn = document.getElementById("accountBtn");
     const accountOverlay = document.getElementById("accountOverlay");
     const closeAccountBtn = document.getElementById("closeAccountBtn");
@@ -8165,6 +8219,37 @@ I will upload the topic soon, confirm your understanding`;
       }
     }
 
+    /** Return the theme currently on the page ("dark" or "light"), as set by the head script. */
+    function currentTheme() {
+      return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    }
+
+    /**
+     * Put theme on the page: data-theme (which every color token keys off), the switch's
+     * aria-checked/title, and the browser theme-color. With remember, saves the choice for this
+     * device only (it is not part of the synced profile). Storage failures are ignored.
+     */
+    function applyTheme(theme, { remember = false } = {}) {
+      const dark = theme === "dark";
+      document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+      themeToggle.setAttribute("aria-checked", String(dark));
+      themeToggle.title = dark ? "Switch to light mode" : "Switch to dark mode";
+      document.getElementById("themeColorMeta")?.setAttribute("content", dark ? "#1e1812" : "#e8d9bc");
+      if (remember) {
+        try { localStorage.setItem(THEME_STORAGE_KEY, dark ? "dark" : "light"); } catch (error) {}
+      }
+    }
+
+    /** True when the user has flipped the switch on this device (so the system setting is ignored). */
+    function hasSavedTheme() {
+      try {
+        const saved = localStorage.getItem(THEME_STORAGE_KEY);
+        return saved === "dark" || saved === "light";
+      } catch (error) {
+        return false;
+      }
+    }
+
     /**
      * Build a <details> dropdown holding secondary actions. items are [label, handler, extraClass]
      * tuples or null for a separator. Choosing an item closes the menu before running the bound
@@ -9605,6 +9690,18 @@ I will upload the topic soon, confirm your understanding`;
 
     // KEYBOARD ROUTER: preserve context/typing guards, arrows for grading/later/undo, Space for reveal/next and Enter for typed submission only. Known modal exclusions are limited; see docs/KNOWN_LIMITS.md before extending this handler.
     document.addEventListener("click", event => closeOpenMenus(event.target));
+    applyTheme(currentTheme());
+    themeToggle.addEventListener("click", event => {
+      applyTheme(currentTheme() === "dark" ? "light" : "dark", { remember: true });
+      // After a pointer click, hand Space/Enter back to the card (keyboard activation keeps focus).
+      if (event.detail > 0) themeToggle.blur();
+    });
+    try {
+      // Until the switch is used on this device, keep following the system setting live.
+      window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", event => {
+        if (!hasSavedTheme()) applyTheme(event.matches ? "dark" : "light");
+      });
+    } catch (error) {}
     for (const item of document.querySelectorAll(".library-more .menu-item")) {
       item.addEventListener("click", () => closeOpenMenus());
     }
@@ -9623,6 +9720,8 @@ I will upload the topic soon, confirm your understanding`;
       }
       // A focused deck picker owns its arrow keys; an open options panel pauses grading keys.
       if (target === deckSelect || studySettings.classList.contains("mobile-open")) return;
+      // Space/Enter on the focused theme switch belong to the switch, not the card.
+      if (target === themeToggle && (event.code === "Space" || event.key === "Enter")) return;
       const typingIntoField =
         target === answerInput ||
         target === nameInput ||

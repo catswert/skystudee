@@ -176,8 +176,8 @@ See [Decks](DECKS.md) for stable update/copy behavior and accepted formats.
 
 ## Presentation and motion invariants
 
-There is one stylesheet: design tokens (light, plus a `prefers-color-scheme: dark` override of
-the same tokens), desktop defaults, short/narrow window adjustments, then phone overrides. Its
+There is one stylesheet: design tokens (light on `:root`, dark as a `:root[data-theme="dark"]`
+override of the same tokens), desktop defaults, short/narrow window adjustments, then phone overrides. Its
 header comment records the design direction (ruled index card on a kraft desk / lamp-lit walnut
 desk; Atkinson Hyperlegible Next for UI, Shantell Sans for card text and titles, both from Google
 Fonts with system fallbacks). Phone detection uses both viewport and screen width <=960; it is
@@ -185,6 +185,13 @@ not OS detection and may include small tablets. Phone layout uses a bottom navig
 compact header and a bottom-sheet Options panel; on desktop the same `#studySettings` panel is a
 dropdown under the Options button (both via the `mobile-open` class; Escape closes it). Keep the
 desktop layout unchanged when repairing phone-only problems.
+
+Theme: a small head script sets `<html data-theme>` before first paint from
+`skystudee_theme_v1` (this device only) or, when nothing is saved, the system color scheme, and
+keeps `<meta name="theme-color">` in step. The `#themeToggle` switch in the header's top-right
+corner (`role="switch"`, `aria-checked`) calls `applyTheme`, which saves the choice; until it is
+used, the app follows system changes live. The boot screen in `src/loader.html` reads the same key.
+Style dark mode only through tokens, never with `prefers-color-scheme` rules.
 
 On the study page `body[data-view="study"] .app` is exactly one viewport tall, so `.card-stage`
 (a CSS size container) receives the remaining height and the card keeps 5:3 proportions with

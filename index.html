@@ -10,8 +10,13 @@ html,body{margin:0;min-height:100%;background:#e8d9bc;color:#2b2118;font-family:
 #boot{min-height:100dvh;display:grid;place-items:center;text-align:center}
 #boot b{font-size:1.05rem;font-weight:750;letter-spacing:-.02em}
 #boot span{display:block;color:#67533f;font-size:.8rem;margin-top:.45rem}
-@media (prefers-color-scheme:dark){html,body{background:#1e1812;color:#f1e6d2}#boot span{color:#bba78b}}
+html[data-theme=dark],html[data-theme=dark] body{background:#1e1812;color:#f1e6d2}html[data-theme=dark] #boot span{color:#bba78b}
+@media (prefers-color-scheme:dark){html:not([data-theme=light]),html:not([data-theme=light]) body{background:#1e1812;color:#f1e6d2}html:not([data-theme=light]) #boot span{color:#bba78b}}
 </style>
+<script>
+// Boot screen follows the app's theme switch (skystudee_theme_v1, this device only), else the system.
+try{var t=localStorage.getItem("skystudee_theme_v1");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}
+</script>
 </head>
 <body>
 <div id="boot"><div><b>SkyStudee</b><span>Loading…</span></div></div>
@@ -25,8 +30,8 @@ html,body{margin:0;min-height:100%;background:#e8d9bc;color:#2b2118;font-family:
 (async()=>{
  try{
   // Version invalidates old cache URLs. It is NOT the local/cloud schema version.
-  const version='poetry-decks-v24-20261119';
-  const texts=await Promise.all(Array.from({length:18},async(_,i)=>{
+  const version='theme-toggle-v25-20261119';
+  const texts=await Promise.all(Array.from({length:19},async(_,i)=>{
    const part=String(i+1).padStart(2,'0');
    const r=await fetch(`assets/mobile-build-${part}?v=${version}`,{cache:'no-store'});
    if(!r.ok) throw new Error(`Build part ${i+1}: HTTP ${r.status}`);

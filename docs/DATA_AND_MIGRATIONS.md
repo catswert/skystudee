@@ -27,6 +27,8 @@ schema just to make a release number look newer; migrations compare those values
 - `study_cards_memory_engine_v4`: legacy guest migration source.
 - `skystudee_seed_biological_bases_brain_v1[:uid]`: guest/account Brain seed marker.
 - `skystudee_pre_cloud_restore_v1`: retained legacy schema-v1 recovery slot.
+- `skystudee_theme_v1`: `"light"` or `"dark"` from the header switch. Per device, never
+  synced or part of a profile; absent means follow the system setting.
 
 ## Profile and record shapes
 
