@@ -62,6 +62,8 @@ contains private complete appState. Never publish a backup as educational conten
 | Unit 2 — Part 1 — AP Psychology — Perception, Cognition, Memory & Intelligence | `ap_psych:unit_2_part_1_cognition` | AP Psychology / Unit 2 | 122 cards; pre-v13 upgrade seed; removable afterward |
 | Unit 3 — AP Psychology — Development and Learning | `ap_psych:unit_3_development_and_learning` | AP Psychology / Unit 3 | 117 cards; pre-v14 upgrade seed; removable afterward |
 | Unit 3 — AP Psychology — Learning | `ap_psych:unit_3_learning` | AP Psychology / Unit 3 | 54 cards; pre-v16 upgrade seed; removable afterward |
+| Poetry — Movements and Poets | `english:poetry_movements` | English / Poetry | 85 cards: movement order, dates, traits, poets; pre-v17 upgrade seed; removable |
+| Poetry — Poems | `english:poetry_poems` | English / Poetry | 38 cards on poems from the class notes (“When I Have Fears” onward); pre-v17 upgrade seed; removable |
 | Unit 4 — AP Psychology — Social Psychology | `ap_psych:unit_4_social_psychology` | AP Psychology / Unit 4 | 73 cards; pre-v15 upgrade seed; removable afterward |
 | Unit 4 — AP Psychology — Motivation, Emotion & Personality | `ap_psych:unit_4_motivation_emotion_personality` | AP Psychology / Unit 4 | 81 cards; pre-v15 upgrade seed; removable afterward |
 
@@ -74,7 +76,7 @@ snapshot that would leave zero decks receives the fresh-profile starter decks.
 Counts are the current bundled-content snapshot. Update this table when content
 changes. Arrays `PSYCH_CARDS`, `BRAIN_CARDS`, `SENSATION_BASE_CARDS`,
 `CONSCIOUSNESS_CARDS`, `SENSATION_CARDS`, `COGNITION_PART1_CARDS`, `DEVELOPMENT_CARDS`,
-`LEARNING_CARDS`, `SOCIAL_PSYCH_CARDS` and `PERSONALITY_CARDS` are what the app uses. The matching files in `decks/` are public
+`LEARNING_CARDS`, `SOCIAL_PSYCH_CARDS`, `PERSONALITY_CARDS`, `POETRY_MOVEMENTS_CARDS` and `POETRY_POEMS_CARDS` are what the app uses. The matching files in `decks/` are public
 references/exports; editing only a JSON file does **not** update the starter deck
 in the running app.
 
@@ -86,7 +88,7 @@ source and a corresponding public export when useful. Keep every identity stable
 ensure both-direction evidence initialization, and avoid rewriting custom local
 organization each launch. Editing embedded content will not automatically update
 already seeded removable deck copies; schema 12 therefore appends only missing
-States of Consciousness IDs while preserving progress, custom names, and deletion. Unit 2 Part 1 is independently seeded only for pre-v13 profiles, so later deletion remains authoritative. Unit 3 is independently seeded only for pre-v14 profiles; later deletion remains authoritative. Both Unit 4 decks are seeded only for pre-v15 profiles (`seedUnit4DecksForUpgrade`); deleting either afterward is authoritative. The Unit 3 Learning deck is seeded only for pre-v16 profiles (`seedLearningDeckForUpgrade`), into the same Unit 3 as Development, after the decks already there.
+States of Consciousness IDs while preserving progress, custom names, and deletion. Unit 2 Part 1 is independently seeded only for pre-v13 profiles, so later deletion remains authoritative. Unit 3 is independently seeded only for pre-v14 profiles; later deletion remains authoritative. Both Unit 4 decks are seeded only for pre-v15 profiles (`seedUnit4DecksForUpgrade`); deleting either afterward is authoritative. The Unit 3 Learning deck is seeded only for pre-v16 profiles (`seedLearningDeckForUpgrade`), into the same Unit 3 as Development, after the decks already there. The two poetry decks are seeded only for pre-v17 profiles (`seedPoetryDecksForUpgrade`) into unit "Poetry" of `bundledEnglishClass`: the user's first English-family class that has decks, else any English-family class, else a new class named "English" with the stable ID `class:english:bundled`.
 
 The Library and deck picker show a shortened name (`displayDeckName`) that drops `" — "`
 segments repeating the deck's class or unit, so "Unit 4 — AP Psychology — Social Psychology"

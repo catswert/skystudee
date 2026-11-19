@@ -28,7 +28,7 @@ class LearningDeckTests(unittest.TestCase):
 
     def test_schema_16_seeds_once_into_unit_3(self):
         s = (ROOT / "src/skystudee.html").read_text()
-        self.assertIn("const APP_VERSION = 16;", s)
+        self.assertIn("const APP_VERSION = 17;", s)
         self.assertIn("function seedLearningDeckForUpgrade", s)
         self.assertIn("seedLearningDeckForUpgrade(target, saved.version);", s)
         self.assertIn('bundledUnit(target, psych.id, "Unit 3")', s)

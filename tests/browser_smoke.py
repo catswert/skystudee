@@ -135,7 +135,7 @@ def run(source: str, baseline: str | None) -> dict:
 
         page, errors = new_page()
         check('fresh Library home',page.locator('#decksView').is_visible())
-        check('local studying available with SDK blocked',page.evaluate('!firebaseAuthReady && Object.keys(appState.decks).length===8'))
+        check('local studying available with SDK blocked',page.evaluate('!firebaseAuthReady && Object.keys(appState.decks).length===10'))
         check('fresh profile has no German deck',page.evaluate('!appState.decks[RETIRED_GERMAN_DECK_ID] && !!appState.decks[activeDeckId]'))
         check('both Unit 4 decks bundled under AP Psychology Unit 4',page.evaluate("""() => [SOCIAL_PSYCH_DECK_ID,PERSONALITY_DECK_ID].every(id => {
           const deck=appState.decks[id];
@@ -272,6 +272,30 @@ def run(source: str, baseline: str | None) -> dict:
         deleted_learning = learning_page.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
         deleted_learning_page, deleted_learning_errors = new_page(saved=deleted_learning)
         check('deleted Learning deck stays deleted at schema 16', not deleted_learning_errors and deleted_learning_page.evaluate('!appState.decks[LEARNING_DECK_ID]'))
+
+        check('poetry decks bundled in English / Poetry', page.evaluate("""() => {
+          const a = appState.decks[POETRY_MOVEMENTS_DECK_ID], b = appState.decks[POETRY_POEMS_DECK_ID];
+          const cls = appState.classes[a?.classId];
+          return a?.cards.length === 85 && b?.cards.length === 38 && a.classId === b.classId && a.unitId === b.unitId &&
+            cls?.name === 'English' && cls.familyId === 'english' && appState.units[a.unitId]?.name === 'Poetry';
+        }"""))
+        pre_poetry = page.evaluate("plainJson(appState)")
+        pre_poetry['version'] = 16
+        for key in ('english:poetry_movements', 'english:poetry_poems'): pre_poetry['decks'].pop(key, None)
+        pre_poetry['classes'] = {k:v for k,v in pre_poetry['classes'].items() if v.get('familyId') != 'english'}
+        pre_poetry['units'] = {k:v for k,v in pre_poetry['units'].items() if v['classId'] in pre_poetry['classes']}
+        pre_poetry['classes']['class:ap_lit:mine'] = {'id':'class:ap_lit:mine','catalogId':'ap_english_literature_and_composition','name':'AP English Literature and Composition','familyId':'english','order':5}
+        pre_poetry['decks']['mine:othello'] = {'id':'mine:othello','name':'Othello','cards':[{'id':'o','front':'Iago','back':'Villain'}],'facts':{},'classId':'class:ap_lit:mine','unitId':None}
+        poetry_page, poetry_errors = new_page(saved=pre_poetry)
+        check('v16 profile gets poetry decks in its existing English class', not poetry_errors and poetry_page.evaluate("""() => {
+          const a = appState.decks[POETRY_MOVEMENTS_DECK_ID], b = appState.decks[POETRY_POEMS_DECK_ID];
+          return a?.classId === 'class:ap_lit:mine' && b?.classId === 'class:ap_lit:mine' &&
+            appState.units[a.unitId]?.name === 'Poetry' && !appState.classes['class:english:bundled'];
+        }"""))
+        poetry_page.evaluate("delete appState.decks[POETRY_POEMS_DECK_ID];persistState({includeSession:false})")
+        deleted_poetry = poetry_page.evaluate('JSON.parse(localStorage.getItem(STORAGE_KEY))')
+        deleted_poetry_page, deleted_poetry_errors = new_page(saved=deleted_poetry)
+        check('deleted poetry deck stays deleted at schema 17', not deleted_poetry_errors and deleted_poetry_page.evaluate('!appState.decks[POETRY_POEMS_DECK_ID] && !!appState.decks[POETRY_MOVEMENTS_DECK_ID]'))
 
         # Duplicate classes/units (e.g. created independently on two synced devices) merge into one.
         dup = page.evaluate("plainJson(appState)")

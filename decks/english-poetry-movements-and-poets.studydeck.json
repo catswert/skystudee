@@ -1,0 +1,435 @@
+{
+  "format": "StudyCardsDeck",
+  "version": 1,
+  "deckId": "english:poetry_movements",
+  "name": "Poetry — Movements and Poets",
+  "className": "English",
+  "unitName": "Poetry",
+  "cards": [
+    {
+      "id": "order",
+      "front": "Poetry movements in order, oldest first",
+      "back": "Metaphysical, Augustan, Romantics, Symbolists, Modernists, Harlem Renaissance, Post-Modernists"
+    },
+    {
+      "id": "mnemonic",
+      "front": "Mnemonic for the movement order",
+      "back": "My Aunt Rides Stinky Mules Hauling Potatoes (M-A-R-S-M-H-P)"
+    },
+    {
+      "id": "era_metaphysical",
+      "front": "Metaphysical poetry",
+      "back": "1st movement: 17th-century England (Baroque period)"
+    },
+    {
+      "id": "era_augustan",
+      "front": "Augustan poetry",
+      "back": "2nd movement: mid-17th to mid-18th century"
+    },
+    {
+      "id": "era_romantics",
+      "front": "Romantic poetry",
+      "back": "3rd movement: 19th century, England and America"
+    },
+    {
+      "id": "era_symbolists",
+      "front": "Symbolist poetry",
+      "back": "4th movement: mid-19th to early 20th century"
+    },
+    {
+      "id": "era_modernists",
+      "front": "Modernist poetry",
+      "back": "5th movement: 20th century"
+    },
+    {
+      "id": "era_harlem",
+      "front": "Harlem Renaissance",
+      "back": "6th movement: first half of the 20th century"
+    },
+    {
+      "id": "era_postmodern",
+      "front": "Post-Modernist poetry",
+      "back": "7th movement: second half of the 20th century, split into submovements"
+    },
+    {
+      "id": "after_metaphysical",
+      "front": "Movement after Metaphysical",
+      "back": "Augustan"
+    },
+    {
+      "id": "after_augustan",
+      "front": "Movement after Augustan",
+      "back": "Romantics"
+    },
+    {
+      "id": "after_romantics",
+      "front": "Movement after Romantics",
+      "back": "Symbolists"
+    },
+    {
+      "id": "after_symbolists",
+      "front": "Movement after Symbolists",
+      "back": "Modernists"
+    },
+    {
+      "id": "after_modernists",
+      "front": "Movement after Modernists",
+      "back": "Harlem Renaissance (it overlaps Modernism)"
+    },
+    {
+      "id": "after_harlem",
+      "front": "Movement after Harlem Renaissance",
+      "back": "Post-Modernists"
+    },
+    {
+      "id": "poets_metaphysical",
+      "front": "Metaphysical poets",
+      "back": "John Donne, George Herbert, Andrew Marvell"
+    },
+    {
+      "id": "poets_augustan",
+      "front": "Augustan writers",
+      "back": "John Dryden, Alexander Pope, John Gay, Jonathan Swift"
+    },
+    {
+      "id": "poets_romantics",
+      "front": "Romantic writers",
+      "back": "Wordsworth, Shelley, Keats, Scott, Hugo, Emerson, Whitman, Hawthorne, Thoreau"
+    },
+    {
+      "id": "poets_symbolists",
+      "front": "Symbolist poets",
+      "back": "W. B. Yeats, T. S. Eliot"
+    },
+    {
+      "id": "poets_modernists",
+      "front": "Modernist writers",
+      "back": "Stevens, Williams, H.D., Moore, Cummings, Eliot, Joyce, Woolf, Faulkner, Chopin"
+    },
+    {
+      "id": "poets_harlem",
+      "front": "Harlem Renaissance writers",
+      "back": "Dunbar, McKay, Hughes, Cullen, Hurston, Larsen, Wright, Ellison"
+    },
+    {
+      "id": "postmodern_submovements",
+      "front": "Post-Modernist submovements",
+      "back": "Beat, Confessional, New York School, Black Arts, Black Mountain"
+    },
+    {
+      "id": "poets_confessional",
+      "front": "Confessional poets",
+      "back": "John Berryman, Robert Lowell, Anne Sexton, Sylvia Plath"
+    },
+    {
+      "id": "poets_other",
+      "front": "Other poets of note on the sheet",
+      "back": "Dickinson, Frost, Auden, Bishop, Rich, Heaney"
+    },
+    {
+      "id": "traits_metaphysical",
+      "front": "Which movement? Wit, paradox, huge shifts in scale, introspective philosophical meditation",
+      "back": "Metaphysical"
+    },
+    {
+      "id": "traits_augustan",
+      "front": "Which movement? Heroic couplets, satire meant to improve society, mock-epic comedy",
+      "back": "Augustan"
+    },
+    {
+      "id": "traits_romantics",
+      "front": "Which movement? Everyday language, emotion, nature, imagination, the sublime",
+      "back": "Romantics"
+    },
+    {
+      "id": "traits_symbolists",
+      "front": "Which movement? Dreams, synesthesia, musical sound, deep symbols, art for art’s sake",
+      "back": "Symbolists"
+    },
+    {
+      "id": "traits_modernists",
+      "front": "Which movement? Fragmentation like cubism, allusions, new forms, many viewpoints at once",
+      "back": "Modernists"
+    },
+    {
+      "id": "traits_harlem",
+      "front": "Which movement? African American concerns, blues and jazz repetition, a more inclusive America",
+      "back": "Harlem Renaissance"
+    },
+    {
+      "id": "traits_postmodern",
+      "front": "Which movement? Parody, irony, unstable narrative, collapsing binaries, surface over depth",
+      "back": "Post-Modernists"
+    },
+    {
+      "id": "traits_confessional",
+      "front": "Which submovement? Personal “I” speaker, sensitive material, innermost doubts and anxieties",
+      "back": "Confessional (Post-Modernist)"
+    },
+    {
+      "id": "term_heroic_couplet",
+      "front": "Heroic couplet",
+      "back": "Two rhyming lines of iambic pentameter; the Augustan signature form"
+    },
+    {
+      "id": "term_iambic_pentameter",
+      "front": "Iambic pentameter",
+      "back": "Five iambs per line: ten syllables, each pair unstressed then stressed"
+    },
+    {
+      "id": "term_mock_epic",
+      "front": "Mock epic",
+      "back": "Treating a mundane subject in grand epic style for comedy (Augustan)"
+    },
+    {
+      "id": "term_assonance",
+      "front": "Assonance",
+      "back": "Repetition of similar vowel sounds"
+    },
+    {
+      "id": "term_consonance",
+      "front": "Consonance",
+      "back": "Repetition of consonant sounds"
+    },
+    {
+      "id": "term_synesthesia",
+      "front": "Synesthesia",
+      "back": "Describing one sense in terms of another; a Symbolist technique"
+    },
+    {
+      "id": "term_art_for_arts_sake",
+      "front": "Art for art’s sake",
+      "back": "Symbolist idea that art should be beautiful and pleasing, not useful"
+    },
+    {
+      "id": "term_rewritten_prosody",
+      "front": "Rewritten prosody",
+      "back": "Confessional poets recasting earlier movements’ forms in their own voice"
+    },
+    {
+      "id": "poet_john_donne",
+      "front": "John Donne",
+      "back": "Metaphysical"
+    },
+    {
+      "id": "poet_george_herbert",
+      "front": "George Herbert",
+      "back": "Metaphysical"
+    },
+    {
+      "id": "poet_andrew_marvell",
+      "front": "Andrew Marvell",
+      "back": "Metaphysical"
+    },
+    {
+      "id": "poet_john_dryden",
+      "front": "John Dryden",
+      "back": "Augustan"
+    },
+    {
+      "id": "poet_alexander_pope",
+      "front": "Alexander Pope",
+      "back": "Augustan"
+    },
+    {
+      "id": "poet_john_gay",
+      "front": "John Gay",
+      "back": "Augustan"
+    },
+    {
+      "id": "poet_jonathan_swift",
+      "front": "Jonathan Swift",
+      "back": "Augustan (satirist)"
+    },
+    {
+      "id": "poet_william_wordsworth",
+      "front": "William Wordsworth",
+      "back": "Romantics"
+    },
+    {
+      "id": "poet_percy_bysshe_shelley",
+      "front": "Percy Bysshe Shelley",
+      "back": "Romantics"
+    },
+    {
+      "id": "poet_john_keats",
+      "front": "John Keats",
+      "back": "Romantics"
+    },
+    {
+      "id": "poet_walter_scott",
+      "front": "Walter Scott",
+      "back": "Romantics (Scottish poet and novelist)"
+    },
+    {
+      "id": "poet_victor_hugo",
+      "front": "Victor Hugo",
+      "back": "Romantics (French poet and novelist)"
+    },
+    {
+      "id": "poet_ralph_waldo_emerson",
+      "front": "Ralph Waldo Emerson",
+      "back": "Romantics (American essayist and poet)"
+    },
+    {
+      "id": "poet_walt_whitman",
+      "front": "Walt Whitman",
+      "back": "Romantics (American poet)"
+    },
+    {
+      "id": "poet_nathaniel_hawthorne",
+      "front": "Nathaniel Hawthorne",
+      "back": "Romantics (American novelist)"
+    },
+    {
+      "id": "poet_henry_david_thoreau",
+      "front": "Henry David Thoreau",
+      "back": "Romantics (American essayist)"
+    },
+    {
+      "id": "poet_w_b_yeats",
+      "front": "W. B. Yeats",
+      "back": "Symbolists"
+    },
+    {
+      "id": "poet_t_s_eliot",
+      "front": "T. S. Eliot",
+      "back": "Modernists (the sheet also lists him with the Symbolists)"
+    },
+    {
+      "id": "poet_wallace_stevens",
+      "front": "Wallace Stevens",
+      "back": "Modernists"
+    },
+    {
+      "id": "poet_william_carlos_williams",
+      "front": "William Carlos Williams",
+      "back": "Modernists"
+    },
+    {
+      "id": "poet_hilda_doolittle_h_d",
+      "front": "Hilda Doolittle (H.D.)",
+      "back": "Modernists"
+    },
+    {
+      "id": "poet_marianne_moore",
+      "front": "Marianne Moore",
+      "back": "Modernists"
+    },
+    {
+      "id": "poet_e_e_cummings",
+      "front": "E. E. Cummings",
+      "back": "Modernists"
+    },
+    {
+      "id": "poet_james_joyce",
+      "front": "James Joyce",
+      "back": "Modernists (Irish novelist)"
+    },
+    {
+      "id": "poet_virginia_woolf",
+      "front": "Virginia Woolf",
+      "back": "Modernists (English novelist)"
+    },
+    {
+      "id": "poet_william_faulkner",
+      "front": "William Faulkner",
+      "back": "Modernists (American novelist)"
+    },
+    {
+      "id": "poet_kate_chopin",
+      "front": "Kate Chopin",
+      "back": "Modernists (American fiction writer)"
+    },
+    {
+      "id": "poet_paul_laurence_dunbar",
+      "front": "Paul Laurence Dunbar",
+      "back": "Harlem Renaissance"
+    },
+    {
+      "id": "poet_claude_mckay",
+      "front": "Claude McKay",
+      "back": "Harlem Renaissance"
+    },
+    {
+      "id": "poet_langston_hughes",
+      "front": "Langston Hughes",
+      "back": "Harlem Renaissance"
+    },
+    {
+      "id": "poet_countee_cullen",
+      "front": "Countee Cullen",
+      "back": "Harlem Renaissance"
+    },
+    {
+      "id": "poet_zora_neale_hurston",
+      "front": "Zora Neale Hurston",
+      "back": "Harlem Renaissance (novelist)"
+    },
+    {
+      "id": "poet_nella_larsen",
+      "front": "Nella Larsen",
+      "back": "Harlem Renaissance (novelist)"
+    },
+    {
+      "id": "poet_richard_wright",
+      "front": "Richard Wright",
+      "back": "Harlem Renaissance (novelist)"
+    },
+    {
+      "id": "poet_ralph_ellison",
+      "front": "Ralph Ellison",
+      "back": "Harlem Renaissance (novelist)"
+    },
+    {
+      "id": "poet_john_berryman",
+      "front": "John Berryman",
+      "back": "Post-Modernists (Confessional)"
+    },
+    {
+      "id": "poet_robert_lowell",
+      "front": "Robert Lowell",
+      "back": "Post-Modernists (Confessional)"
+    },
+    {
+      "id": "poet_anne_sexton",
+      "front": "Anne Sexton",
+      "back": "Post-Modernists (Confessional)"
+    },
+    {
+      "id": "poet_sylvia_plath",
+      "front": "Sylvia Plath",
+      "back": "Post-Modernists (Confessional)"
+    },
+    {
+      "id": "poet_emily_dickinson",
+      "front": "Emily Dickinson",
+      "back": "Other poet of note: American, 1830–1886"
+    },
+    {
+      "id": "poet_robert_frost",
+      "front": "Robert Frost",
+      "back": "Other poet of note: American, 1874–1963"
+    },
+    {
+      "id": "poet_w_h_auden",
+      "front": "W. H. Auden",
+      "back": "Other poet of note: English-born, 1907–1973"
+    },
+    {
+      "id": "poet_elizabeth_bishop",
+      "front": "Elizabeth Bishop",
+      "back": "Other poet of note: American, 1911–1979"
+    },
+    {
+      "id": "poet_adrienne_rich",
+      "front": "Adrienne Rich",
+      "back": "Other poet of note: American, 1929–2012"
+    },
+    {
+      "id": "poet_seamus_heaney",
+      "front": "Seamus Heaney",
+      "back": "Other poet of note: Irish, 1939–2013"
+    }
+  ]
+}

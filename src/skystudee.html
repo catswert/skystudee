@@ -2328,6 +2328,19 @@
     const LEARNING_CARDS = [{"id":"learning","front":"Learning","back":"A relatively permanent change in behavior due to experience with the environment"},{"id":"behavioral_perspective","front":"Behavioral Perspective","back":"Studies how observable behaviors are learned and reinforced through the environment"},{"id":"associative_learning","front":"Associative Learning","back":"Learning that certain events occur together, as in classical and operant conditioning"},{"id":"association","front":"Association","back":"A learned link between two events; the basis of classical conditioning"},{"id":"habituation","front":"Habituation","back":"Non-associative learning: responding less to a repeated, harmless stimulus"},{"id":"classical_conditioning","front":"Classical Conditioning","back":"Learning to associate two stimuli so one comes to predict the other"},{"id":"neutral_stimulus","front":"Neutral Stimulus (NS)","back":"A stimulus that triggers no particular response before conditioning"},{"id":"unconditioned_stimulus","front":"Unconditioned Stimulus (UCS)","back":"A stimulus that naturally triggers a response without any learning"},{"id":"unconditioned_response","front":"Unconditioned Response (UR)","back":"The natural, unlearned reaction to an unconditioned stimulus"},{"id":"conditioned_stimulus","front":"Conditioned Stimulus (CS)","back":"A once-neutral stimulus that triggers a response after repeated pairing with the UCS"},{"id":"conditioned_response","front":"Conditioned Response (CR)","back":"The learned response to a conditioned stimulus"},{"id":"pavlov_dog_experiment","front":"Ivan Pavlov’s Dog Experiment","back":"Dogs learned to salivate to a sound that had been repeatedly paired with food"},{"id":"little_albert_experiment","front":"John Watson’s Little Albert Experiment","back":"Pairing a white rat with a loud noise conditioned a baby to fear rats"},{"id":"acquisition","front":"Acquisition","back":"The initial stage of learning, when an association is first formed"},{"id":"extinction","front":"Extinction","back":"A conditioned response fades when the CS keeps appearing without the UCS"},{"id":"spontaneous_recovery","front":"Spontaneous Recovery","back":"An extinguished conditioned response briefly reappears after a rest period"},{"id":"stimulus_discrimination","front":"Stimulus Discrimination","back":"Responding to the conditioned stimulus but not to similar stimuli"},{"id":"stimulus_generalization","front":"Stimulus Generalization","back":"Responding to stimuli that resemble the conditioned stimulus"},{"id":"higher_order_conditioning","front":"Higher-Order Conditioning","back":"Pairing a conditioned stimulus with a new neutral stimulus, conditioning it too"},{"id":"counterconditioning","front":"Counterconditioning","back":"Replacing an unwanted conditioned response by pairing the trigger with a new response"},{"id":"taste_aversion","front":"Taste Aversion","back":"Avoiding a food after its taste was paired with illness, often just once"},{"id":"one_trial_conditioning","front":"One-Trial Conditioning","back":"An association learned from a single pairing of two events"},{"id":"biological_preparedness","front":"Biological Preparedness","back":"Inborn readiness to quickly learn survival-relevant associations, like food and illness"},{"id":"operant_conditioning","front":"Operant Conditioning","back":"Learning in which consequences strengthen or weaken a behavior"},{"id":"law_of_effect","front":"Law of Effect","back":"Thorndike’s principle: behaviors with favorable outcomes repeat; unfavorable ones become less likely"},{"id":"reinforcement","front":"Reinforcement","back":"Any consequence that makes a behavior more likely to happen again"},{"id":"punishment","front":"Punishment","back":"Any consequence that makes a behavior less likely to happen again"},{"id":"positive_reinforcement","front":"Positive Reinforcement","back":"Adding something desirable after a behavior to increase it"},{"id":"negative_reinforcement","front":"Negative Reinforcement","back":"Removing something unpleasant after a behavior to increase it"},{"id":"positive_punishment","front":"Positive Punishment","back":"Adding something unpleasant after a behavior to decrease it"},{"id":"negative_punishment","front":"Negative Punishment","back":"Removing something desirable after a behavior to decrease it"},{"id":"primary_reinforcers","front":"Primary Reinforcers","back":"Naturally satisfying rewards that need no learning, like food or water"},{"id":"secondary_reinforcers","front":"Secondary Reinforcers","back":"Learned rewards tied to primary ones, like money, grades, or praise"},{"id":"reinforcement_discrimination","front":"Reinforcement Discrimination","back":"Learning which situations signal reinforcement, and responding only in those"},{"id":"reinforcement_generalization","front":"Reinforcement Generalization","back":"Performing a reinforced behavior in new, similar situations"},{"id":"shaping","front":"Shaping","back":"Reinforcing closer and closer approximations of a desired behavior"},{"id":"bf_skinner","front":"B. F. Skinner","back":"Operant conditioning researcher; shaped pigeons’ behavior with rewards in an operant chamber"},{"id":"instinctive_drift","front":"Instinctive Drift","back":"Trained animals drifting back toward natural, instinctive behaviors"},{"id":"superstitious_behavior","front":"Superstitious Behavior","back":"A behavior repeated because it was accidentally reinforced, though it caused nothing"},{"id":"learned_helplessness","front":"Learned Helplessness","back":"Giving up after repeated uncontrollable bad events, even once control is possible"},{"id":"reinforcement_schedules","front":"Reinforcement Schedules","back":"Rules for when and how often a behavior is reinforced"},{"id":"continuous_reinforcement","front":"Continuous Reinforcement","back":"Reinforcing every occurrence: fast learning, but fast extinction"},{"id":"partial_reinforcement","front":"Partial Reinforcement","back":"Reinforcing only some occurrences: slower learning, but more resistant to extinction"},{"id":"fixed_interval","front":"Fixed-Interval Schedule (FI)","back":"Reinforces the first response after a set time; responding rises near the deadline"},{"id":"variable_interval","front":"Variable-Interval Schedule (VI)","back":"Reinforces after unpredictable amounts of time; slow, steady responding"},{"id":"fixed_ratio","front":"Fixed-Ratio Schedule (FR)","back":"Reinforces after a set number of responses; high rate, brief pause after rewards"},{"id":"variable_ratio","front":"Variable-Ratio Schedule (VR)","back":"Reinforces after an unpredictable number of responses; high, steady, extinction-resistant"},{"id":"social_learning_theory","front":"Social Learning Theory","back":"Bandura’s theory that we learn by observing, imitating, and modeling others"},{"id":"modeling","front":"Modeling","back":"Learning by observing and imitating others’ behavior"},{"id":"bobo_doll_experiment","front":"Albert Bandura’s Bobo Doll Experiment","back":"Children who watched an adult hit a Bobo doll imitated the aggression"},{"id":"vicarious_conditioning","front":"Vicarious Conditioning","back":"Learning from the consequences others experience, without experiencing them yourself"},{"id":"insight_learning","front":"Insight Learning","back":"A sudden “aha” realization of a solution, without trial and error"},{"id":"latent_learning","front":"Latent Learning","back":"Learning without obvious reinforcement that shows only once there’s a reason"},{"id":"cognitive_maps","front":"Cognitive Maps","back":"Mental representations of the layout of one’s environment"}];
 
     // ==========================================================
+    // PRELOADED ENGLISH — POETRY
+    // ==========================================================
+    // Two removable decks from the poetry movements sheet and the class poetry notes (poems from
+    // "When I Have Fears" onward). They live in an English-family class, unit "Poetry"; see
+    // bundledEnglishClass. Keep decks/english-poetry-*.studydeck.json equal to these arrays.
+    const POETRY_MOVEMENTS_DECK_ID = "english:poetry_movements";
+    const POETRY_MOVEMENTS_DECK_NAME = "Poetry — Movements and Poets";
+    const POETRY_MOVEMENTS_CARDS = [{"id":"order","front":"Poetry movements in order, oldest first","back":"Metaphysical, Augustan, Romantics, Symbolists, Modernists, Harlem Renaissance, Post-Modernists"},{"id":"mnemonic","front":"Mnemonic for the movement order","back":"My Aunt Rides Stinky Mules Hauling Potatoes (M-A-R-S-M-H-P)"},{"id":"era_metaphysical","front":"Metaphysical poetry","back":"1st movement: 17th-century England (Baroque period)"},{"id":"era_augustan","front":"Augustan poetry","back":"2nd movement: mid-17th to mid-18th century"},{"id":"era_romantics","front":"Romantic poetry","back":"3rd movement: 19th century, England and America"},{"id":"era_symbolists","front":"Symbolist poetry","back":"4th movement: mid-19th to early 20th century"},{"id":"era_modernists","front":"Modernist poetry","back":"5th movement: 20th century"},{"id":"era_harlem","front":"Harlem Renaissance","back":"6th movement: first half of the 20th century"},{"id":"era_postmodern","front":"Post-Modernist poetry","back":"7th movement: second half of the 20th century, split into submovements"},{"id":"after_metaphysical","front":"Movement after Metaphysical","back":"Augustan"},{"id":"after_augustan","front":"Movement after Augustan","back":"Romantics"},{"id":"after_romantics","front":"Movement after Romantics","back":"Symbolists"},{"id":"after_symbolists","front":"Movement after Symbolists","back":"Modernists"},{"id":"after_modernists","front":"Movement after Modernists","back":"Harlem Renaissance (it overlaps Modernism)"},{"id":"after_harlem","front":"Movement after Harlem Renaissance","back":"Post-Modernists"},{"id":"poets_metaphysical","front":"Metaphysical poets","back":"John Donne, George Herbert, Andrew Marvell"},{"id":"poets_augustan","front":"Augustan writers","back":"John Dryden, Alexander Pope, John Gay, Jonathan Swift"},{"id":"poets_romantics","front":"Romantic writers","back":"Wordsworth, Shelley, Keats, Scott, Hugo, Emerson, Whitman, Hawthorne, Thoreau"},{"id":"poets_symbolists","front":"Symbolist poets","back":"W. B. Yeats, T. S. Eliot"},{"id":"poets_modernists","front":"Modernist writers","back":"Stevens, Williams, H.D., Moore, Cummings, Eliot, Joyce, Woolf, Faulkner, Chopin"},{"id":"poets_harlem","front":"Harlem Renaissance writers","back":"Dunbar, McKay, Hughes, Cullen, Hurston, Larsen, Wright, Ellison"},{"id":"postmodern_submovements","front":"Post-Modernist submovements","back":"Beat, Confessional, New York School, Black Arts, Black Mountain"},{"id":"poets_confessional","front":"Confessional poets","back":"John Berryman, Robert Lowell, Anne Sexton, Sylvia Plath"},{"id":"poets_other","front":"Other poets of note on the sheet","back":"Dickinson, Frost, Auden, Bishop, Rich, Heaney"},{"id":"traits_metaphysical","front":"Which movement? Wit, paradox, huge shifts in scale, introspective philosophical meditation","back":"Metaphysical"},{"id":"traits_augustan","front":"Which movement? Heroic couplets, satire meant to improve society, mock-epic comedy","back":"Augustan"},{"id":"traits_romantics","front":"Which movement? Everyday language, emotion, nature, imagination, the sublime","back":"Romantics"},{"id":"traits_symbolists","front":"Which movement? Dreams, synesthesia, musical sound, deep symbols, art for art’s sake","back":"Symbolists"},{"id":"traits_modernists","front":"Which movement? Fragmentation like cubism, allusions, new forms, many viewpoints at once","back":"Modernists"},{"id":"traits_harlem","front":"Which movement? African American concerns, blues and jazz repetition, a more inclusive America","back":"Harlem Renaissance"},{"id":"traits_postmodern","front":"Which movement? Parody, irony, unstable narrative, collapsing binaries, surface over depth","back":"Post-Modernists"},{"id":"traits_confessional","front":"Which submovement? Personal “I” speaker, sensitive material, innermost doubts and anxieties","back":"Confessional (Post-Modernist)"},{"id":"term_heroic_couplet","front":"Heroic couplet","back":"Two rhyming lines of iambic pentameter; the Augustan signature form"},{"id":"term_iambic_pentameter","front":"Iambic pentameter","back":"Five iambs per line: ten syllables, each pair unstressed then stressed"},{"id":"term_mock_epic","front":"Mock epic","back":"Treating a mundane subject in grand epic style for comedy (Augustan)"},{"id":"term_assonance","front":"Assonance","back":"Repetition of similar vowel sounds"},{"id":"term_consonance","front":"Consonance","back":"Repetition of consonant sounds"},{"id":"term_synesthesia","front":"Synesthesia","back":"Describing one sense in terms of another; a Symbolist technique"},{"id":"term_art_for_arts_sake","front":"Art for art’s sake","back":"Symbolist idea that art should be beautiful and pleasing, not useful"},{"id":"term_rewritten_prosody","front":"Rewritten prosody","back":"Confessional poets recasting earlier movements’ forms in their own voice"},{"id":"poet_john_donne","front":"John Donne","back":"Metaphysical"},{"id":"poet_george_herbert","front":"George Herbert","back":"Metaphysical"},{"id":"poet_andrew_marvell","front":"Andrew Marvell","back":"Metaphysical"},{"id":"poet_john_dryden","front":"John Dryden","back":"Augustan"},{"id":"poet_alexander_pope","front":"Alexander Pope","back":"Augustan"},{"id":"poet_john_gay","front":"John Gay","back":"Augustan"},{"id":"poet_jonathan_swift","front":"Jonathan Swift","back":"Augustan (satirist)"},{"id":"poet_william_wordsworth","front":"William Wordsworth","back":"Romantics"},{"id":"poet_percy_bysshe_shelley","front":"Percy Bysshe Shelley","back":"Romantics"},{"id":"poet_john_keats","front":"John Keats","back":"Romantics"},{"id":"poet_walter_scott","front":"Walter Scott","back":"Romantics (Scottish poet and novelist)"},{"id":"poet_victor_hugo","front":"Victor Hugo","back":"Romantics (French poet and novelist)"},{"id":"poet_ralph_waldo_emerson","front":"Ralph Waldo Emerson","back":"Romantics (American essayist and poet)"},{"id":"poet_walt_whitman","front":"Walt Whitman","back":"Romantics (American poet)"},{"id":"poet_nathaniel_hawthorne","front":"Nathaniel Hawthorne","back":"Romantics (American novelist)"},{"id":"poet_henry_david_thoreau","front":"Henry David Thoreau","back":"Romantics (American essayist)"},{"id":"poet_w_b_yeats","front":"W. B. Yeats","back":"Symbolists"},{"id":"poet_t_s_eliot","front":"T. S. Eliot","back":"Modernists (the sheet also lists him with the Symbolists)"},{"id":"poet_wallace_stevens","front":"Wallace Stevens","back":"Modernists"},{"id":"poet_william_carlos_williams","front":"William Carlos Williams","back":"Modernists"},{"id":"poet_hilda_doolittle_h_d","front":"Hilda Doolittle (H.D.)","back":"Modernists"},{"id":"poet_marianne_moore","front":"Marianne Moore","back":"Modernists"},{"id":"poet_e_e_cummings","front":"E. E. Cummings","back":"Modernists"},{"id":"poet_james_joyce","front":"James Joyce","back":"Modernists (Irish novelist)"},{"id":"poet_virginia_woolf","front":"Virginia Woolf","back":"Modernists (English novelist)"},{"id":"poet_william_faulkner","front":"William Faulkner","back":"Modernists (American novelist)"},{"id":"poet_kate_chopin","front":"Kate Chopin","back":"Modernists (American fiction writer)"},{"id":"poet_paul_laurence_dunbar","front":"Paul Laurence Dunbar","back":"Harlem Renaissance"},{"id":"poet_claude_mckay","front":"Claude McKay","back":"Harlem Renaissance"},{"id":"poet_langston_hughes","front":"Langston Hughes","back":"Harlem Renaissance"},{"id":"poet_countee_cullen","front":"Countee Cullen","back":"Harlem Renaissance"},{"id":"poet_zora_neale_hurston","front":"Zora Neale Hurston","back":"Harlem Renaissance (novelist)"},{"id":"poet_nella_larsen","front":"Nella Larsen","back":"Harlem Renaissance (novelist)"},{"id":"poet_richard_wright","front":"Richard Wright","back":"Harlem Renaissance (novelist)"},{"id":"poet_ralph_ellison","front":"Ralph Ellison","back":"Harlem Renaissance (novelist)"},{"id":"poet_john_berryman","front":"John Berryman","back":"Post-Modernists (Confessional)"},{"id":"poet_robert_lowell","front":"Robert Lowell","back":"Post-Modernists (Confessional)"},{"id":"poet_anne_sexton","front":"Anne Sexton","back":"Post-Modernists (Confessional)"},{"id":"poet_sylvia_plath","front":"Sylvia Plath","back":"Post-Modernists (Confessional)"},{"id":"poet_emily_dickinson","front":"Emily Dickinson","back":"Other poet of note: American, 1830–1886"},{"id":"poet_robert_frost","front":"Robert Frost","back":"Other poet of note: American, 1874–1963"},{"id":"poet_w_h_auden","front":"W. H. Auden","back":"Other poet of note: English-born, 1907–1973"},{"id":"poet_elizabeth_bishop","front":"Elizabeth Bishop","back":"Other poet of note: American, 1911–1979"},{"id":"poet_adrienne_rich","front":"Adrienne Rich","back":"Other poet of note: American, 1929–2012"},{"id":"poet_seamus_heaney","front":"Seamus Heaney","back":"Other poet of note: Irish, 1939–2013"}];
+    const POETRY_POEMS_DECK_ID = "english:poetry_poems";
+    const POETRY_POEMS_DECK_NAME = "Poetry — Poems";
+    const POETRY_POEMS_CARDS = [{"id":"fears_author","front":"“When I Have Fears That I May Cease to Be”","back":"John Keats (Romantics); a Shakespearean sonnet"},{"id":"fears_fear","front":"“When I Have Fears”: the speaker’s fear","back":"Dying before he writes his great works or fully experiences love"},{"id":"fears_imagery","front":"“When I Have Fears”: key imagery","back":"Agricultural simile (books as harvested grain); personified night looking down on him"},{"id":"fears_shift","front":"“When I Have Fears”: how the speaker changes","back":"From pride in his ambitions to fear, then acceptance of how small he is"},{"id":"fears_key_part","front":"“When I Have Fears”: the most important part","back":"The opening: high hopes for his writing versus looming death"},{"id":"daffodils_author","front":"“I Wandered Lonely as a Cloud”","back":"William Wordsworth (Romantics)"},{"id":"daffodils_idea","front":"“I Wandered Lonely as a Cloud”: main idea","back":"Nature, through personified dancing daffodils, is isolating yet empowering"},{"id":"daffodils_shift","front":"“I Wandered Lonely as a Cloud”: how the speaker changes","back":"Watches the daffodils, then dances with them, then recalls them for inspiration"},{"id":"lucy_author","front":"“Strange Fits of Passion Have I Known” (Lucy 1)","back":"William Wordsworth (Romantics); the first Lucy poem"},{"id":"lucy_idea","front":"Lucy 1: main idea","back":"Moon symbolism and visual imagery show how fear affects love"},{"id":"lucy_moon","front":"Lucy 1: what the moon stands for","back":"His destination and the passage of time; it sinks as he nears Lucy"},{"id":"lucy_journey","front":"Lucy 1: the ride to Lucy’s cottage","back":"Exciting but worrisome, and it feels endless"},{"id":"lucy_form","front":"Lucy 1: form","back":"All quatrains: four lines each, echoing the four seasons and nature"},{"id":"astronomer_author","front":"“When I Heard the Learn’d Astronomer”","back":"Walt Whitman (Romantics on the sheet); free verse"},{"id":"astronomer_idea","front":"“Learn’d Astronomer”: main idea","back":"Self-discovery in nature matters more than structured education"},{"id":"astronomer_diction","front":"“Learn’d Astronomer”: diction shift","back":"Matter-of-fact academic terms first, then free, mystical words like “rising”"},{"id":"astronomer_structure","front":"“Learn’d Astronomer”: structure","back":"Lines 1–4 repeat “When I” and feel fixed; shift at line 5; then open"},{"id":"astronomer_free_verse","front":"“Learn’d Astronomer”: why free verse?","back":"Its open form mirrors learning through spirituality and personal enlightenment"},{"id":"blackbird_author","front":"“Thirteen Ways of Looking at a Blackbird”","back":"Wallace Stevens (Modernists)"},{"id":"blackbird_thirteen","front":"“Thirteen Ways”: why thirteen sections?","back":"Thirteen viewpoints of one bird; Modernism favors many perspectives at once"},{"id":"blackbird_river","front":"“Thirteen Ways”: the river and the blackbird","back":"Merges the bird with its environment, effacing individuality"},{"id":"blackbird_golden","front":"“Thirteen Ways”: golden birds vs. the blackbird","back":"People chase golden birds (unattainable goals) while the real blackbird is right there"},{"id":"blackbird_tone","front":"“Thirteen Ways”: tone","back":"Both reverent and unsettled"},{"id":"english_b_author","front":"“Theme for English B”","back":"Langston Hughes (Harlem Renaissance)"},{"id":"english_b_harlem","front":"“Theme for English B”: why personify Harlem?","back":"Humanizing Harlem humanizes its people"},{"id":"english_b_questions","front":"“Theme for English B”: why so many questions?","back":"Unsure he can speak for himself; questioning what being American means"},{"id":"english_b_page","front":"“Theme for English B”: the color of the page","back":"The paper is white; his color is what he adds to it"},{"id":"english_b_music","front":"“Theme for English B”: “Bessie, bop, or Bach”","back":"Bessie Smith and bebop are Black music, Bach is white European; tastes cross lines"},{"id":"english_b_connected","front":"“Theme for English B”: speaker and instructor","back":"Part of each other, even when they don’t want to be connected"},{"id":"blackberrying_author","front":"“Blackberrying”","back":"Sylvia Plath (Post-Modernists, Confessional)"},{"id":"blackberrying_tone","front":"“Blackberrying”: tone shift","back":"Chaotic (especially stanza 2), then introspective"},{"id":"blackberrying_hooks","front":"“Blackberrying”: the hooks and turns toward the sea","back":"Changes in life"},{"id":"blackberrying_words","front":"“Blackberrying”: key repeated words","back":"“Nothing” and “protesting”"},{"id":"blackberrying_confessional","front":"“Blackberrying”: Confessional traits","back":"Free verse, personal pronouns, innermost thoughts, rewritten prosody"},{"id":"her_kind_author","front":"“Her Kind”","back":"Anne Sexton (Post-Modernists, Confessional)"},{"id":"her_kind_witch","front":"“Her Kind”: the witch","back":"Echoes the witch trials; her own experience of how women get labeled"},{"id":"her_kind_structure","front":"“Her Kind”: structure","back":"Three stanzas, three types of women, each ending “I have been her kind”"},{"id":"her_kind_diction","front":"“Her Kind”: stanza 1 diction","back":"Abstractly dark"}];
+
+    // ==========================================================
     // PRELOADED UNIT 4 — SOCIAL PSYCHOLOGY AND PERSONALITY
     // ==========================================================
     // Two removable AP Psychology preloads from the Unit 4 Social Psychology & Personality
@@ -2542,6 +2555,27 @@
     }
 
     /**
+     * Return the class for the bundled poetry decks: the class already holding them, else the
+     * user's first English-family class that has decks, else any English-family class, else a new
+     * class named "English" with a stable ID (identical on every device). Mutates target only when
+     * it has to create that class.
+     */
+    function bundledEnglishClass(target) {
+      for (const id of [POETRY_MOVEMENTS_DECK_ID, POETRY_POEMS_DECK_ID]) {
+        const cls = target.classes[target.decks?.[id]?.classId];
+        if (cls) return cls;
+      }
+      const english = Object.values(target.classes || {})
+        .filter(cls => cls.familyId === "english")
+        .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0) || String(a.id).localeCompare(String(b.id)));
+      const withDecks = english.find(cls => Object.values(target.decks || {}).some(deck => deck.classId === cls.id));
+      if (withDecks || english[0]) return withDecks || english[0];
+      const record = makeClassRecord({ id: "class:english:bundled", name: "English", familyId: "english", order: nextOrder(target.classes) });
+      target.classes[record.id] = record;
+      return record;
+    }
+
+    /**
      * Find a same-name unit in classId or create it with an ID derived from the class and name, so
      * two devices running the same bundled-deck migration create the SAME unit record.
      */
@@ -2591,6 +2625,8 @@
           deck.classId = findOrCreateCatalogClass(target, "ap_psychology")?.id || null;
         } else if (seedBundled && (deck.id === SOCIAL_PSYCH_DECK_ID || deck.id === PERSONALITY_DECK_ID || deck.id === LEARNING_DECK_ID) && !deck.classId) {
           deck.classId = bundledPsychologyClass(target).id;
+        } else if (seedBundled && (deck.id === POETRY_MOVEMENTS_DECK_ID || deck.id === POETRY_POEMS_DECK_ID) && !deck.classId) {
+          deck.classId = bundledEnglishClass(target).id;
         } else if (suggestUnclassified && !deck.classId) {
           const suggestion = suggestCatalogClass(deck.name, deck.cards);
           if (suggestion) deck.classId = findOrCreateCatalogClass(target, suggestion.id)?.id || null;
@@ -2615,6 +2651,8 @@
           if (!deck.unitId && deck.classId && target.classes[deck.classId]) deck.unitId = bundledUnit(target, deck.classId, "Unit 4").id;
         } else if (seedBundled && deck.id === LEARNING_DECK_ID) {
           if (!deck.unitId && deck.classId && target.classes[deck.classId]) deck.unitId = bundledUnit(target, deck.classId, "Unit 3").id;
+        } else if (seedBundled && (deck.id === POETRY_MOVEMENTS_DECK_ID || deck.id === POETRY_POEMS_DECK_ID)) {
+          if (!deck.unitId && deck.classId && target.classes[deck.classId]) deck.unitId = bundledUnit(target, deck.classId, "Poetry").id;
         }
 
         if (!Number.isFinite(Number(deck.order))) deck.order = 0;
@@ -2622,7 +2660,7 @@
     }
 
     // VERSION BOUNDARIES: APP_VERSION is local schema, CLOUD_SCHEMA_VERSION is snapshot shape, and build-manifest.version is deployment identity. A comment-only release changes only the last.
-    const APP_VERSION = 16;
+    const APP_VERSION = 17;
     const FIREBASE_SDK_VERSION = "12.18.0";
     // PUBLIC WEB CONFIG only. Never add service-account/private/OAuth-secret credentials. Actual database access is enforced by Firebase Auth and externally published Security Rules.
     const FIREBASE_CONFIG = {
@@ -2997,7 +3035,8 @@
 
     /**
      * Create a fresh local profile with the bundled AP Psychology decks (Research Methods, Unit 1
-     * Sensation, Unit 2 Part 1, both Unit 3 decks and both Unit 4 decks) plus explicit initial organization.
+     * Sensation, Unit 2 Part 1, both Unit 3 decks and both Unit 4 decks) plus the two English
+     * poetry decks plus explicit initial organization.
      * Brain seeding is separate; do not use this as a substitute for a recoverable saved state.
      */
     function defaultAppState() {
@@ -3051,6 +3090,21 @@
         order: 1
       });
       learning.settings.mode = "memory";
+      const poetryMovements = createDeckRecord({
+        id: POETRY_MOVEMENTS_DECK_ID,
+        name: POETRY_MOVEMENTS_DECK_NAME,
+        cards: POETRY_MOVEMENTS_CARDS,
+        preloaded: true
+      });
+      poetryMovements.settings.mode = "memory";
+      const poetryPoems = createDeckRecord({
+        id: POETRY_POEMS_DECK_ID,
+        name: POETRY_POEMS_DECK_NAME,
+        cards: POETRY_POEMS_CARDS,
+        preloaded: true,
+        order: 1
+      });
+      poetryPoems.settings.mode = "memory";
 
       const state = {
         version: APP_VERSION,
@@ -3068,7 +3122,9 @@
           [DEVELOPMENT_DECK_ID]: development,
           [SOCIAL_PSYCH_DECK_ID]: socialPsych,
           [PERSONALITY_DECK_ID]: personality,
-          [LEARNING_DECK_ID]: learning
+          [LEARNING_DECK_ID]: learning,
+          [POETRY_MOVEMENTS_DECK_ID]: poetryMovements,
+          [POETRY_POEMS_DECK_ID]: poetryPoems
         }
       };
       ensureOrganizationState(state, { seedBundled: true });
@@ -3306,6 +3362,31 @@
     }
 
     /**
+     * Add the two removable poetry decks exactly once to profiles saved before schema 17, in the
+     * English class from bundledEnglishClass, unit "Poetry". A missing deck in a version 17+ save
+     * is a deliberate deletion and stays deleted.
+     */
+    function seedPoetryDecksForUpgrade(target, savedVersion) {
+      if (Number(savedVersion || 0) >= 17) return;
+      if (target.decks[POETRY_MOVEMENTS_DECK_ID] && target.decks[POETRY_POEMS_DECK_ID]) return;
+      const english = bundledEnglishClass(target);
+      const unit = bundledUnit(target, english.id, "Poetry");
+      for (const [id, name, cards] of [
+        [POETRY_MOVEMENTS_DECK_ID, POETRY_MOVEMENTS_DECK_NAME, POETRY_MOVEMENTS_CARDS],
+        [POETRY_POEMS_DECK_ID, POETRY_POEMS_DECK_NAME, POETRY_POEMS_CARDS]
+      ]) {
+        if (target.decks[id]) continue;
+        const siblings = Object.fromEntries(Object.entries(target.decks || {}).filter(([, deck]) => deck.unitId === unit.id));
+        const deck = createDeckRecord({
+          id, name, cards, preloaded: true,
+          classId: english.id, unitId: unit.id, order: nextOrder(siblings)
+        });
+        deck.settings.mode = "memory";
+        target.decks[id] = deck;
+      }
+    }
+
+    /**
      * Add the removable Unit 3 Learning preload exactly once to profiles saved before schema 16,
      * under the class that holds the AP Psychology decks, Unit 3, after the decks already there.
      * A missing deck in a version 16+ save is a deliberate deletion and stays deleted.
@@ -3416,6 +3497,7 @@
       seedDevelopmentDeckForUpgrade(target, saved.version);
       seedUnit4DecksForUpgrade(target, saved.version);
       seedLearningDeckForUpgrade(target, saved.version);
+      seedPoetryDecksForUpgrade(target, saved.version);
       if (Number(saved.version || 0) < 15) dropEmptyGermanClass(target);
       ensureOrganizationState(target, {
         seedBundled: Number(saved.version || 0) < 7,

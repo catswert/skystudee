@@ -39,7 +39,7 @@ class Unit4DeckTests(unittest.TestCase):
 
     def test_schema_15_migration_and_german_retirement(self):
         s = (ROOT / "src/skystudee.html").read_text()
-        self.assertIn("const APP_VERSION = 16;", s)
+        self.assertIn("const APP_VERSION = 17;", s)
         self.assertIn("function seedUnit4DecksForUpgrade", s)
         self.assertIn("seedUnit4DecksForUpgrade(target, saved.version);", s)
         self.assertIn('bundledUnit(target, psych.id, "Unit 4")', s)

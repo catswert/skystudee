@@ -1,0 +1,200 @@
+{
+  "format": "StudyCardsDeck",
+  "version": 1,
+  "deckId": "english:poetry_poems",
+  "name": "Poetry — Poems",
+  "className": "English",
+  "unitName": "Poetry",
+  "cards": [
+    {
+      "id": "fears_author",
+      "front": "“When I Have Fears That I May Cease to Be”",
+      "back": "John Keats (Romantics); a Shakespearean sonnet"
+    },
+    {
+      "id": "fears_fear",
+      "front": "“When I Have Fears”: the speaker’s fear",
+      "back": "Dying before he writes his great works or fully experiences love"
+    },
+    {
+      "id": "fears_imagery",
+      "front": "“When I Have Fears”: key imagery",
+      "back": "Agricultural simile (books as harvested grain); personified night looking down on him"
+    },
+    {
+      "id": "fears_shift",
+      "front": "“When I Have Fears”: how the speaker changes",
+      "back": "From pride in his ambitions to fear, then acceptance of how small he is"
+    },
+    {
+      "id": "fears_key_part",
+      "front": "“When I Have Fears”: the most important part",
+      "back": "The opening: high hopes for his writing versus looming death"
+    },
+    {
+      "id": "daffodils_author",
+      "front": "“I Wandered Lonely as a Cloud”",
+      "back": "William Wordsworth (Romantics)"
+    },
+    {
+      "id": "daffodils_idea",
+      "front": "“I Wandered Lonely as a Cloud”: main idea",
+      "back": "Nature, through personified dancing daffodils, is isolating yet empowering"
+    },
+    {
+      "id": "daffodils_shift",
+      "front": "“I Wandered Lonely as a Cloud”: how the speaker changes",
+      "back": "Watches the daffodils, then dances with them, then recalls them for inspiration"
+    },
+    {
+      "id": "lucy_author",
+      "front": "“Strange Fits of Passion Have I Known” (Lucy 1)",
+      "back": "William Wordsworth (Romantics); the first Lucy poem"
+    },
+    {
+      "id": "lucy_idea",
+      "front": "Lucy 1: main idea",
+      "back": "Moon symbolism and visual imagery show how fear affects love"
+    },
+    {
+      "id": "lucy_moon",
+      "front": "Lucy 1: what the moon stands for",
+      "back": "His destination and the passage of time; it sinks as he nears Lucy"
+    },
+    {
+      "id": "lucy_journey",
+      "front": "Lucy 1: the ride to Lucy’s cottage",
+      "back": "Exciting but worrisome, and it feels endless"
+    },
+    {
+      "id": "lucy_form",
+      "front": "Lucy 1: form",
+      "back": "All quatrains: four lines each, echoing the four seasons and nature"
+    },
+    {
+      "id": "astronomer_author",
+      "front": "“When I Heard the Learn’d Astronomer”",
+      "back": "Walt Whitman (Romantics on the sheet); free verse"
+    },
+    {
+      "id": "astronomer_idea",
+      "front": "“Learn’d Astronomer”: main idea",
+      "back": "Self-discovery in nature matters more than structured education"
+    },
+    {
+      "id": "astronomer_diction",
+      "front": "“Learn’d Astronomer”: diction shift",
+      "back": "Matter-of-fact academic terms first, then free, mystical words like “rising”"
+    },
+    {
+      "id": "astronomer_structure",
+      "front": "“Learn’d Astronomer”: structure",
+      "back": "Lines 1–4 repeat “When I” and feel fixed; shift at line 5; then open"
+    },
+    {
+      "id": "astronomer_free_verse",
+      "front": "“Learn’d Astronomer”: why free verse?",
+      "back": "Its open form mirrors learning through spirituality and personal enlightenment"
+    },
+    {
+      "id": "blackbird_author",
+      "front": "“Thirteen Ways of Looking at a Blackbird”",
+      "back": "Wallace Stevens (Modernists)"
+    },
+    {
+      "id": "blackbird_thirteen",
+      "front": "“Thirteen Ways”: why thirteen sections?",
+      "back": "Thirteen viewpoints of one bird; Modernism favors many perspectives at once"
+    },
+    {
+      "id": "blackbird_river",
+      "front": "“Thirteen Ways”: the river and the blackbird",
+      "back": "Merges the bird with its environment, effacing individuality"
+    },
+    {
+      "id": "blackbird_golden",
+      "front": "“Thirteen Ways”: golden birds vs. the blackbird",
+      "back": "People chase golden birds (unattainable goals) while the real blackbird is right there"
+    },
+    {
+      "id": "blackbird_tone",
+      "front": "“Thirteen Ways”: tone",
+      "back": "Both reverent and unsettled"
+    },
+    {
+      "id": "english_b_author",
+      "front": "“Theme for English B”",
+      "back": "Langston Hughes (Harlem Renaissance)"
+    },
+    {
+      "id": "english_b_harlem",
+      "front": "“Theme for English B”: why personify Harlem?",
+      "back": "Humanizing Harlem humanizes its people"
+    },
+    {
+      "id": "english_b_questions",
+      "front": "“Theme for English B”: why so many questions?",
+      "back": "Unsure he can speak for himself; questioning what being American means"
+    },
+    {
+      "id": "english_b_page",
+      "front": "“Theme for English B”: the color of the page",
+      "back": "The paper is white; his color is what he adds to it"
+    },
+    {
+      "id": "english_b_music",
+      "front": "“Theme for English B”: “Bessie, bop, or Bach”",
+      "back": "Bessie Smith and bebop are Black music, Bach is white European; tastes cross lines"
+    },
+    {
+      "id": "english_b_connected",
+      "front": "“Theme for English B”: speaker and instructor",
+      "back": "Part of each other, even when they don’t want to be connected"
+    },
+    {
+      "id": "blackberrying_author",
+      "front": "“Blackberrying”",
+      "back": "Sylvia Plath (Post-Modernists, Confessional)"
+    },
+    {
+      "id": "blackberrying_tone",
+      "front": "“Blackberrying”: tone shift",
+      "back": "Chaotic (especially stanza 2), then introspective"
+    },
+    {
+      "id": "blackberrying_hooks",
+      "front": "“Blackberrying”: the hooks and turns toward the sea",
+      "back": "Changes in life"
+    },
+    {
+      "id": "blackberrying_words",
+      "front": "“Blackberrying”: key repeated words",
+      "back": "“Nothing” and “protesting”"
+    },
+    {
+      "id": "blackberrying_confessional",
+      "front": "“Blackberrying”: Confessional traits",
+      "back": "Free verse, personal pronouns, innermost thoughts, rewritten prosody"
+    },
+    {
+      "id": "her_kind_author",
+      "front": "“Her Kind”",
+      "back": "Anne Sexton (Post-Modernists, Confessional)"
+    },
+    {
+      "id": "her_kind_witch",
+      "front": "“Her Kind”: the witch",
+      "back": "Echoes the witch trials; her own experience of how women get labeled"
+    },
+    {
+      "id": "her_kind_structure",
+      "front": "“Her Kind”: structure",
+      "back": "Three stanzas, three types of women, each ending “I have been her kind”"
+    },
+    {
+      "id": "her_kind_diction",
+      "front": "“Her Kind”: stanza 1 diction",
+      "back": "Abstractly dark"
+    }
+  ]
+}
